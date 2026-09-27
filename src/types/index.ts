@@ -51,6 +51,11 @@ export interface MoodImage {
   aspect_ratio?: string;
   tags?: string[];
   created_at?: string;
+  order_index?: number;
+  sizeBytes?: number;
+  fileName?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface WebBookmark {

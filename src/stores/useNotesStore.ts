@@ -6,6 +6,7 @@ import { tauriListNotes, tauriAddNote, tauriUpdateNote, tauriDeleteNote } from "
 import {
   savePhotoToStorage,
   deletePhotoFromStorage,
+  deleteAllPhotosForNote,
   getPhotoFromStorage,
   listPhotosForNote,
 } from "@/services/imageStorage";
@@ -111,16 +112,27 @@ export const useNotesStore = defineStore("notes", () => {
               if (existing.url.startsWith("idb://") || !existing.url) {
                 existing.url = stored.dataUrl;
               }
+              if (stored.sizeBytes) existing.sizeBytes = stored.sizeBytes;
+              if (stored.name) existing.fileName = stored.name;
+              if (stored.width) existing.width = stored.width;
+              if (stored.height) existing.height = stored.height;
             } else {
               note.mood_gallery.push({
                 id: stored.id,
                 url: stored.dataUrl,
                 caption: stored.caption || stored.name,
-                tags: ["asset", "idb"],
+                fileName: stored.name,
+                sizeBytes: stored.sizeBytes,
+                width: stored.width,
+                height: stored.height,
+                tags: ["photo", "vault"],
                 created_at: stored.created_at,
+                order_index: stored.order_index ?? note.mood_gallery.length,
               });
             }
           }
+          // Sort by order_index if available
+          note.mood_gallery.sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
         }
       } catch (e) {
         console.warn(`Could not hydrate IDB photos for note ${note.id}:`, e);
@@ -250,6 +262,12 @@ export const useNotesStore = defineStore("notes", () => {
     const note = notes.value.find((n) => n.id === noteId);
     if (!note) return;
     if (!note.mood_gallery) note.mood_gallery = [];
+    
+    // Assign order_index
+    img.order_index = 0;
+    note.mood_gallery.forEach((m, idx) => {
+      m.order_index = idx + 1;
+    });
     note.mood_gallery.unshift(img);
     saveToLocal();
 
@@ -259,10 +277,13 @@ export const useNotesStore = defineStore("notes", () => {
         id: img.id,
         noteId,
         dataUrl: img.url,
-        name: img.caption || "Photo",
+        name: img.fileName || img.caption || "Photo",
         caption: img.caption || "Visual Reference",
-        sizeBytes: Math.round((img.url.length * 3) / 4),
+        sizeBytes: img.sizeBytes || Math.round((img.url.length * 3) / 4),
+        width: img.width,
+        height: img.height,
         created_at: img.created_at || new Date().toISOString(),
+        order_index: 0,
       });
     }
   }
@@ -279,10 +300,13 @@ export const useNotesStore = defineStore("notes", () => {
           id: imgId,
           noteId,
           dataUrl: updates.url,
-          name: updates.caption || "Photo",
+          name: updates.fileName || updates.caption || "Photo",
           caption: updates.caption || "Visual Reference",
-          sizeBytes: Math.round((updates.url.length * 3) / 4),
+          sizeBytes: updates.sizeBytes || Math.round((updates.url.length * 3) / 4),
+          width: updates.width,
+          height: updates.height,
           created_at: new Date().toISOString(),
+          order_index: idx,
         });
       }
     }
@@ -292,8 +316,50 @@ export const useNotesStore = defineStore("notes", () => {
     const note = notes.value.find((n) => n.id === noteId);
     if (!note || !note.mood_gallery) return;
     note.mood_gallery = note.mood_gallery.filter((m) => m.id !== imgId);
+    note.mood_gallery.forEach((m, idx) => {
+      m.order_index = idx;
+    });
     saveToLocal();
     await deletePhotoFromStorage(imgId);
+  }
+
+  async function clearAllMoodImages(noteId: number) {
+    const note = notes.value.find((n) => n.id === noteId);
+    if (!note || !note.mood_gallery) return;
+    note.mood_gallery = [];
+    saveToLocal();
+    await deleteAllPhotosForNote(noteId);
+  }
+
+  function moveMoodImage(
+    noteId: number,
+    imgId: string,
+    direction: "left" | "right" | "first" | "last"
+  ) {
+    const note = notes.value.find((n) => n.id === noteId);
+    if (!note || !note.mood_gallery || note.mood_gallery.length <= 1) return;
+    const list = [...note.mood_gallery];
+    const idx = list.findIndex((m) => m.id === imgId);
+    if (idx === -1) return;
+
+    const [item] = list.splice(idx, 1);
+    if (direction === "first") {
+      list.unshift(item);
+    } else if (direction === "last") {
+      list.push(item);
+    } else if (direction === "left") {
+      const targetIdx = Math.max(0, idx - 1);
+      list.splice(targetIdx, 0, item);
+    } else if (direction === "right") {
+      const targetIdx = Math.min(list.length, idx + 1);
+      list.splice(targetIdx, 0, item);
+    }
+
+    list.forEach((m, i) => {
+      m.order_index = i;
+    });
+    note.mood_gallery = list;
+    saveToLocal();
   }
 
   function addBookmark(noteId: number, bm: WebBookmark) {
@@ -338,6 +404,9 @@ export const useNotesStore = defineStore("notes", () => {
   function reorderMoodImages(noteId: number, newOrder: MoodImage[]) {
     const note = notes.value.find((n) => n.id === noteId);
     if (!note) return;
+    newOrder.forEach((m, idx) => {
+      m.order_index = idx;
+    });
     note.mood_gallery = newOrder;
     saveToLocal();
   }
@@ -393,6 +462,8 @@ export const useNotesStore = defineStore("notes", () => {
     addMoodImage,
     updateMoodImage,
     deleteMoodImage,
+    clearAllMoodImages,
+    moveMoodImage,
     reorderMoodImages,
     addBookmark,
     updateBookmark,

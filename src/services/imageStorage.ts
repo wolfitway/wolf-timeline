@@ -42,6 +42,7 @@ export interface StoredPhotoRecord {
   width?: number;
   height?: number;
   created_at: string;
+  order_index?: number;
 }
 
 /**
@@ -52,7 +53,7 @@ export async function optimizeImageFile(
   file: File,
   maxDim = 1920,
   quality = 0.88
-): Promise<{ dataUrl: string; width: number; height: number; sizeBytes: number }> {
+): Promise<{ dataUrl: string; width: number; height: number; sizeBytes: number; fileName: string }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error("Failed to read image file"));
@@ -81,6 +82,7 @@ export async function optimizeImageFile(
             width: img.width,
             height: img.height,
             sizeBytes: file.size,
+            fileName: file.name,
           });
         }
 
@@ -98,7 +100,7 @@ export async function optimizeImageFile(
         }
 
         const sizeBytes = Math.round((dataUrl.length * 3) / 4);
-        resolve({ dataUrl, width, height, sizeBytes });
+        resolve({ dataUrl, width, height, sizeBytes, fileName: file.name });
       };
       img.src = e.target?.result as string;
     };
@@ -163,6 +165,28 @@ export async function deletePhotoFromStorage(id: string): Promise<boolean> {
 }
 
 /**
+ * Permanently deletes all photos for a note from IndexedDB
+ */
+export async function deleteAllPhotosForNote(noteId: number): Promise<number> {
+  try {
+    const db = await openMediaDB();
+    const photos = await listPhotosForNote(noteId);
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const store = tx.objectStore(STORE_NAME);
+      for (const p of photos) {
+        store.delete(p.id);
+      }
+      tx.oncomplete = () => resolve(photos.length);
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) {
+    console.warn("IndexedDB deleteAllPhotosForNote failed:", e);
+    return 0;
+  }
+}
+
+/**
  * Lists all stored photos for a given note
  */
 export async function listPhotosForNote(noteId: number): Promise<StoredPhotoRecord[]> {
@@ -180,4 +204,92 @@ export async function listPhotosForNote(noteId: number): Promise<StoredPhotoReco
     console.warn("IndexedDB listPhotosForNote failed:", e);
     return [];
   }
+}
+
+/**
+ * Helper to download a single image file to the user's computer/folder
+ */
+export function downloadPhotoFile(dataUrlOrUrl: string, fileName = "wolfnote-photo.png") {
+  const link = document.createElement("a");
+  link.href = dataUrlOrUrl;
+  link.download = fileName.replace(/[/\\?%*:|"<>]/g, "-");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/**
+ * Exports all photos in a gallery to a real folder on the user's filesystem
+ * using the Native File System Access API (window.showDirectoryPicker) if supported,
+ * or sequential file downloads fallback.
+ */
+export async function exportPhotosToFolder(
+  photos: Array<{ id: string; url: string; caption?: string; fileName?: string }>,
+  folderPrefix = "wolfnote-gallery"
+): Promise<{ success: boolean; count: number; mode: "native_directory" | "downloads" }> {
+  if (!photos.length) return { success: false, count: 0, mode: "downloads" };
+
+  // 1. Try Native File System Access API
+  if ("showDirectoryPicker" in window) {
+    try {
+      const dirHandle = await (window as any).showDirectoryPicker({
+        id: "wolfnote-gallery-export",
+        mode: "readwrite",
+        startIn: "pictures",
+      });
+
+      let saved = 0;
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i];
+        const cleanName = (photo.caption || photo.fileName || `photo_${i + 1}`)
+          .replace(/[/\\?%*:|"<>]/g, "_")
+          .trim();
+        const ext = photo.url.startsWith("data:image/jpeg")
+          ? "jpg"
+          : photo.url.startsWith("data:image/webp")
+          ? "webp"
+          : "png";
+        const fileName = `${String(i + 1).padStart(2, "0")}_${cleanName}.${ext}`;
+
+        // Convert dataUrl to blob
+        const res = await fetch(photo.url);
+        const blob = await res.blob();
+
+        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        saved++;
+      }
+
+      return { success: true, count: saved, mode: "native_directory" };
+    } catch (e: any) {
+      if (e?.name === "AbortError") {
+        return { success: false, count: 0, mode: "native_directory" };
+      }
+      console.warn("DirectoryPicker failed or declined, falling back to download:", e);
+    }
+  }
+
+  // 2. Fallback: trigger sequential browser downloads
+  let downloaded = 0;
+  for (let i = 0; i < photos.length; i++) {
+    const photo = photos[i];
+    const cleanName = (photo.caption || photo.fileName || `photo_${i + 1}`)
+      .replace(/[/\\?%*:|"<>]/g, "_")
+      .trim();
+    const ext = photo.url.startsWith("data:image/jpeg")
+      ? "jpg"
+      : photo.url.startsWith("data:image/webp")
+      ? "webp"
+      : "png";
+    const fileName = `${folderPrefix}_${String(i + 1).padStart(2, "0")}_${cleanName}.${ext}`;
+
+    setTimeout(() => {
+      downloadPhotoFile(photo.url, fileName);
+    }, i * 200);
+    downloaded++;
+  }
+
+  return { success: true, count: downloaded, mode: "downloads" };
 }

@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
-import { optimizeImageFile } from "@/services/imageStorage";
+import { optimizeImageFile, downloadPhotoFile, exportPhotosToFolder } from "@/services/imageStorage";
 import { fetchSmartResource } from "@/services/resourceFetcher";
 import type { Note, TimelineEvent, AiExploration, WebBookmark, MoodImage } from "@/types";
 
@@ -203,16 +203,24 @@ function onMoodCardDragStart(e: DragEvent, id: string) {
     e.dataTransfer.setData("text/plain", id);
   }
 }
+
 function onMoodCardDragOver(e: DragEvent, id: string) {
   e.preventDefault();
   if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
   dragOverMoodId.value = id;
 }
-function onMoodCardDragLeave(id: string) {
-  if (dragOverMoodId.value === id) dragOverMoodId.value = null;
+
+function onMoodCardDragLeave(e: DragEvent, id: string) {
+  const currentTarget = e.currentTarget as HTMLElement | null;
+  const relatedTarget = e.relatedTarget as Node | null;
+  if (!currentTarget || !relatedTarget || !currentTarget.contains(relatedTarget)) {
+    if (dragOverMoodId.value === id) dragOverMoodId.value = null;
+  }
 }
+
 function onMoodCardDrop(e: DragEvent, targetId: string) {
   e.preventDefault();
+  e.stopPropagation();
   dragOverMoodId.value = null;
   const sourceId = draggedMoodId.value || e.dataTransfer?.getData("text/plain");
   if (!sourceId || sourceId === targetId || !notesStore.selectedNote?.mood_gallery) return;
@@ -228,6 +236,7 @@ function onMoodCardDrop(e: DragEvent, targetId: string) {
   draggedMoodId.value = null;
   uiStore.showToast("Mood gallery images reordered ✓");
 }
+
 function onMoodCardDragEnd() {
   draggedMoodId.value = null;
   dragOverMoodId.value = null;
@@ -540,17 +549,21 @@ async function ingestMoodFiles(files: FileList | File[]) {
     const file = files[i];
     if (!file.type.startsWith("image/")) continue;
     try {
-      const { dataUrl, sizeBytes } = await optimizeImageFile(file, 1920, 0.88);
-      const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+      const { dataUrl, sizeBytes, width, height, fileName } = await optimizeImageFile(file, 1920, 0.88);
+      const cleanName = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
       const img: MoodImage = {
         id: `mood_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${i}`,
         url: dataUrl,
         caption: cleanName || "Visual Reference",
+        fileName: file.name,
+        sizeBytes,
+        width,
+        height,
         tags: ["upload", "photo"],
         created_at: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       };
       await notesStore.addMoodImage(noteId, img);
-      uiStore.showToast(`Saved "${cleanName}" (${Math.round(sizeBytes / 1024)} KB) to Vault ✓`);
+      uiStore.showToast(`Saved "${cleanName}" (${Math.round(sizeBytes / 1024)} KB) to Sovereign Vault ✓`);
     } catch (err) {
       console.error("Failed to process image file:", err);
       uiStore.showToast(`Failed to process ${file.name}`);
@@ -623,6 +636,64 @@ async function handleDeleteMood(imgId: string) {
   if (!notesStore.selectedNote) return;
   await notesStore.deleteMoodImage(notesStore.selectedNote.id, imgId);
   uiStore.showToast("Photo permanently deleted from database & vault ✓");
+}
+
+function handleMoveMood(imgId: string, direction: "left" | "right" | "first" | "last") {
+  if (!notesStore.selectedNote) return;
+  notesStore.moveMoodImage(notesStore.selectedNote.id, imgId, direction);
+  uiStore.showToast(`Photo moved ${direction} ✓`);
+}
+
+function handleDownloadSinglePhoto(img: MoodImage) {
+  const ext = img.url.startsWith("data:image/jpeg")
+    ? "jpg"
+    : img.url.startsWith("data:image/webp")
+    ? "webp"
+    : "png";
+  const cleanName = (img.fileName || img.caption || "wolfnote_photo")
+    .replace(/[/\\?%*:|"<>]/g, "_")
+    .trim();
+  downloadPhotoFile(img.url, `${cleanName}.${ext}`);
+  uiStore.showToast(`Saved "${cleanName}" to disk / downloads ✓`);
+}
+
+const isExportingPhotos = ref(false);
+async function handleExportGalleryToFolder() {
+  if (!notesStore.selectedNote?.mood_gallery?.length) {
+    uiStore.showToast("No photos in this gallery to export");
+    return;
+  }
+  isExportingPhotos.value = true;
+  try {
+    const folderPrefix = `wolfnote_${(notesStore.selectedNote.title || "gallery")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "_")}`;
+    const res = await exportPhotosToFolder(
+      notesStore.selectedNote.mood_gallery,
+      folderPrefix
+    );
+    if (res.success) {
+      if (res.mode === "native_directory") {
+        uiStore.showToast(`Saved ${res.count} photos directly to selected folder ✓`);
+      } else {
+        uiStore.showToast(`Exported ${res.count} photos to your computer ✓`);
+      }
+    }
+  } catch (err) {
+    console.error("Export error:", err);
+    uiStore.showToast("Failed to export photos to folder");
+  } finally {
+    isExportingPhotos.value = false;
+  }
+}
+
+async function handleClearAllMood() {
+  if (!notesStore.selectedNote?.mood_gallery?.length) return;
+  const count = notesStore.selectedNote.mood_gallery.length;
+  if (confirm(`Permanently delete all ${count} photos from the sovereign database & vault for this card?`)) {
+    await notesStore.clearAllMoodImages(notesStore.selectedNote.id);
+    uiStore.showToast(`All ${count} photos permanently deleted from database ✓`);
+  }
 }
 
 function openMoodLightbox(index: number) {
@@ -1502,8 +1573,8 @@ function toggleMoodTag(tag: string) {
               </div>
 
               <!-- Upload Button (Direct File Ingest) -->
-              <label class="btn-add-mood-quick file-label" title="Upload image files from disk">
-                📁 Upload
+              <label class="btn-add-mood-quick file-label" title="Upload image files from your computer">
+                📁 Upload Photos
                 <input
                   type="file"
                   accept="image/*"
@@ -1512,6 +1583,17 @@ function toggleMoodTag(tag: string) {
                   @change="onMoodFileInputChange"
                 />
               </label>
+
+              <!-- Export All to Folder / Disk -->
+              <button
+                type="button"
+                class="btn-add-mood-quick export-btn"
+                :disabled="isExportingPhotos || !notesStore.selectedNote?.mood_gallery?.length"
+                @click="handleExportGalleryToFolder"
+                title="Export all gallery photos directly to a folder on your computer"
+              >
+                {{ isExportingPhotos ? "💾 Exporting..." : "💾 Export to Folder" }}
+              </button>
 
               <!-- Manual URL Add Toggle -->
               <button
@@ -1522,20 +1604,45 @@ function toggleMoodTag(tag: string) {
               >
                 + URL
               </button>
+
+              <!-- Clear Gallery Button -->
+              <button
+                v-if="notesStore.selectedNote?.mood_gallery?.length"
+                type="button"
+                class="btn-add-mood-quick danger-ghost"
+                @click="handleClearAllMood"
+                title="Permanently wipe gallery photos from local database"
+              >
+                🗑️ Clear
+              </button>
             </div>
           </div>
 
           <div v-if="showMoodGallery" class="collapsible-content">
+            <!-- Sovereign Media Storage Info Strip -->
+            <div class="sovereign-storage-strip">
+              <div class="storage-strip-left">
+                <span class="storage-badge-dot"></span>
+                <span class="storage-badge-text">
+                  <strong>Local Sovereign Media DB</strong> • {{ notesStore.selectedNote?.mood_gallery?.length || 0 }} Photos
+                  <span v-if="notesStore.selectedNote?.mood_gallery?.reduce((acc, m) => acc + (m.sizeBytes || 0), 0)">
+                    ({{ Math.round(notesStore.selectedNote.mood_gallery.reduce((acc, m) => acc + (m.sizeBytes || 0), 0) / 1024) }} KB total)
+                  </span>
+                </span>
+              </div>
+              <span class="storage-security-pill">🔒 Zero Cloud Telemetry • 100% On-Device</span>
+            </div>
+
             <!-- Mood Gallery Dedicated Tags Filter Strip -->
             <div v-if="noteMoodTags.length" class="mood-tags-filter-bar">
-              <span class="mood-tag-label">Mood Tags:</span>
+              <span class="mood-tag-label">Filter Tags:</span>
               <button
                 type="button"
                 class="tag-filter-chip sm"
                 :class="{ active: activeMoodTag === null }"
                 @click="activeMoodTag = null"
               >
-                All ({{ notesStore.selectedNote.mood_gallery?.length || 0 }})
+                All ({{ notesStore.selectedNote?.mood_gallery?.length || 0 }})
               </button>
               <button
                 v-for="tag in noteMoodTags"
@@ -1555,12 +1662,15 @@ function toggleMoodTag(tag: string) {
               :class="{ 'banner-active': isGalleryDraggingFiles }"
               @click="moodFileInput?.click()"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
-              <span>Click or Drop images anywhere to upload • Drag cards to reorder • Paste (⌘V)</span>
+              <div class="banner-text-wrap">
+                <span class="banner-title">Click or Drop photos anywhere to upload & store</span>
+                <span class="banner-subtitle">Drag cards or use ◀ ▶ buttons to reorder • Export to folder • Paste (⌘V)</span>
+              </div>
               <input
                 ref="moodFileInput"
                 type="file"
@@ -1571,14 +1681,14 @@ function toggleMoodTag(tag: string) {
               />
             </div>
 
-            <!-- Mood Gallery Grid with robust Drag & Drop -->
+            <!-- Mood Gallery Grid with robust Drag & Drop + 1-Click Reorder Buttons -->
             <div
               v-if="filteredMoodGallery.length"
               class="mood-grid"
               :class="`cols-${moodGridCols}`"
             >
               <div
-                v-for="img in filteredMoodGallery"
+                v-for="(img, idx) in filteredMoodGallery"
                 :key="img.id"
                 class="mood-card-item"
                 :class="{
@@ -1588,10 +1698,47 @@ function toggleMoodTag(tag: string) {
                 draggable="true"
                 @dragstart="onMoodCardDragStart($event, img.id)"
                 @dragover="onMoodCardDragOver($event, img.id)"
-                @dragleave="onMoodCardDragLeave(img.id)"
+                @dragleave="onMoodCardDragLeave($event, img.id)"
                 @drop="onMoodCardDrop($event, img.id)"
                 @dragend="onMoodCardDragEnd"
               >
+                <!-- Quick Reorder & Quick Action Overlay Bar -->
+                <div class="mood-quick-reorder-bar">
+                  <div class="reorder-btn-group">
+                    <button
+                      type="button"
+                      class="btn-reorder-icon"
+                      :disabled="idx === 0"
+                      @click.stop="handleMoveMood(img.id, 'left')"
+                      title="Move Left (Earlier in gallery)"
+                    >
+                      ◀
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-reorder-icon"
+                      :disabled="idx === filteredMoodGallery.length - 1"
+                      @click.stop="handleMoveMood(img.id, 'right')"
+                      title="Move Right (Later in gallery)"
+                    >
+                      ▶
+                    </button>
+                  </div>
+
+                  <span class="mood-order-badge">#{{ idx + 1 }}</span>
+
+                  <div class="reorder-action-group">
+                    <button
+                      type="button"
+                      class="btn-reorder-icon download"
+                      @click.stop="handleDownloadSinglePhoto(img)"
+                      title="Download / Save this photo to disk"
+                    >
+                      ⬇️
+                    </button>
+                  </div>
+                </div>
+
                 <div class="mood-img-wrap" @click="openMoodLightbox(filteredMoodGallery.findIndex(m => m.id === img.id))">
                   <img
                     :src="img.url"
@@ -1601,16 +1748,22 @@ function toggleMoodTag(tag: string) {
                     loading="lazy"
                   />
                   <div class="mood-img-overlay">
-                    <span class="zoom-badge">🔍 Enlarge</span>
+                    <span class="zoom-badge">🔍 Enlarge Lightbox</span>
                   </div>
-                  <span class="card-drag-handle-badge" title="Drag to reorder">⋮</span>
+                  <span class="card-drag-handle-badge" title="Drag to reorder card">⋮⋮</span>
                 </div>
 
                 <div class="mood-meta-row">
-                  <span class="mood-caption-label" :title="img.caption">{{ img.caption }}</span>
+                  <div class="mood-meta-text">
+                    <span class="mood-caption-label" :title="img.caption">{{ img.caption }}</span>
+                    <span v-if="img.sizeBytes" class="mood-size-badge">
+                      {{ Math.round(img.sizeBytes / 1024) }} KB
+                    </span>
+                  </div>
                   <div class="mood-btn-group">
-                    <button type="button" class="btn-item-icon" @click="startEditMood(img)" title="Edit Image">✏️</button>
-                    <button type="button" class="btn-item-icon danger" @click="handleDeleteMood(img.id)" title="Delete Image">✕</button>
+                    <button type="button" class="btn-item-icon" @click.stop="handleDownloadSinglePhoto(img)" title="Save Photo to Folder">⬇️</button>
+                    <button type="button" class="btn-item-icon" @click.stop="startEditMood(img)" title="Edit Photo Details">✏️</button>
+                    <button type="button" class="btn-item-icon danger" @click.stop="handleDeleteMood(img.id)" title="Permanently Delete Photo from Database">✕</button>
                   </div>
                 </div>
 
@@ -1619,7 +1772,7 @@ function toggleMoodTag(tag: string) {
                     v-for="t in img.tags"
                     :key="t"
                     class="resource-tag-pill clickable"
-                    @click="toggleMoodTag(t)"
+                    @click.stop="toggleMoodTag(t)"
                   >
                     #{{ t }}
                   </span>
@@ -1628,7 +1781,7 @@ function toggleMoodTag(tag: string) {
             </div>
 
             <div v-else class="resource-empty-hint">
-              <span>No mood images found. Drag & drop images onto this card or click "📁 Upload" to add some!</span>
+              <span>No mood images found. Drag & drop images onto this card or click "📁 Upload Photos" to add some!</span>
             </div>
 
             <!-- Edit Mood Item Form -->
@@ -2936,6 +3089,7 @@ function toggleMoodTag(tag: string) {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .grid-layout-buttons {
@@ -2981,16 +3135,77 @@ function toggleMoodTag(tag: string) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-decoration: none;
 }
 
 .btn-add-mood-quick.file-label {
   cursor: pointer;
 }
 
-.btn-add-mood-quick:hover {
+.btn-add-mood-quick:hover:not(:disabled) {
   background: #10b981;
   color: #022c22;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.btn-add-mood-quick.export-btn {
+  background: #0d281e;
+  border-color: #10b981;
+  color: #a7f3d0;
+}
+
+.btn-add-mood-quick.danger-ghost {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.btn-add-mood-quick.danger-ghost:hover {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.btn-add-mood-quick:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sovereign Media Storage Info Strip */
+.sovereign-storage-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #04130d;
+  border: 1px solid #0e3020;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.storage-strip-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.storage-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.storage-security-pill {
+  font-size: 10px;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
 .mood-tags-filter-bar {
@@ -2998,7 +3213,7 @@ function toggleMoodTag(tag: string) {
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 
 .mood-tag-label {
@@ -3013,29 +3228,49 @@ function toggleMoodTag(tag: string) {
   border: 1.5px dashed #14432c;
   background: #040e09;
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   color: #34d399;
-  font-size: 11.5px;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
-  text-align: center;
+  transition: all 0.18s ease;
+  text-align: left;
+}
+
+.mood-drop-banner svg {
+  flex-shrink: 0;
+  color: #10b981;
+}
+
+.banner-text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.banner-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.banner-subtitle {
+  font-size: 10.5px;
+  color: #6ee7b7;
 }
 
 .mood-drop-banner:hover,
 .mood-drop-banner.banner-active {
   border-color: #10b981;
   background: #082117;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
 }
 
 .mood-grid {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .mood-grid.cols-2 {
@@ -3043,11 +3278,11 @@ function toggleMoodTag(tag: string) {
 }
 
 .mood-grid.cols-3 {
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 }
 
 .mood-grid.cols-4 {
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
 }
 
 .mood-card-item {
@@ -3058,23 +3293,23 @@ function toggleMoodTag(tag: string) {
   transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
   display: flex;
   flex-direction: column;
-  cursor: grab;
   position: relative;
-}
-
-.mood-card-item:active {
-  cursor: grabbing;
 }
 
 .mood-card-item:hover {
   transform: translateY(-2px);
   border-color: #10b981;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 .mood-card-item.is-dragging {
   opacity: 0.35;
   transform: scale(0.96);
   border-style: dashed;
+}
+
+.mood-card-item.is-dragging * {
+  pointer-events: none;
 }
 
 .mood-card-item.drag-over-item {
@@ -3084,10 +3319,66 @@ function toggleMoodTag(tag: string) {
   transform: scale(1.03) translateY(-2px);
 }
 
+/* Quick Reorder Toolbar at top of card */
+.mood-quick-reorder-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(3, 10, 7, 0.95);
+  border-bottom: 1px solid #0d281e;
+  padding: 4px 6px;
+  font-size: 10.5px;
+}
+
+.reorder-btn-group,
+.reorder-action-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.btn-reorder-icon {
+  background: #061810;
+  border: 1px solid #103322;
+  color: #a7f3d0;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  line-height: 1;
+}
+
+.btn-reorder-icon:hover:not(:disabled) {
+  background: #10b981;
+  color: #021a10;
+  border-color: #10b981;
+}
+
+.btn-reorder-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-reorder-icon.download {
+  font-size: 10px;
+  padding: 2px 4px;
+}
+
+.mood-order-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
 .mood-img-wrap {
   position: relative;
   width: 100%;
-  height: 110px;
+  height: 120px;
   cursor: pointer;
   background: #020805;
 }
@@ -3128,15 +3419,18 @@ function toggleMoodTag(tag: string) {
   position: absolute;
   top: 6px;
   right: 6px;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.7);
   color: #94a3b8;
-  font-size: 12px;
-  width: 20px;
-  height: 20px;
+  font-size: 11px;
+  padding: 2px 5px;
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  cursor: grab;
+  line-height: 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-drag-handle-badge:active {
+  cursor: grabbing;
 }
 
 .mood-meta-row {
@@ -3144,16 +3438,30 @@ function toggleMoodTag(tag: string) {
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px 4px 10px;
+  gap: 6px;
+}
+
+.mood-meta-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
 }
 
 .mood-caption-label {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
   color: #e2e8f0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1;
+}
+
+.mood-size-badge {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #64748b;
 }
 
 .mood-btn-group {
