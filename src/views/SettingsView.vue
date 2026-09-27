@@ -6,16 +6,19 @@ import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useVaultStore } from "@/stores/useVaultStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useLicenseStore } from "@/stores/useLicenseStore";
+import { useShortcutsStore, type KeyCombo } from "@/stores/useShortcutsStore";
 
 const notesStore = useNotesStore();
 const roadmapStore = useRoadmapStore();
 const vaultStore = useVaultStore();
 const uiStore = useUiStore();
 const licenseStore = useLicenseStore();
+const shortcutsStore = useShortcutsStore();
 
 // Navigation Tabs
 export type SettingsCategory =
   | "connections"
+  | "shortcuts"
   | "export"
   | "themes"
   | "fonts"
@@ -25,6 +28,98 @@ export type SettingsCategory =
 
 const activeCategory = ref<SettingsCategory>("connections");
 const searchQuery = ref("");
+
+// Shortcuts State
+const recordingActionId = ref<string | null>(null);
+const recordedCombo = ref<KeyCombo | null>(null);
+const conflictWarning = ref<string | null>(null);
+const shortcutFilterQuery = ref<string>("");
+
+function startRecording(actionId: string) {
+  recordingActionId.value = actionId;
+  recordedCombo.value = null;
+  conflictWarning.value = null;
+}
+
+function cancelRecording() {
+  recordingActionId.value = null;
+  recordedCombo.value = null;
+  conflictWarning.value = null;
+}
+
+function handleRecorderKeyDown(e: KeyboardEvent) {
+  if (!recordingActionId.value) return;
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (e.key === "Escape") {
+    cancelRecording();
+    return;
+  }
+
+  // Ignore bare modifier keys
+  if (["Control", "Meta", "Alt", "Shift"].includes(e.key)) {
+    return;
+  }
+
+  const hasMod = e.metaKey || e.ctrlKey;
+  let cleanKey = e.key;
+  if (cleanKey === " ") cleanKey = "Space";
+
+  const newCombo: KeyCombo = {
+    key: cleanKey,
+    mod: hasMod,
+    alt: e.altKey || undefined,
+    shift: e.shiftKey || undefined,
+  };
+
+  const isFunctionKey = /^F[1-9]|F1[0-2]$/i.test(e.key);
+  if (!hasMod && !newCombo.alt && !isFunctionKey) {
+    uiStore.showToast("Shortcuts must include Ctrl/Cmd or Alt modifier for system safety");
+    return;
+  }
+
+  const conflict = shortcutsStore.findConflict(recordingActionId.value, newCombo);
+  if (conflict) {
+    conflictWarning.value = `Conflicts with "${conflict.label}" (${shortcutsStore.formatShortcut(conflict.id)})`;
+  } else {
+    conflictWarning.value = null;
+  }
+
+  recordedCombo.value = newCombo;
+}
+
+function saveRecordedShortcut() {
+  if (recordingActionId.value && recordedCombo.value) {
+    shortcutsStore.setShortcut(recordingActionId.value, recordedCombo.value);
+    uiStore.showToast(`Saved shortcut for ${recordingActionId.value} ✓`);
+    cancelRecording();
+  }
+}
+
+function resetShortcutToDefault(actionId: string) {
+  shortcutsStore.resetShortcut(actionId);
+  uiStore.showToast("Shortcut restored to default ✓");
+}
+
+function resetAllShortcuts() {
+  if (confirm("Reset all application shortcuts to default keybindings?")) {
+    shortcutsStore.resetAllShortcuts();
+    uiStore.showToast("All shortcuts reset to defaults ✓");
+  }
+}
+
+const filteredShortcutsList = computed(() => {
+  const q = shortcutFilterQuery.value.toLowerCase().trim();
+  if (!q) return shortcutsStore.shortcuts;
+  return shortcutsStore.shortcuts.filter((s) => {
+    return (
+      s.label.toLowerCase().includes(q) ||
+      s.desc.toLowerCase().includes(q) ||
+      shortcutsStore.formatShortcut(s.id).toLowerCase().includes(q)
+    );
+  });
+});
 
 // Connections State
 const connections = ref<Record<string, { connected: boolean; token: string }>>({});
@@ -262,6 +357,7 @@ function copyDeviceId() {
 // Categories definitions for sidebar
 const categories = computed(() => [
   { id: "connections" as SettingsCategory, label: "Wolfitway Connections", icon: "⚡", count: WOLFITWAY_PRODUCTS.length },
+  { id: "shortcuts" as SettingsCategory, label: "Keyboard Shortcuts", icon: "⌨️", count: shortcutsStore.shortcuts.length },
   { id: "export" as SettingsCategory, label: "Data Export & Backup", icon: "📦", count: 4 },
   { id: "themes" as SettingsCategory, label: "Appearance & Themes", icon: "🎨", count: themesList.length },
   { id: "fonts" as SettingsCategory, label: "Typography & Fonts", icon: "🔤", count: fontsList.length },
@@ -276,6 +372,7 @@ const filteredCategories = computed(() => {
   if (!q) return categories.value;
   return categories.value.filter((cat) => {
     if (cat.label.toLowerCase().includes(q)) return true;
+    if (cat.id === "shortcuts" && ("shortcuts keybindings hotkeys keys command".includes(q) || shortcutsStore.shortcuts.some((s) => s.label.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)))) return true;
     if (cat.id === "connections" && WOLFITWAY_PRODUCTS.some((p) => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))) return true;
     if (cat.id === "export" && ("json markdown csv backup restore".includes(q))) return true;
     if (cat.id === "themes" && themesList.some((t) => t.name.toLowerCase().includes(q))) return true;
@@ -293,33 +390,40 @@ const searchResults = computed(() => {
   if (!q) return [];
   const results: Array<{ categoryId: SettingsCategory; categoryLabel: string; title: string; desc: string }> = [];
 
-  // 1. Connections
+  // 1. Shortcuts
+  shortcutsStore.shortcuts.forEach((s) => {
+    if (s.label.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q) || shortcutsStore.formatShortcut(s.id).toLowerCase().includes(q) || "shortcuts keybindings keys".includes(q)) {
+      results.push({ categoryId: "shortcuts", categoryLabel: "Keyboard Shortcuts", title: `${s.label} (${shortcutsStore.formatShortcut(s.id)})`, desc: s.desc });
+    }
+  });
+
+  // 2. Connections
   WOLFITWAY_PRODUCTS.forEach((p) => {
     if (p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.domain.toLowerCase().includes(q)) {
       results.push({ categoryId: "connections", categoryLabel: "Wolfitway Connections", title: p.name, desc: p.desc });
     }
   });
 
-  // 2. Themes
+  // 3. Themes
   themesList.forEach((t) => {
     if (t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q)) {
       results.push({ categoryId: "themes", categoryLabel: "Appearance & Themes", title: t.name, desc: t.desc });
     }
   });
 
-  // 3. Fonts
+  // 4. Fonts
   fontsList.forEach((f) => {
     if (f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q)) {
       results.push({ categoryId: "fonts", categoryLabel: "Typography & Fonts", title: f.name, desc: f.type });
     }
   });
 
-  // 4. Export
+  // 5. Export
   if ("export json markdown csv backup data".includes(q)) {
     results.push({ categoryId: "export", categoryLabel: "Data Export & Backup", title: "JSON & Markdown Vault Export", desc: "Download zero-telemetry offline database backups." });
   }
 
-  // 5. Experts
+  // 6. Experts
   SOVEREIGN_EXPERTS.forEach((e) => {
     if (e.role.toLowerCase().includes(q) || e.handle.toLowerCase().includes(q) || e.mandate.toLowerCase().includes(q)) {
       results.push({ categoryId: "experts", categoryLabel: "Council of Experts", title: `${e.avatar} ${e.role}`, desc: e.mandate });
@@ -476,6 +580,148 @@ function jumpToCategory(catId: SettingsCategory) {
                 {{ connections[prod.id]?.connected ? "Disconnect" : "Connect Mock" }}
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Keyboard Shortcuts -->
+      <div v-else-if="activeCategory === 'shortcuts'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title">⌨️ Keyboard Shortcuts &amp; Ergonomics</h3>
+            <p class="pane-desc">Customize global application hotkeys, resolve key conflicts, and tailor your sovereign deep-work flow.</p>
+          </div>
+          <div class="header-action-group">
+            <button type="button" class="btn-secondary-action" @click="resetAllShortcuts">
+              ↺ Reset All Defaults
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="shortcuts-filter-bar">
+          <div class="filter-input-wrap">
+            <span class="filter-icon">🔍</span>
+            <input
+              v-model="shortcutFilterQuery"
+              type="text"
+              class="shortcuts-filter-input"
+              placeholder="Filter shortcuts by name, action, or key..."
+            />
+            <button v-if="shortcutFilterQuery" type="button" class="btn-clear-search" @click="shortcutFilterQuery = ''">✕</button>
+          </div>
+          <span class="shortcuts-count-pill">{{ filteredShortcutsList.length }} Shortcuts</span>
+        </div>
+
+        <!-- Recording Banner / Card if active -->
+        <div v-if="recordingActionId" class="key-recorder-card" tabindex="0" @keydown="handleRecorderKeyDown">
+          <div class="recorder-top">
+            <div class="recorder-title-row">
+              <span class="pulse-recording-dot"></span>
+              <span class="recorder-heading">
+                Recording shortcut for: <strong>{{ shortcutsStore.shortcuts.find(s => s.id === recordingActionId)?.label }}</strong>
+              </span>
+            </div>
+            <button type="button" class="btn-close-recorder" @click="cancelRecording">✕</button>
+          </div>
+
+          <div class="recorder-prompt-box">
+            <p v-if="!recordedCombo" class="prompt-text">
+              ⌨️ Press your desired key combination on your keyboard (e.g. <kbd>{{ shortcutsStore.isMac ? '⌘' : 'Ctrl' }}</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>)
+            </p>
+            <div v-else class="recorded-keys-display">
+              <span class="recorded-label">Detected:</span>
+              <div class="keys-row">
+                <kbd v-for="(tok, idx) in shortcutsStore.formatComboTokens(recordedCombo)" :key="idx" class="live-kbd">
+                  {{ tok }}
+                </kbd>
+              </div>
+            </div>
+
+            <div v-if="conflictWarning" class="conflict-alert-box">
+              <span class="alert-icon">⚠️</span>
+              <span>{{ conflictWarning }}</span>
+            </div>
+          </div>
+
+          <div class="recorder-actions">
+            <button type="button" class="btn-cancel" @click="cancelRecording">Cancel (Esc)</button>
+            <button
+              type="button"
+              class="btn-save-key"
+              :disabled="!recordedCombo"
+              @click="saveRecordedShortcut"
+            >
+              Save Keybinding ✓
+            </button>
+          </div>
+        </div>
+
+        <!-- Shortcuts Table Grid -->
+        <div class="shortcuts-grid">
+          <div
+            v-for="item in filteredShortcutsList"
+            :key="item.id"
+            class="shortcut-row-card"
+            :class="{ custom: item.isCustom, recording: recordingActionId === item.id }"
+          >
+            <div class="shortcut-info">
+              <div class="shortcut-title-row">
+                <span class="shortcut-label">{{ item.label }}</span>
+                <span v-if="item.isCustom" class="badge-custom">CUSTOMIZED</span>
+                <span class="category-tag-pill">{{ item.category }}</span>
+              </div>
+              <p class="shortcut-desc">{{ item.desc }}</p>
+            </div>
+
+            <div class="shortcut-controls">
+              <!-- Visual Key Badges -->
+              <div class="key-badges-row">
+                <kbd
+                  v-for="(tok, idx) in shortcutsStore.formatComboTokens(item.currentKey)"
+                  :key="idx"
+                  class="kbd-badge"
+                >
+                  {{ tok }}
+                </kbd>
+              </div>
+
+              <!-- Action buttons -->
+              <button
+                type="button"
+                class="btn-record-key"
+                :class="{ recording: recordingActionId === item.id }"
+                @click="startRecording(item.id)"
+              >
+                {{ recordingActionId === item.id ? 'Recording...' : '✎ Edit' }}
+              </button>
+
+              <button
+                v-if="item.isCustom"
+                type="button"
+                class="btn-reset-key"
+                title="Reset to factory default"
+                @click="resetShortcutToDefault(item.id)"
+              >
+                ↺
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cheatsheet & Sovereign Keyboard Overview -->
+        <div class="shortcuts-cheatsheet-card">
+          <div class="cheatsheet-header">
+            <span class="cheatsheet-icon">🐺</span>
+            <div>
+              <h4 class="cheatsheet-title">Sovereign Keyboard Ergonomics</h4>
+              <p class="cheatsheet-sub">All shortcuts are intercepted locally before browser defaults and persisted offline.</p>
+            </div>
+          </div>
+          <div class="cheatsheet-chips">
+            <span class="chip-item"><code>Zero Network Leak</code></span>
+            <span class="chip-item"><code>Platform: {{ shortcutsStore.isMac ? 'macOS (⌘ Command)' : 'Linux/Windows (Ctrl)' }}</code></span>
+            <span class="chip-item"><code>Safe Inputs (Typing Protected)</code></span>
           </div>
         </div>
       </div>
@@ -1890,5 +2136,414 @@ function jumpToCategory(catId: SettingsCategory) {
   color: #9ca3af;
   margin: 0;
   line-height: 1.4;
+}
+
+/* ========================================================
+   KEYBOARD SHORTCUTS CATEGORY STYLES
+   ======================================================== */
+.shortcuts-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.filter-input-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.shortcuts-filter-input {
+  width: 100%;
+  background: #060e0a;
+  border: 1px solid #14281f;
+  border-radius: 8px;
+  padding: 10px 36px 10px 36px;
+  color: #e5e7eb;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.shortcuts-filter-input:focus {
+  border-color: var(--emerald-main, #10b981);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+}
+
+.shortcuts-count-pill {
+  font-size: 11px;
+  font-weight: 700;
+  background: #081711;
+  border: 1px solid #143526;
+  color: var(--emerald-bright, #34d399);
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* Key Recorder Card */
+.key-recorder-card {
+  background: #091711;
+  border: 2px solid var(--emerald-main, #10b981);
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
+  animation: pulseRecorder 2s infinite ease-in-out;
+  outline: none;
+}
+
+@keyframes pulseRecorder {
+  0% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.4); }
+  100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+}
+
+.recorder-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.recorder-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pulse-recording-dot {
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: pulseDot 1s infinite alternate;
+}
+
+@keyframes pulseDot {
+  from { opacity: 0.4; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.15); }
+}
+
+.recorder-heading {
+  font-size: 14px;
+  color: #fff;
+}
+
+.recorder-heading strong {
+  color: var(--emerald-bright, #34d399);
+}
+
+.btn-close-recorder {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.btn-close-recorder:hover {
+  color: #fff;
+}
+
+.recorder-prompt-box {
+  background: #050b08;
+  border: 1px dashed rgba(16, 185, 129, 0.4);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.prompt-text {
+  margin: 0;
+  font-size: 13.5px;
+  color: #9ca3af;
+}
+
+.recorded-keys-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.recorded-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.keys-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.live-kbd {
+  background: #11281e;
+  border: 1px solid var(--emerald-main, #10b981);
+  color: #fff;
+  font-family: var(--font-mono, monospace);
+  font-size: 15px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 6px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
+}
+
+.conflict-alert-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.recorder-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-cancel {
+  background: #101c16;
+  border: 1px solid #233e31;
+  color: #9ca3af;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background: #162a20;
+  color: #fff;
+}
+
+.btn-save-key {
+  background: var(--emerald-main, #10b981);
+  border: 1px solid #34d399;
+  color: #040c08;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-save-key:hover:not(:disabled) {
+  background: #34d399;
+  box-shadow: 0 0 15px rgba(52, 211, 153, 0.4);
+}
+
+.btn-save-key:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Shortcuts List & Grid */
+.shortcuts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.shortcut-row-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #07100c;
+  border: 1px solid #14281f;
+  border-radius: 10px;
+  padding: 14px 20px;
+  transition: all 0.15s ease;
+}
+
+.shortcut-row-card:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: #0a1711;
+}
+
+.shortcut-row-card.custom {
+  border-left: 3px solid var(--emerald-main, #10b981);
+}
+
+.shortcut-row-card.recording {
+  border-color: #3b82f6;
+  background: #081522;
+}
+
+.shortcut-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shortcut-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shortcut-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.badge-custom {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--emerald-main, #10b981);
+  color: var(--emerald-bright, #34d399);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.category-tag-pill {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  color: #6b7280;
+  background: #0c1c14;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.shortcut-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #88929b;
+}
+
+.shortcut-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.key-badges-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.kbd-badge {
+  background: #050b08;
+  border: 1px solid #1b3528;
+  color: #e5e7eb;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 5px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.btn-record-key {
+  background: #0d1e17;
+  border: 1px solid #1a3c2d;
+  color: var(--emerald-bright, #34d399);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-record-key:hover {
+  background: #143224;
+  border-color: var(--emerald-main, #10b981);
+}
+
+.btn-record-key.recording {
+  background: #1e3a8a;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.btn-reset-key {
+  background: transparent;
+  border: 1px solid #233e31;
+  color: #6b7280;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-reset-key:hover {
+  color: #fff;
+  border-color: #4b6357;
+}
+
+/* Cheatsheet Card */
+.shortcuts-cheatsheet-card {
+  background: #060e0a;
+  border: 1px solid #14281f;
+  border-radius: 12px;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cheatsheet-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cheatsheet-icon {
+  font-size: 24px;
+}
+
+.cheatsheet-title {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.cheatsheet-sub {
+  margin: 0;
+  font-size: 11.5px;
+  color: #6b7280;
+}
+
+.cheatsheet-chips {
+  display: flex;
+  gap: 10px;
+}
+
+.chip-item code {
+  background: #091711;
+  border: 1px solid #143526;
+  color: var(--emerald-bright, #34d399);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
 }
 </style>

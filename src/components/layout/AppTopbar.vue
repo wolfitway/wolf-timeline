@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useUiStore, type ActiveTab } from "@/stores/useUiStore";
 import { useVaultStore } from "@/stores/useVaultStore";
+import { useShortcutsStore } from "@/stores/useShortcutsStore";
 
 const uiStore = useUiStore();
 const vaultStore = useVaultStore();
+const shortcutsStore = useShortcutsStore();
 
 const navItems: { id: ActiveTab; label: string; icon?: string }[] = [
   { id: "timeline", label: "Timeline" },
@@ -78,7 +80,7 @@ function handleSecurityBadgeClick() {
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
         <span>Search</span>
-        <kbd class="search-kbd">⌘K</kbd>
+        <kbd class="search-kbd">{{ shortcutsStore.formatShortcut('command_palette') }}</kbd>
       </button>
 
       <!-- Keygen / License Studio Trigger -->

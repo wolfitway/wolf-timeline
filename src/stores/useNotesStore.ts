@@ -203,6 +203,33 @@ export const useNotesStore = defineStore("notes", () => {
     saveToLocal();
   }
 
+  function selectNote(id: number | null) {
+    selectedNoteId.value = id;
+  }
+
+  async function duplicateNote(id: number) {
+    const orig = notes.value.find((n) => n.id === id);
+    if (!orig) return;
+    const duplicated: Note = {
+      ...JSON.parse(JSON.stringify(orig)),
+      id: Date.now(),
+      title: `${orig.title} (Copy)`,
+      created_at: new Date().toISOString(),
+    };
+    notes.value.unshift(duplicated);
+    selectedNoteId.value = duplicated.id;
+    await tauriAddNote({
+      title: duplicated.title,
+      body: duplicated.body,
+      tags: duplicated.tags,
+      kind: duplicated.kind,
+      status: duplicated.status,
+      funnel_stage: duplicated.funnel_stage,
+    });
+    saveToLocal();
+    return duplicated;
+  }
+
   function reorderNotes(newOrder: Note[]) {
     notes.value = newOrder;
     saveToLocal();
@@ -450,6 +477,8 @@ export const useNotesStore = defineStore("notes", () => {
     addNote,
     updateNote,
     deleteNote,
+    selectNote,
+    duplicateNote,
     reorderNotes,
     addTimelineEvent,
     updateTimelineEvent,

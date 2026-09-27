@@ -21,23 +21,106 @@ import { useNotesStore } from "@/stores/useNotesStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useVaultStore } from "@/stores/useVaultStore";
 import { useLicenseStore } from "@/stores/useLicenseStore";
+import { useShortcutsStore } from "@/stores/useShortcutsStore";
 
 const uiStore = useUiStore();
 const notesStore = useNotesStore();
 const roadmapStore = useRoadmapStore();
 const vaultStore = useVaultStore();
 const licenseStore = useLicenseStore();
+const shortcutsStore = useShortcutsStore();
 
 function handleGlobalKeyDown(e: KeyboardEvent) {
-  // ⌘K for Command Palette
-  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+  // Check if target is an editable input or textarea
+  const target = e.target as HTMLElement | null;
+  const isEditable = Boolean(
+    target && (
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable
+    )
+  );
+
+  // 1. Command Palette (works everywhere)
+  if (shortcutsStore.matchesEvent("command_palette", e)) {
     e.preventDefault();
     uiStore.showCommandPalette = !uiStore.showCommandPalette;
+    return;
   }
-  // ⌘+Enter for Quick Capture (if not in text area)
-  else if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !uiStore.showQuickCapture && !uiStore.showFocusEditor) {
+
+  // 2. Navigation Tab switching (works everywhere with modifier)
+  if (shortcutsStore.matchesEvent("tab_timeline", e)) {
     e.preventDefault();
-    uiStore.showQuickCapture = true;
+    uiStore.setTab("timeline");
+    return;
+  }
+  if (shortcutsStore.matchesEvent("tab_studio", e)) {
+    e.preventDefault();
+    uiStore.setTab("studio");
+    return;
+  }
+  if (shortcutsStore.matchesEvent("tab_roadmap", e)) {
+    e.preventDefault();
+    uiStore.setTab("roadmap");
+    return;
+  }
+  if (shortcutsStore.matchesEvent("tab_secrets", e)) {
+    e.preventDefault();
+    uiStore.setTab("secrets");
+    return;
+  }
+  if (shortcutsStore.matchesEvent("tab_settings", e)) {
+    e.preventDefault();
+    uiStore.setTab("settings");
+    return;
+  }
+
+  // 3. Emergency Vault Lock
+  if (shortcutsStore.matchesEvent("lock_vault", e)) {
+    e.preventDefault();
+    vaultStore.lockVault();
+    uiStore.showToast("🔒 Secret Vault locked immediately");
+    return;
+  }
+
+  // 4. Focus Editor Mode
+  if (shortcutsStore.matchesEvent("focus_mode", e)) {
+    e.preventDefault();
+    uiStore.showFocusEditor = !uiStore.showFocusEditor;
+    return;
+  }
+
+  // 5. Export Data
+  if (shortcutsStore.matchesEvent("export_data", e)) {
+    e.preventDefault();
+    uiStore.setTab("settings");
+    uiStore.showToast("📦 Opening export and backup center...");
+    return;
+  }
+
+  // 6. Quick Capture (if not inside an active modal)
+  if (shortcutsStore.matchesEvent("quick_capture", e)) {
+    if (!uiStore.showQuickCapture && !uiStore.showFocusEditor) {
+      e.preventDefault();
+      uiStore.showQuickCapture = true;
+      return;
+    }
+  }
+
+  // 7. New Note / Document
+  if (shortcutsStore.matchesEvent("new_note", e)) {
+    e.preventDefault();
+    notesStore.addNote({
+      title: "Untitled Document",
+      body: "# Untitled Document\n\nBegin drafting sovereign strategy, architecture, or notes...",
+      tags: ["draft"],
+      kind: "idea",
+      status: "ideation",
+    }).then(() => {
+      uiStore.showToast("Created new document ✓");
+      uiStore.setTab("studio");
+    });
+    return;
   }
 }
 
