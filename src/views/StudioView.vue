@@ -12,12 +12,11 @@ const shortcutsStore = useShortcutsStore();
 // Textarea and preview references for scrolling & cursor
 const editorTextarea = ref<HTMLTextAreaElement | null>(null);
 const previewContentRef = ref<HTMLDivElement | null>(null);
-const isSyncScrollEnabled = ref<boolean>(true);
-let isScrolling = false;
+const isSyncScrollEnabled = ref<boolean>(false);
+const activeHoverPane = ref<"editor" | "preview" | null>(null);
 
 function onEditorScroll() {
-  if (!isSyncScrollEnabled.value || isScrolling || !editorTextarea.value || !previewContentRef.value) return;
-  isScrolling = true;
+  if (!isSyncScrollEnabled.value || activeHoverPane.value !== "editor" || !editorTextarea.value || !previewContentRef.value) return;
   const textarea = editorTextarea.value;
   const preview = previewContentRef.value;
   const maxScrollTextarea = textarea.scrollHeight - textarea.clientHeight;
@@ -25,14 +24,10 @@ function onEditorScroll() {
     const ratio = textarea.scrollTop / maxScrollTextarea;
     preview.scrollTop = ratio * (preview.scrollHeight - preview.clientHeight);
   }
-  requestAnimationFrame(() => {
-    isScrolling = false;
-  });
 }
 
 function onPreviewScroll() {
-  if (!isSyncScrollEnabled.value || isScrolling || !editorTextarea.value || !previewContentRef.value) return;
-  isScrolling = true;
+  if (!isSyncScrollEnabled.value || activeHoverPane.value !== "preview" || !editorTextarea.value || !previewContentRef.value) return;
   const textarea = editorTextarea.value;
   const preview = previewContentRef.value;
   const maxScrollPreview = preview.scrollHeight - preview.clientHeight;
@@ -40,9 +35,6 @@ function onPreviewScroll() {
     const ratio = preview.scrollTop / maxScrollPreview;
     textarea.scrollTop = ratio * (textarea.scrollHeight - textarea.clientHeight);
   }
-  requestAnimationFrame(() => {
-    isScrolling = false;
-  });
 }
 
 // Studio Layout & View State
@@ -948,7 +940,12 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
       <!-- Editor & Live Preview Panes (if note selected) -->
       <div v-if="notesStore.selectedNote" class="studio-panes" :class="viewMode">
         <!-- Left Editor Pane -->
-        <div v-show="viewMode !== 'preview'" class="studio-editor-pane">
+        <div
+          v-show="viewMode !== 'preview'"
+          class="studio-editor-pane"
+          @mouseenter="activeHoverPane = 'editor'"
+          @mouseleave="activeHoverPane = null"
+        >
           <div class="pane-meta-strip">
             <span class="pane-label">MARKDOWN SOURCE</span>
             <span class="pane-hint">Tab = 2 spaces • ⌘B / ⌘I / ⌘S enabled</span>
@@ -966,7 +963,12 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
         </div>
 
         <!-- Right Live Preview Pane -->
-        <div v-show="viewMode !== 'editor'" class="studio-preview-pane">
+        <div
+          v-show="viewMode !== 'editor'"
+          class="studio-preview-pane"
+          @mouseenter="activeHoverPane = 'preview'"
+          @mouseleave="activeHoverPane = null"
+        >
           <div class="pane-meta-strip">
             <span class="pane-label">SOVEREIGN LIVE PREVIEW</span>
             <div class="preview-meta-actions">
@@ -977,7 +979,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
                 :title="isSyncScrollEnabled ? 'Synchronized scrolling active (click to decouple)' : 'Independent scrolling active (click to sync)'"
                 @click="isSyncScrollEnabled = !isSyncScrollEnabled"
               >
-                <span>{{ isSyncScrollEnabled ? '🔗 Sync Scroll' : '🔓 Decoupled' }}</span>
+                <span>{{ isSyncScrollEnabled ? '🔗 Sync Scroll On' : '🔓 Independent' }}</span>
               </button>
               <span class="pane-sync">Interactive Checklists Enabled ✓</span>
             </div>
@@ -1757,6 +1759,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
   background: transparent;
   border: none;
   padding: 24px;
@@ -1780,11 +1783,11 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   padding: 24px 32px 80px 32px;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
   color: #e5e7eb;
   line-height: 1.7;
   font-size: 14px;
   box-sizing: border-box;
-  scroll-behavior: smooth;
 }
 
 /* Sleek Emerald Scrollbars for Studio */
