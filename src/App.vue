@@ -14,6 +14,7 @@ import SecretEditorModal from "@/components/modals/SecretEditorModal.vue";
 import LicenseActivationModal from "@/components/modals/LicenseActivationModal.vue";
 import FocusEditorModal from "@/components/modals/FocusEditorModal.vue";
 import ImageLightboxModal from "@/components/modals/ImageLightboxModal.vue";
+import AiExplorationModal from "@/components/modals/AiExplorationModal.vue";
 
 import { useUiStore } from "@/stores/useUiStore";
 import { useNotesStore } from "@/stores/useNotesStore";
@@ -85,6 +86,7 @@ onUnmounted(() => {
     <LicenseActivationModal />
     <FocusEditorModal />
     <ImageLightboxModal />
+    <AiExplorationModal />
 
     <!-- Toast Notification -->
     <div v-if="uiStore.toastMessage" class="global-toast">

@@ -13,12 +13,24 @@ export const useUiStore = defineStore("ui", () => {
   const showSecretScanner = ref<boolean>(false);
   const showSecretEditor = ref<boolean>(false);
   const showLicenseModal = ref<boolean>(false);
+  const showAiExplorationModal = ref<boolean>(false);
+  const activeAiExplorationId = ref<string | null>(null);
   const showLightbox = ref<boolean>(false);
   const lightboxImageUrl = ref<string>("");
   const lightboxCaption = ref<string>("");
   const lightboxTags = ref<string[]>([]);
   const lightboxGallery = ref<Array<{ url: string; caption?: string; tags?: string[] }>>([]);
   const lightboxIndex = ref<number>(0);
+
+  function openAiExplorationModal(expId: string | null = null) {
+    activeAiExplorationId.value = expId;
+    showAiExplorationModal.value = true;
+  }
+
+  function closeAiExplorationModal() {
+    showAiExplorationModal.value = false;
+    activeAiExplorationId.value = null;
+  }
 
   // Toast notifications
   const toastMessage = ref<string | null>(null);
@@ -91,6 +103,10 @@ export const useUiStore = defineStore("ui", () => {
     showSecretScanner,
     showSecretEditor,
     showLicenseModal,
+    showAiExplorationModal,
+    activeAiExplorationId,
+    openAiExplorationModal,
+    closeAiExplorationModal,
     showLightbox,
     lightboxImageUrl,
     lightboxCaption,

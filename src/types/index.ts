@@ -8,6 +8,24 @@ export interface TimelineEvent {
   type?: "manual" | "ai" | "git" | "release";
 }
 
+export interface ExpertReview {
+  expert: string;
+  avatar: string;
+  role: string;
+  score: number;
+  verdict: "Approved" | "Recommended" | "Caution" | "Security Flag";
+  comment: string;
+}
+
+export interface AiDebateTurn {
+  id: string;
+  speaker: string;
+  avatar: string;
+  stance: "pro" | "con" | "neutral" | "synthesis";
+  argument: string;
+  timestamp?: string;
+}
+
 export interface AiExploration {
   id: string;
   title: string;
@@ -17,6 +35,12 @@ export interface AiExploration {
   rationale: string;
   transcript: string;
   tags?: string[];
+  debate_models?: string[];
+  debate_turns?: AiDebateTurn[];
+  decision_outcome?: string;
+  tradeoffs?: Array<{ aspect: string; pro: string; con: string }>;
+  key_takeaways?: string[];
+  status?: "debating" | "consensus_reached" | "superseded";
 }
 
 export interface MoodImage {
@@ -38,6 +62,10 @@ export interface WebBookmark {
   note?: string;
   favicon?: string;
   tags?: string[];
+  preview_image?: string;
+  description?: string;
+  expert_reviews?: ExpertReview[];
+  fetch_status?: "idle" | "fetching" | "fetched" | "error";
 }
 
 

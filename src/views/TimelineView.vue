@@ -4,6 +4,7 @@ import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { optimizeImageFile } from "@/services/imageStorage";
+import { fetchSmartResource } from "@/services/resourceFetcher";
 import type { Note, TimelineEvent, AiExploration, WebBookmark, MoodImage } from "@/types";
 
 const notesStore = useNotesStore();
@@ -404,6 +405,43 @@ const editDocTitle = ref("");
 const editDocUrl = ref("");
 const editDocNote = ref("");
 const editDocTags = ref("");
+const isFetchingResource = ref(false);
+
+async function handleAutoFetchResource() {
+  if (!newDocUrl.value.trim() || !notesStore.selectedNote) {
+    uiStore.showToast("Enter a URL first (e.g. github.com, sqlite.org, vuejs.org)...");
+    return;
+  }
+  isFetchingResource.value = true;
+  uiStore.showToast("⚡ Fetching page snapshot & consulting Council of Experts...");
+  try {
+    const fetched = await fetchSmartResource(newDocUrl.value.trim());
+    const bm: WebBookmark = {
+      id: `bm_${Date.now()}`,
+      title: fetched.title,
+      url: newDocUrl.value.trim().startsWith("http") ? newDocUrl.value.trim() : `https://${newDocUrl.value.trim()}`,
+      domain: fetched.domain,
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      description: fetched.description,
+      preview_image: fetched.preview_image,
+      expert_reviews: fetched.expert_reviews,
+      tags: fetched.tags,
+      fetch_status: "fetched",
+    };
+    notesStore.addBookmark(notesStore.selectedNote.id, bm);
+    newDocTitle.value = "";
+    newDocUrl.value = "";
+    newDocNote.value = "";
+    newDocTags.value = "";
+    showAddDoc.value = false;
+    uiStore.showToast(`Resource snapshot & Council review generated ✓`);
+  } catch (err) {
+    console.error("Auto fetch error:", err);
+    uiStore.showToast("Failed to fetch resource preview.");
+  } finally {
+    isFetchingResource.value = false;
+  }
+}
 
 function handleAddDoc() {
   if (!newDocTitle.value.trim() || !notesStore.selectedNote) return;
@@ -1148,7 +1186,7 @@ function toggleMoodTag(tag: string) {
           </div>
         </div>
 
-        <!-- 2. Collapsible AI Explorations Section with Full CRUD & Reasoning Drawer -->
+        <!-- 2. Collapsible AI Explorations Section with Decision Studio & Multi-Model Debates -->
         <div class="collapsible-section">
           <button
             type="button"
@@ -1157,9 +1195,19 @@ function toggleMoodTag(tag: string) {
           >
             <div class="collapsible-left">
               <span class="chevron-icon">{{ showAiExplorations ? "⌃" : "⌄" }}</span>
-              <span class="collapsible-title">AI Explorations</span>
+              <span class="collapsible-title">AI Explorations &amp; Decision Debates</span>
             </div>
-            <span class="collapsible-count-pill">{{ filteredAiExplorations.length }}</span>
+            <div class="header-right-badges">
+              <button
+                type="button"
+                class="btn-open-studio-header"
+                @click.stop="uiStore.openAiExplorationModal()"
+                title="Launch full AI debate studio"
+              >
+                <span>⚔️ Open Debate Studio</span>
+              </button>
+              <span class="collapsible-count-pill">{{ filteredAiExplorations.length }}</span>
+            </div>
           </button>
 
           <div v-if="showAiExplorations" class="collapsible-content">
@@ -1178,29 +1226,28 @@ function toggleMoodTag(tag: string) {
                 @dragleave="onAiDragLeave(ai.id)"
                 @drop="onAiDrop($event, ai.id)"
                 @dragend="onAiDragEnd"
+                @click="uiStore.openAiExplorationModal(ai.id)"
               >
                 <div class="ai-banner-left">
-                  <span class="ai-drag-dots" title="Drag to reorder">⋮⋮</span>
+                  <span class="ai-drag-dots" title="Drag to reorder" @click.stop>⋮⋮</span>
                   <div class="ai-banner-info">
                     <div class="ai-banner-title-row">
                       <span class="ai-banner-title">{{ ai.title }}</span>
                       <span class="ai-banner-model-pill">{{ ai.model }}</span>
+                      <span v-if="ai.debate_turns?.length" class="ai-debates-count-pill">
+                        ⚔️ {{ ai.debate_turns.length }} Model Debates
+                      </span>
                       <span class="ai-banner-meta">• {{ ai.date }}</span>
                     </div>
 
-                    <p v-if="ai.rationale" class="ai-inline-rationale">{{ ai.rationale }}</p>
+                    <p v-if="ai.decision_outcome || ai.rationale" class="ai-inline-rationale">
+                      <strong class="rationale-lead">🎯 Consensus: </strong>{{ ai.decision_outcome || ai.rationale }}
+                    </p>
 
-                    <button
-                      v-if="ai.transcript"
-                      type="button"
-                      class="btn-toggle-transcript"
-                      @click="toggleAiExpanded(ai.id)"
-                    >
-                      {{ expandedAiIds.has(ai.id) ? "Hide AI Reasoning ▲" : "View AI Reasoning / Transcript ▼" }}
-                    </button>
-
-                    <div v-if="expandedAiIds.has(ai.id) && ai.transcript" class="ai-transcript-box">
-                      <pre class="ai-transcript-text">{{ ai.transcript }}</pre>
+                    <div v-if="ai.key_takeaways?.length" class="ai-mini-takeaways">
+                      <span v-for="(k, kidx) in ai.key_takeaways.slice(0, 2)" :key="kidx" class="mini-takeaway-item">
+                        ✓ {{ k }}
+                      </span>
                     </div>
 
                     <div v-if="ai.tags?.length" class="inline-tags-row">
@@ -1208,7 +1255,7 @@ function toggleMoodTag(tag: string) {
                         v-for="t in ai.tags"
                         :key="t"
                         class="resource-tag-pill clickable"
-                        @click="toggleDetailTag(t)"
+                        @click.stop="toggleDetailTag(t)"
                       >
                         #{{ t }}
                       </span>
@@ -1216,78 +1263,31 @@ function toggleMoodTag(tag: string) {
                   </div>
                 </div>
 
-                <div class="ai-banner-actions">
-                  <span class="badge-link-pill">LINK</span>
-                  <button type="button" class="btn-item-icon" @click="startEditAi(ai)" title="Edit AI Exploration">✏️</button>
-                  <button type="button" class="btn-item-icon danger" @click="handleDeleteAi(ai.id)" title="Delete AI Exploration">✕</button>
+                <div class="ai-banner-actions" @click.stop>
+                  <a v-if="ai.url" :href="ai.url" target="_blank" rel="noopener noreferrer" class="badge-link-pill" title="Open thread URL">
+                    LINK ↗
+                  </a>
+                  <button type="button" class="btn-item-icon" @click="uiStore.openAiExplorationModal(ai.id)" title="Open Full Debate Studio">✏️</button>
+                  <button type="button" class="btn-item-icon danger" @click="handleDeleteAi(ai.id)" title="Delete Record">✕</button>
                 </div>
               </div>
             </div>
 
             <div v-else class="resource-empty-hint">
-              <span>No AI explorations match the active tag filter.</span>
-            </div>
-
-            <!-- Edit AI Exploration Form -->
-            <div v-if="editingAiId" class="inline-adder-card edit-mode">
-              <div class="adder-header">
-                <span class="card-edit-badge">Editing AI Exploration</span>
-                <button type="button" class="btn-item-icon" @click="editingAiId = null">✕</button>
-              </div>
-              <input v-model="editAiTitle" type="text" class="adder-input" placeholder="Exploration topic..." />
-              <select v-model="editAiModel" class="adder-input">
-                <option value="Gemini 2.5 Pro">Gemini 2.5 Pro</option>
-                <option value="Gemini 2.5 Flash">Gemini 2.5 Flash</option>
-                <option value="Claude 3.7 Sonnet">Claude 3.7 Sonnet</option>
-                <option value="GPT-4o">GPT-4o</option>
-                <option value="DeepSeek R1">DeepSeek R1</option>
-                <option value="Local LLM">Local LLM</option>
-              </select>
-              <input v-model="editAiRationale" type="text" class="adder-input" placeholder="Decision rationale / takeaway..." />
-              <textarea v-model="editAiTranscript" class="adder-textarea" placeholder="AI transcript / reasoning..."></textarea>
-              <input v-model="editAiTags" type="text" class="adder-input" placeholder="Tags (comma-separated)..." />
-              <div class="adder-actions">
-                <button type="button" class="btn-adder-cancel" @click="editingAiId = null">Cancel</button>
-                <button type="button" class="btn-adder-save" @click="handleSaveEditAi">Update Exploration</button>
-              </div>
+              <span>No AI explorations recorded. Click "+ Launch Decision & Debate Studio" to start.</span>
             </div>
 
             <button
-              v-if="!showAddAi && !editingAiId"
               type="button"
               class="btn-inline-add"
-              @click="showAddAi = true"
+              @click="uiStore.openAiExplorationModal()"
             >
-              + Log AI Exploration
+              + Launch Full AI Decision &amp; Debate Studio
             </button>
-
-            <!-- Add AI Form -->
-            <div v-else-if="showAddAi" class="inline-adder-card">
-              <div class="adder-header">
-                <span class="card-edit-badge">New AI Exploration</span>
-                <button type="button" class="btn-item-icon" @click="showAddAi = false">✕</button>
-              </div>
-              <input v-model="newAiTitle" type="text" class="adder-input" placeholder="Exploration topic..." />
-              <select v-model="newAiModel" class="adder-input">
-                <option value="Gemini 2.5 Pro">Gemini 2.5 Pro</option>
-                <option value="Gemini 2.5 Flash">Gemini 2.5 Flash</option>
-                <option value="Claude 3.7 Sonnet">Claude 3.7 Sonnet</option>
-                <option value="GPT-4o">GPT-4o</option>
-                <option value="DeepSeek R1">DeepSeek R1</option>
-                <option value="Local LLM">Local LLM</option>
-              </select>
-              <input v-model="newAiRationale" type="text" class="adder-input" placeholder="Decision rationale / takeaway..." />
-              <textarea v-model="newAiTranscript" class="adder-textarea" placeholder="AI transcript / reasoning..."></textarea>
-              <input v-model="newAiTags" type="text" class="adder-input" placeholder="Tags (comma-separated, e.g. canary, rag)..." />
-              <div class="adder-actions">
-                <button type="button" class="btn-adder-cancel" @click="showAddAi = false">Cancel</button>
-                <button type="button" class="btn-adder-save" @click="handleAddAi">Save Exploration</button>
-              </div>
-            </div>
           </div>
         </div>
 
-        <!-- 3. Collapsible Docs & Bookmarks Section with Full CRUD -->
+        <!-- 3. Collapsible Docs & Bookmarks Section with Auto-Fetch Snapshot & Expert Reviews -->
         <div class="collapsible-section">
           <button
             type="button"
@@ -1296,7 +1296,7 @@ function toggleMoodTag(tag: string) {
           >
             <div class="collapsible-left">
               <span class="chevron-icon">{{ showDocs ? "⌃" : "⌄" }}</span>
-              <span class="collapsible-title">Docs & Specs</span>
+              <span class="collapsible-title">Docs &amp; Verified Resources</span>
             </div>
             <span class="collapsible-count-pill">{{ filteredBookmarks.length }}</span>
           </button>
@@ -1309,7 +1309,8 @@ function toggleMoodTag(tag: string) {
                 class="doc-item"
                 :class="{
                   'is-dragging': draggedDocId === doc.id,
-                  'drag-over-item': dragOverDocId === doc.id && draggedDocId !== doc.id
+                  'drag-over-item': dragOverDocId === doc.id && draggedDocId !== doc.id,
+                  'has-preview': !!doc.preview_image
                 }"
                 draggable="true"
                 @dragstart="onDocDragStart($event, doc.id)"
@@ -1318,36 +1319,115 @@ function toggleMoodTag(tag: string) {
                 @drop="onDocDrop($event, doc.id)"
                 @dragend="onDocDragEnd"
               >
-                <div class="doc-item-left">
-                  <div class="doc-title-row">
-                    <span class="card-drag-handle sm" title="Drag to reorder">⋮</span>
-                    <span class="doc-title">{{ doc.title }}</span>
-                    <span class="doc-domain-badge">{{ doc.domain }}</span>
-                  </div>
-                  <a :href="doc.url" target="_blank" rel="noopener noreferrer" class="doc-link">
-                    🔗 {{ doc.url }}
+                <!-- Optional Webpage Preview Snapshot -->
+                <div v-if="doc.preview_image" class="doc-preview-banner">
+                  <img :src="doc.preview_image" :alt="doc.title" class="doc-preview-img" loading="lazy" />
+                  <a :href="doc.url" target="_blank" rel="noopener noreferrer" class="preview-hover-overlay">
+                    <span>↗ Visit Resource</span>
                   </a>
-                  <span v-if="doc.note" class="doc-note">{{ doc.note }}</span>
-                  <div v-if="doc.tags?.length" class="inline-tags-row">
-                    <span
-                      v-for="t in doc.tags"
-                      :key="t"
-                      class="resource-tag-pill clickable"
-                      @click="toggleDetailTag(t)"
-                    >
-                      #{{ t }}
-                    </span>
-                  </div>
                 </div>
-                <div class="doc-item-actions">
-                  <button type="button" class="btn-item-icon" @click="startEditDoc(doc)" title="Edit Doc">✏️</button>
-                  <button type="button" class="btn-item-icon danger" @click="handleDeleteDoc(doc.id)" title="Delete Doc">✕</button>
+
+                <div class="doc-item-body">
+                  <div class="doc-item-left">
+                    <div class="doc-title-row">
+                      <span class="card-drag-handle sm" title="Drag to reorder">⋮</span>
+                      <span class="doc-title">{{ doc.title }}</span>
+                      <span class="doc-domain-badge">{{ doc.domain }}</span>
+                    </div>
+
+                    <a :href="doc.url" target="_blank" rel="noopener noreferrer" class="doc-link">
+                      🔗 {{ doc.url }}
+                    </a>
+
+                    <p v-if="doc.description" class="doc-desc-text">{{ doc.description }}</p>
+                    <span v-else-if="doc.note" class="doc-note">{{ doc.note }}</span>
+
+                    <!-- Sovereign Council of Experts Review Badges -->
+                    <div v-if="doc.expert_reviews?.length" class="expert-reviews-row">
+                      <span class="council-label">🐺 Council Verdicts:</span>
+                      <div class="expert-badges-group">
+                        <span
+                          v-for="rev in doc.expert_reviews"
+                          :key="rev.expert"
+                          class="expert-review-badge"
+                          :title="`${rev.expert} (${rev.role}): ${rev.comment}`"
+                        >
+                          <span class="rev-avatar">{{ rev.avatar }}</span>
+                          <span class="rev-name">{{ rev.expert.split(' ')[0] }}:</span>
+                          <span class="rev-score">{{ rev.score }}/10</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div v-if="doc.tags?.length" class="inline-tags-row">
+                      <span
+                        v-for="t in doc.tags"
+                        :key="t"
+                        class="resource-tag-pill clickable"
+                        @click="toggleDetailTag(t)"
+                      >
+                        #{{ t }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="doc-item-actions">
+                    <button type="button" class="btn-item-icon" @click="startEditDoc(doc)" title="Edit Doc">✏️</button>
+                    <button type="button" class="btn-item-icon danger" @click="handleDeleteDoc(doc.id)" title="Delete Doc">✕</button>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div v-else class="resource-empty-hint">
               <span>No documentation links match the active tag filter.</span>
+            </div>
+
+            <!-- Smart Auto-Fetch / Link Resource Box -->
+            <div v-if="!showAddDoc && !editingDocId" class="resource-quick-fetch-bar">
+              <div class="quick-fetch-input-wrap">
+                <span class="globe-icon">🌐</span>
+                <input
+                  v-model="newDocUrl"
+                  type="text"
+                  class="quick-url-input"
+                  placeholder="Paste URL to auto-fetch snapshot & Council review (e.g. github.com, sqlite.org)..."
+                  @keydown.enter="handleAutoFetchResource"
+                />
+                <button
+                  type="button"
+                  class="btn-quick-fetch"
+                  :disabled="isFetchingResource"
+                  @click="handleAutoFetchResource"
+                >
+                  <span v-if="isFetchingResource">⏳ Analyzing...</span>
+                  <span v-else>⚡ Auto-Fetch</span>
+                </button>
+              </div>
+              <button
+                type="button"
+                class="btn-manual-doc-toggle"
+                @click="showAddDoc = true"
+              >
+                + Manual Entry
+              </button>
+            </div>
+
+            <!-- Manual Add Doc Form -->
+            <div v-else-if="showAddDoc" class="inline-adder-card">
+              <div class="adder-header">
+                <span class="card-edit-badge">New Resource Link</span>
+                <button type="button" class="btn-item-icon" @click="showAddDoc = false">✕</button>
+              </div>
+              <input v-model="newDocUrl" type="text" class="adder-input" placeholder="https://... URL / spec link" />
+              <input v-model="newDocTitle" type="text" class="adder-input" placeholder="Document title..." />
+              <input v-model="newDocNote" type="text" class="adder-input" placeholder="Takeaway note (optional)..." />
+              <input v-model="newDocTags" type="text" class="adder-input" placeholder="Tags (comma-separated)..." />
+              <div class="adder-actions">
+                <button type="button" class="btn-adder-cancel" @click="showAddDoc = false">Cancel</button>
+                <button type="button" class="btn-adder-save" @click="handleAddDoc">Save Manual</button>
+                <button type="button" class="btn-quick-fetch" @click="handleAutoFetchResource">⚡ Auto-Fetch &amp; Review</button>
+              </div>
             </div>
 
             <!-- Edit Doc Form -->
@@ -1363,31 +1443,6 @@ function toggleMoodTag(tag: string) {
               <div class="adder-actions">
                 <button type="button" class="btn-adder-cancel" @click="editingDocId = null">Cancel</button>
                 <button type="button" class="btn-adder-save" @click="handleSaveEditDoc">Update Doc</button>
-              </div>
-            </div>
-
-            <button
-              v-if="!showAddDoc && !editingDocId"
-              type="button"
-              class="btn-inline-add"
-              @click="showAddDoc = true"
-            >
-              + Link Document
-            </button>
-
-            <!-- Add Doc Form -->
-            <div v-else-if="showAddDoc" class="inline-adder-card">
-              <div class="adder-header">
-                <span class="card-edit-badge">New Document Bookmark</span>
-                <button type="button" class="btn-item-icon" @click="showAddDoc = false">✕</button>
-              </div>
-              <input v-model="newDocTitle" type="text" class="adder-input" placeholder="Document title..." />
-              <input v-model="newDocUrl" type="text" class="adder-input" placeholder="https://... URL / spec link" />
-              <input v-model="newDocNote" type="text" class="adder-input" placeholder="Takeaway note (optional)..." />
-              <input v-model="newDocTags" type="text" class="adder-input" placeholder="Tags (comma-separated)..." />
-              <div class="adder-actions">
-                <button type="button" class="btn-adder-cancel" @click="showAddDoc = false">Cancel</button>
-                <button type="button" class="btn-adder-save" @click="handleAddDoc">Save Doc</button>
               </div>
             </div>
           </div>
@@ -2494,6 +2549,55 @@ function toggleMoodTag(tag: string) {
   color: #ffffff;
 }
 
+.btn-open-studio-header {
+  background: #0d281c;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: var(--emerald-bright, #34d399);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-open-studio-header:hover {
+  background: #143d2b;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+}
+
+.header-right-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-debates-count-pill {
+  font-size: 10px;
+  font-weight: 800;
+  background: #231230;
+  border: 1px solid #4a1d68;
+  color: #c084fc;
+  padding: 1px 7px;
+  border-radius: 8px;
+}
+
+.rationale-lead {
+  color: var(--emerald-bright, #34d399);
+}
+
+.ai-mini-takeaways {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.mini-takeaway-item {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+
 .ai-banner-model-pill {
   font-size: 10px;
   font-weight: 600;
@@ -2513,6 +2617,7 @@ function toggleMoodTag(tag: string) {
   font-size: 11px;
   color: #cbd5e1;
   margin: 2px 0 0 0;
+  line-height: 1.4;
 }
 
 .btn-toggle-transcript {
@@ -2565,23 +2670,23 @@ function toggleMoodTag(tag: string) {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.05em;
+  text-decoration: none;
 }
 
-/* Docs */
+/* Docs & Verified Resources */
 .docs-stack {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .doc-item {
   background: #071912;
   border: 1px solid #112d20;
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: 10px;
+  overflow: hidden;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   cursor: grab;
   transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
@@ -2600,6 +2705,174 @@ function toggleMoodTag(tag: string) {
   background: #0b2e20;
   box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
   transform: translateY(-2px) scale(1.01);
+}
+
+/* Preview Banner */
+.doc-preview-banner {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: #040a07;
+  border-bottom: 1px solid #0f241a;
+  overflow: hidden;
+}
+
+.doc-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.preview-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.doc-preview-banner:hover .preview-hover-overlay {
+  opacity: 1;
+}
+
+.doc-item-body {
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.doc-desc-text {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin: 3px 0;
+  line-height: 1.4;
+}
+
+/* Council of Experts Reviews */
+.expert-reviews-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  flex-wrap: wrap;
+}
+
+.council-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--emerald-bright, #34d399);
+}
+
+.expert-badges-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.expert-review-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #040e09;
+  border: 1px solid #133323;
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 10px;
+}
+
+.rev-avatar {
+  font-size: 10px;
+}
+
+.rev-name {
+  color: #d1d5db;
+  font-weight: 600;
+}
+
+.rev-score {
+  color: #10b981;
+  font-weight: 700;
+}
+
+/* Quick Fetch Bar */
+.resource-quick-fetch-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.quick-fetch-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #06150e;
+  border: 1px solid #143324;
+  border-radius: 8px;
+  padding: 4px 6px 4px 10px;
+}
+
+.globe-icon {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.quick-url-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 11.5px;
+  color: #fff;
+  font-family: inherit;
+}
+
+.quick-url-input::placeholder {
+  color: #64748b;
+}
+
+.btn-quick-fetch {
+  background: #10b981;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  color: #03140b;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-quick-fetch:hover {
+  background: #34d399;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
+}
+
+.btn-manual-doc-toggle {
+  background: #091a13;
+  border: 1px solid #143828;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-manual-doc-toggle:hover {
+  background: #0f2b1f;
+  color: #fff;
 }
 
 .doc-item-left {
