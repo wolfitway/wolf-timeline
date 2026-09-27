@@ -379,7 +379,7 @@ const filteredCategories = computed(() => {
   if (!q) return categories.value;
   return categories.value.filter((cat) => {
     if (cat.label.toLowerCase().includes(q)) return true;
-    if (cat.id === "about" && ("about founder draguta dragiuta dan ioan dan-ioan timis timisoara remetea mare 15 years solo builder certified trainer wolfitway wolfitwayos wolfscentvideo udemy wolfaistory youtube solo builder saas perspective".includes(q))) return true;
+    if (cat.id === "about" && ("about founder draguta dragiuta dan ioan dan-ioan timis timisoara remetea mare 15 years solo builder certified trainer wolfitway wolfitwayos wolfscentvideo udemy wolfaistory youtube solo builder saas perspective 15 hours 10 hours thought ai architect".includes(q))) return true;
     if (cat.id === "shortcuts" && ("shortcuts keybindings hotkeys keys command".includes(q) || shortcutsStore.shortcuts.some((s) => s.label.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)))) return true;
     if (cat.id === "connections" && WOLFITWAY_PRODUCTS.some((p) => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))) return true;
     if (cat.id === "export" && ("json markdown csv backup restore".includes(q))) return true;
@@ -399,12 +399,12 @@ const searchResults = computed(() => {
   const results: Array<{ categoryId: SettingsCategory; categoryLabel: string; title: string; desc: string }> = [];
 
   // 0. About & Founder
-  if ("about founder draguta dragiuta dan ioan dan-ioan timis timisoara remetea mare 15 years solo builder certified trainer wolfitway wolfitwayos wolfscentvideo udemy wolfaistory youtube solo builder saas perspective".includes(q)) {
+  if ("about founder draguta dragiuta dan ioan dan-ioan timis timisoara remetea mare 15 years solo builder certified trainer wolfitway wolfitwayos wolfscentvideo udemy wolfaistory youtube solo builder saas perspective 15 hours 10 hours thought ai architect".includes(q)) {
     results.push({
       categoryId: "about",
       categoryLabel: "About & Founder Story",
-      title: "Drăguța Dan-Ioan • 15 Yrs Solo Builder, Certified Trainer & AI Pioneer",
-      desc: "From Timiș, Romania (near Timișoara). Creator of wolfitway.com, wolfitwayos, wolfscentvideo.com, @wolfaistory on YouTube. An introvert who trained himself to speak and empower entrepreneurs.",
+      title: "Drăguța Dan-Ioan • AI Architect, 15 Yrs Solo Builder & Certified Trainer",
+      desc: "Built in 15 hours of thought (maybe 10). From Timiș, Romania (near Timișoara). Creator of wolfitway.com, wolfitwayos, wolfscentvideo.com, @wolfaistory on YouTube.",
     });
   }
 
@@ -557,9 +557,10 @@ function jumpToCategory(catId: SettingsCategory) {
           <div class="founder-hero-content">
             <div class="founder-badge-row">
               <span class="founder-flag-badge">🇷🇴 TIMIȘ FORGE (NEAR TIMIȘOARA)</span>
+              <span class="founder-speed-badge">⚡ 15 HOURS OF THOUGHT (MAYBE 10)</span>
               <span class="founder-role-badge">15+ YEARS SOLO BUILDER</span>
               <span class="founder-cert-badge">🎓 CERTIFIED TRAINER</span>
-              <span class="founder-ai-badge">⚡ FRONTIER AI PIONEER</span>
+              <span class="founder-ai-badge">🧠 AI ARCHITECT</span>
               <span class="founder-zero-badge">100% OFFLINE-FIRST ZERO TELEMETRY</span>
             </div>
 
@@ -570,7 +571,7 @@ function jumpToCategory(catId: SettingsCategory) {
               </div>
               <div class="founder-title-col">
                 <h2 class="founder-name">Drăguța Dan-Ioan</h2>
-                <p class="founder-handle">@dan • 15+ Years Solo Builder • Certified Trainer • wolfitway.com • wolfitwayos • wolfscentvideo.com • @wolfaistory</p>
+                <p class="founder-handle">@dan • AI Architect • 15+ Years Solo Builder • Certified Trainer • wolfitway.com • wolfitwayos • wolfscentvideo.com • @wolfaistory</p>
                 <div class="founder-location-pill">
                   <span>📍 Crafted line-by-line from Timiș, Romania (near Timișoara)</span>
                 </div>
@@ -578,8 +579,7 @@ function jumpToCategory(catId: SettingsCategory) {
             </div>
 
             <blockquote class="founder-manifesto-quote">
-              "You don't need a 50-person venture-backed Silicon Valley team burning millions in cloud telemetry to build god-tier software.
-              With 15 years of solo building discipline, stepping past being an introvert to teach and lead as a certified trainer, one maker in Timiș can forge sovereign tools that respect human freedom and outpace entire tech giants."
+              "Wolf Timeline was architected and built in a single day — about 15 hours of thought (maybe 10 hahaha). When you combine 15 years of solo building discipline, stepping past being an introvert to teach and lead as a certified trainer, and master AI architecture, you don't need friction. You just think, design, and bring it to life."
             </blockquote>
           </div>
         </div>
@@ -630,7 +630,7 @@ function jumpToCategory(catId: SettingsCategory) {
             <h4 class="venture-title">New SaaS &amp; Solo Builder Channel</h4>
             <span class="venture-role">Founder Perspective &amp; Mentorship</span>
             <p class="venture-desc">
-              A new channel dedicated to helping entrepreneurs see a different perspective: how an introvert can train themselves to step forward, speak, ship, and thrive without VC dependence.
+              A new channel dedicated to helping entrepreneurs see a different perspective: how an introvert can train themselves to step forward, speak, ship, and thrive.
             </p>
           </div>
 
@@ -651,14 +651,14 @@ function jumpToCategory(catId: SettingsCategory) {
         <div class="story-columns-grid three-col">
           <div class="story-card">
             <div class="story-icon-row">
-              <span class="story-icon">🌲</span>
-              <h3 class="story-title">15 Years of Solitary Craft in Timiș</h3>
+              <span class="story-icon">⚡</span>
+              <h3 class="story-title">Built in 15 Hours of Thought (Maybe 10)</h3>
             </div>
             <p class="story-text">
-              For 15 years, <strong>Drăguța Dan-Ioan</strong> has operated as an independent solo builder and systems architect based in Timiș, Romania (near Timișoara).
+              Wolf Timeline was conceived, architected, and brought into existence in a single marathon session—around 15 hours of pure thought (maybe 10 hahaha).
             </p>
             <p class="story-text">
-              Avoiding bureaucratic standups and VC surveillance, every subsystem in Wolf Timeline—from native Rust Tauri bindings to in-memory AES-256 PBKDF2 encryption—is honed through thousands of hours of intense focus.
+              Operating from Timiș, Romania (near Timișoara), <strong>Drăguța Dan-Ioan</strong> drew upon 15 years of solo builder intuition and cutting-edge AI architecture to construct every subsystem—from native Rust Tauri bindings to in-memory AES-256 PBKDF2 encryption—in a state of unbroken creative flow.
             </p>
           </div>
 
@@ -671,7 +671,7 @@ function jumpToCategory(catId: SettingsCategory) {
               Naturally an introvert, Dan refused to let that become a ceiling. He deliberately trained himself to step forward, stand in front of audiences, and speak—earning accreditation as a <strong>Certified Trainer</strong> and Udemy instructor.
             </p>
             <p class="story-text">
-              His mission with his upcoming channel is to help other introverted builders and entrepreneurs unlock their voice, embrace sovereign tools, and realize they don't need VC permission to win.
+              His upcoming SaaS channel is dedicated to sharing this perspective with solo builders and entrepreneurs: how to find your voice, master your tools, and turn ideas into reality without unnecessary complexity.
             </p>
           </div>
 
@@ -2855,6 +2855,17 @@ function jumpToCategory(catId: SettingsCategory) {
   background: rgba(16, 185, 129, 0.15);
   border: 1px solid #1f4f39;
   color: var(--emerald-bright, #34d399);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.founder-speed-badge {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid #9333ea;
+  color: #c084fc;
   font-size: 11px;
   font-weight: 800;
   padding: 4px 10px;
