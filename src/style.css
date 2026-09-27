@@ -27,6 +27,100 @@
 
   --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+  --drag-transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+/* Theme Presets */
+[data-theme="cyan"] {
+  --emerald-main: #06b6d4;
+  --emerald-bright: #22d3ee;
+  --emerald-deep: #0891b2;
+  --emerald-pill-bg: #082f38;
+  --emerald-pill-border: rgba(6, 182, 212, 0.4);
+  --border-selected: #06b6d4;
+  --border-glow: rgba(6, 182, 212, 0.25);
+  --bg-body: #030a0e;
+  --bg-card: #08141d;
+  --bg-card-hover: #0e202d;
+  --bg-inner: #040d13;
+  --bg-drawer: #071017;
+}
+
+[data-theme="amber"] {
+  --emerald-main: #f59e0b;
+  --emerald-bright: #fbbf24;
+  --emerald-deep: #d97706;
+  --emerald-pill-bg: #382708;
+  --emerald-pill-border: rgba(245, 158, 11, 0.4);
+  --border-selected: #f59e0b;
+  --border-glow: rgba(245, 158, 11, 0.25);
+  --bg-body: #0d0a04;
+  --bg-card: #181309;
+  --bg-card-hover: #261f0f;
+  --bg-inner: #100d05;
+  --bg-drawer: #141008;
+}
+
+[data-theme="sapphire"] {
+  --emerald-main: #6366f1;
+  --emerald-bright: #818cf8;
+  --emerald-deep: #4f46e5;
+  --emerald-pill-bg: #1c1f4a;
+  --emerald-pill-border: rgba(99, 102, 241, 0.4);
+  --border-selected: #6366f1;
+  --border-glow: rgba(99, 102, 241, 0.25);
+  --bg-body: #050612;
+  --bg-card: #0c0e24;
+  --bg-card-hover: #151838;
+  --bg-inner: #070918;
+  --bg-drawer: #0a0c1e;
+}
+
+[data-theme="crimson"] {
+  --emerald-main: #ef4444;
+  --emerald-bright: #f87171;
+  --emerald-deep: #dc2626;
+  --emerald-pill-bg: #3d0e0e;
+  --emerald-pill-border: rgba(239, 68, 68, 0.4);
+  --border-selected: #ef4444;
+  --border-glow: rgba(239, 68, 68, 0.25);
+  --bg-body: #0e0404;
+  --bg-card: #1c0a0a;
+  --bg-card-hover: #2d1212;
+  --bg-inner: #120606;
+  --bg-drawer: #170808;
+}
+
+[data-theme="matrix"] {
+  --emerald-main: #22c55e;
+  --emerald-bright: #4ade80;
+  --emerald-deep: #16a34a;
+  --emerald-pill-bg: #052e16;
+  --emerald-pill-border: rgba(34, 197, 94, 0.4);
+  --border-selected: #22c55e;
+  --border-glow: rgba(34, 197, 94, 0.3);
+  --bg-body: #020803;
+  --bg-card: #061509;
+  --bg-card-hover: #0c2411;
+  --bg-inner: #030d05;
+  --bg-drawer: #051107;
+}
+
+/* Font Families */
+[data-font="inter"] {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+[data-font="outfit"] {
+  --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+[data-font="jakarta"] {
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+[data-font="mono"] {
+  --font-sans: "JetBrains Mono", monospace;
+}
+[data-font="fira"] {
+  --font-mono: "Fira Code", "JetBrains Mono", monospace;
 }
 
 * {

@@ -1783,7 +1783,7 @@ function toggleMoodTag(tag: string) {
   border-radius: 12px;
   padding: 14px 16px;
   cursor: grab;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1805,15 +1805,16 @@ function toggleMoodTag(tag: string) {
 }
 
 .project-card.is-dragging {
-  opacity: 0.4;
+  opacity: 0.35;
+  transform: scale(0.98);
   border-style: dashed;
 }
 
 .project-card.drag-over-item {
   border-color: #10b981;
   background: #0b2e20;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.3);
-  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  transform: translateY(-2px) scale(1.015);
 }
 
 .card-title-row {
@@ -2185,7 +2186,7 @@ function toggleMoodTag(tag: string) {
   min-height: 48px;
   cursor: grab;
   border-radius: 8px;
-  transition: all 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 .timeline-node-row:active {
@@ -2193,12 +2194,15 @@ function toggleMoodTag(tag: string) {
 }
 
 .timeline-node-row.is-dragging {
-  opacity: 0.4;
+  opacity: 0.35;
+  transform: scale(0.98);
 }
 
 .timeline-node-row.drag-over-item {
   background: #092017;
   outline: 1.5px dashed #10b981;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+  transform: translateX(4px);
 }
 
 .timeline-axis {
@@ -2433,7 +2437,7 @@ function toggleMoodTag(tag: string) {
   align-items: flex-start;
   justify-content: space-between;
   cursor: grab;
-  transition: all 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 .ai-exploration-banner:active {
@@ -2441,13 +2445,15 @@ function toggleMoodTag(tag: string) {
 }
 
 .ai-exploration-banner.is-dragging {
-  opacity: 0.4;
+  opacity: 0.35;
+  transform: scale(0.98);
 }
 
 .ai-exploration-banner.drag-over-item {
   border-color: #10b981;
   background: #0b2e20;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  transform: translateY(-2px) scale(1.01);
 }
 
 .ai-banner-left {
@@ -2572,7 +2578,7 @@ function toggleMoodTag(tag: string) {
   align-items: center;
   justify-content: space-between;
   cursor: grab;
-  transition: all 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 .doc-item:active {
@@ -2580,12 +2586,15 @@ function toggleMoodTag(tag: string) {
 }
 
 .doc-item.is-dragging {
-  opacity: 0.4;
+  opacity: 0.35;
+  transform: scale(0.98);
 }
 
 .doc-item.drag-over-item {
   border-color: #10b981;
   background: #0b2e20;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  transform: translateY(-2px) scale(1.01);
 }
 
 .doc-item-left {
@@ -2768,7 +2777,7 @@ function toggleMoodTag(tag: string) {
   border: 1px solid #112d20;
   border-radius: 10px;
   overflow: hidden;
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
   display: flex;
   flex-direction: column;
   cursor: grab;
@@ -2786,14 +2795,15 @@ function toggleMoodTag(tag: string) {
 
 .mood-card-item.is-dragging {
   opacity: 0.35;
+  transform: scale(0.96);
   border-style: dashed;
 }
 
 .mood-card-item.drag-over-item {
   border-color: #34d399;
   background: #08291e;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
-  transform: scale(1.03);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.5);
+  transform: scale(1.03) translateY(-2px);
 }
 
 .mood-img-wrap {

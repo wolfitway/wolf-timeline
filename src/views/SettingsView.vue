@@ -1,25 +1,130 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { WOLFITWAY_PRODUCTS, SOVEREIGN_EXPERTS } from "@/services/seedData";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
+import { useVaultStore } from "@/stores/useVaultStore";
 import { useUiStore } from "@/stores/useUiStore";
+import { useLicenseStore } from "@/stores/useLicenseStore";
 
 const notesStore = useNotesStore();
 const roadmapStore = useRoadmapStore();
+const vaultStore = useVaultStore();
 const uiStore = useUiStore();
+const licenseStore = useLicenseStore();
 
+// Navigation Tabs
+export type SettingsCategory =
+  | "connections"
+  | "export"
+  | "themes"
+  | "fonts"
+  | "license"
+  | "experts"
+  | "performance";
+
+const activeCategory = ref<SettingsCategory>("connections");
+const searchQuery = ref("");
+
+// Connections State
 const connections = ref<Record<string, { connected: boolean; token: string }>>({});
 
+// Themes State
+const currentTheme = ref<string>("obsidian");
+const themesList = [
+  { id: "obsidian", name: "Cyber Obsidian", desc: "Signature emerald neon on deep obsidian black", primary: "#10b981", bg: "#060b09" },
+  { id: "cyan", name: "Cyber Neon Cyan", desc: "Vibrant high-contrast cyan on dark navy slate", primary: "#06b6d4", bg: "#030a0e" },
+  { id: "amber", name: "Amber Sovereign", desc: "Warm gold & amber terminal on dark tungsten", primary: "#f59e0b", bg: "#0d0a04" },
+  { id: "sapphire", name: "Midnight Sapphire", desc: "Deep indigo and violet on midnight stealth", primary: "#6366f1", bg: "#050612" },
+  { id: "crimson", name: "Crimson Terminal", desc: "Aggressive blood cyber-red on dark carbon", primary: "#ef4444", bg: "#0e0404" },
+  { id: "matrix", name: "Matrix Phosphor", desc: "Raw CRT phosphor green on pitch black", primary: "#22c55e", bg: "#020803" },
+];
+
+// Fonts State
+const currentFont = ref<string>("jakarta");
+const fontsList = [
+  { id: "jakarta", name: "Plus Jakarta Sans", type: "Modern Sans", sample: "Sovereign Engineering Alpha 2026" },
+  { id: "inter", name: "Inter UI", type: "Neo-Grotesque", sample: "Fast, crisp system typography 12345" },
+  { id: "outfit", name: "Outfit", type: "Geometric Tech", sample: "Bold cyberpunk headlines & cards" },
+  { id: "mono", name: "JetBrains Mono", type: "Developer Monospace", sample: "const sovereign = true; // 0x7F" },
+  { id: "fira", name: "Fira Code", type: "Code Ligatures", sample: "=> != <= == === -> |> [0..9]" },
+];
+
+const fontScale = ref<string>("14");
+const tabularNums = ref<boolean>(true);
+const glowEffects = ref<boolean>(true);
+const glassmorphism = ref<boolean>(true);
+
+// Performance / Reordering Settings
+const reorderSpeed = ref<string>("smooth"); // fast | smooth | cinematic
+const dragHaptics = ref<boolean>(true);
+const autoSaveDebounce = ref<number>(200);
+
+// File input for import
+const importFileInput = ref<HTMLInputElement | null>(null);
+
 onMounted(() => {
-  const local = localStorage.getItem("wolfitway_connections_state");
-  if (local) {
+  // Load connections
+  const localConn = localStorage.getItem("wolfitway_connections_state");
+  if (localConn) {
     try {
-      connections.value = JSON.parse(local);
+      connections.value = JSON.parse(localConn);
     } catch {}
+  }
+
+  // Load theme
+  const savedTheme = localStorage.getItem("wolf_theme") || "obsidian";
+  currentTheme.value = savedTheme;
+  applyTheme(savedTheme);
+
+  // Load font
+  const savedFont = localStorage.getItem("wolf_font") || "jakarta";
+  currentFont.value = savedFont;
+  applyFont(savedFont);
+
+  // Load font scale
+  const savedScale = localStorage.getItem("wolf_font_scale");
+  if (savedScale) {
+    fontScale.value = savedScale;
+    document.documentElement.style.fontSize = `${savedScale}px`;
   }
 });
 
+function applyTheme(themeId: string) {
+  currentTheme.value = themeId;
+  localStorage.setItem("wolf_theme", themeId);
+  if (themeId === "obsidian") {
+    delete document.documentElement.dataset.theme;
+  } else {
+    document.documentElement.dataset.theme = themeId;
+  }
+}
+
+function applyFont(fontId: string) {
+  currentFont.value = fontId;
+  localStorage.setItem("wolf_font", fontId);
+  document.documentElement.dataset.font = fontId;
+}
+
+function changeFontScale(size: string) {
+  fontScale.value = size;
+  localStorage.setItem("wolf_font_scale", size);
+  document.documentElement.style.fontSize = `${size}px`;
+  uiStore.showToast(`Font scale set to ${size}px ✓`);
+}
+
+function toggleGlow() {
+  glowEffects.value = !glowEffects.value;
+  document.documentElement.classList.toggle("no-glow", !glowEffects.value);
+  uiStore.showToast(glowEffects.value ? "Neon glow effects enabled" : "Neon glow effects dimmed");
+}
+
+function toggleGlass() {
+  glassmorphism.value = !glassmorphism.value;
+  uiStore.showToast(glassmorphism.value ? "Backdrop blur enabled" : "Backdrop blur disabled");
+}
+
+// Wolfitway Connection Handlers
 function toggleConnection(prodId: string) {
   if (!connections.value[prodId]) {
     connections.value[prodId] = { connected: false, token: "" };
@@ -27,10 +132,10 @@ function toggleConnection(prodId: string) {
   const next = !connections.value[prodId].connected;
   connections.value[prodId].connected = next;
   if (next && !connections.value[prodId].token) {
-    connections.value[prodId].token = `wfw_${prodId}_live_${Math.random().toString(36).substring(2, 8)}`;
+    connections.value[prodId].token = `wfw_${prodId}_live_${Math.random().toString(36).substring(2, 10)}`;
   }
   localStorage.setItem("wolfitway_connections_state", JSON.stringify(connections.value));
-  uiStore.showToast(next ? "Connected (Simulated)" : "Disconnected");
+  uiStore.showToast(next ? `Connected to ${prodId.toUpperCase()} ✓` : `Disconnected from ${prodId.toUpperCase()}`);
 }
 
 function updateToken(prodId: string, val: string) {
@@ -41,12 +146,15 @@ function updateToken(prodId: string, val: string) {
   localStorage.setItem("wolfitway_connections_state", JSON.stringify(connections.value));
 }
 
+// Export Handlers
 function exportJson() {
   const payload = {
     notes: notesStore.notes,
     roadmap: roadmapStore.phases,
     exported_at: new Date().toISOString(),
     schema: "wolfitway_sovereign_v2",
+    theme: currentTheme.value,
+    font: currentFont.value,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -71,6 +179,13 @@ function exportMarkdown() {
       });
       md += `\n`;
     }
+    if (n.ai_explorations && n.ai_explorations.length) {
+      md += `### AI Explorations\n`;
+      n.ai_explorations.forEach((ai) => {
+        md += `- [${ai.model}] **${ai.title}**: ${(ai.rationale || ai.transcript || "").slice(0, 80)}...\n`;
+      });
+      md += `\n`;
+    }
     md += `---\n\n`;
   });
   const blob = new Blob([md], { type: "text/markdown" });
@@ -83,6 +198,53 @@ function exportMarkdown() {
   uiStore.showToast("Timeline Markdown exported ✓");
 }
 
+function exportCsv() {
+  let csv = "ID,Title,Status,Created At,Tags,Timeline Events Count,Explorations Count,Docs Count,Moods Count\n";
+  notesStore.notes.forEach((n) => {
+    const safeTitle = `"${n.title.replace(/"/g, '""')}"`;
+    const safeTags = `"${n.tags.join("; ")}"`;
+    csv += `${n.id},${safeTitle},${n.status},${n.created_at},${safeTags},${n.events?.length || 0},${n.ai_explorations?.length || 0},${n.bookmarks?.length || 0},${n.mood_gallery?.length || 0}\n`;
+  });
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `wolf_projects_matrix_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  uiStore.showToast("CSV Matrix exported ✓");
+}
+
+function triggerImportFile() {
+  if (importFileInput.value) {
+    importFileInput.value.click();
+  }
+}
+
+function handleImportFile(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const data = JSON.parse(event.target?.result as string);
+      if (data.notes && Array.isArray(data.notes)) {
+        notesStore.reorderNotes(data.notes);
+      }
+      if (data.roadmap && Array.isArray(data.roadmap)) {
+        roadmapStore.phases = data.roadmap;
+      }
+      uiStore.showToast(`Restored ${data.notes?.length || 0} projects & roadmap phases ✓`);
+    } catch (err) {
+      uiStore.showToast("Failed to parse JSON backup file");
+    }
+  };
+  reader.readAsText(file);
+  target.value = "";
+}
+
 function handleResetWorkspace() {
   if (confirm("Reset workspace with all sovereign sample projects, roadmap, and sample data?")) {
     notesStore.resetToDefaults();
@@ -90,16 +252,188 @@ function handleResetWorkspace() {
     uiStore.showToast("Sample data reloaded ✓");
   }
 }
+
+// Copy Device ID
+function copyDeviceId() {
+  navigator.clipboard.writeText(licenseStore.deviceId);
+  uiStore.showToast("Device Hardware Fingerprint copied ✓");
+}
+
+// Categories definitions for sidebar
+const categories = computed(() => [
+  { id: "connections" as SettingsCategory, label: "Wolfitway Connections", icon: "⚡", count: WOLFITWAY_PRODUCTS.length },
+  { id: "export" as SettingsCategory, label: "Data Export & Backup", icon: "📦", count: 4 },
+  { id: "themes" as SettingsCategory, label: "Appearance & Themes", icon: "🎨", count: themesList.length },
+  { id: "fonts" as SettingsCategory, label: "Typography & Fonts", icon: "🔤", count: fontsList.length },
+  { id: "license" as SettingsCategory, label: "Hardware & Licensing", icon: "🔐", count: licenseStore.isActivated ? "ACTIVE" : "FREE" },
+  { id: "experts" as SettingsCategory, label: "Council of Experts", icon: "🐺", count: SOVEREIGN_EXPERTS.length },
+  { id: "performance" as SettingsCategory, label: "Reordering & Physics", icon: "🚀", count: "SMOOTH" },
+]);
+
+// Filtered categories based on search
+const filteredCategories = computed(() => {
+  const q = searchQuery.value.toLowerCase().trim();
+  if (!q) return categories.value;
+  return categories.value.filter((cat) => {
+    if (cat.label.toLowerCase().includes(q)) return true;
+    if (cat.id === "connections" && WOLFITWAY_PRODUCTS.some((p) => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))) return true;
+    if (cat.id === "export" && ("json markdown csv backup restore".includes(q))) return true;
+    if (cat.id === "themes" && themesList.some((t) => t.name.toLowerCase().includes(q))) return true;
+    if (cat.id === "fonts" && fontsList.some((f) => f.name.toLowerCase().includes(q))) return true;
+    if (cat.id === "experts" && SOVEREIGN_EXPERTS.some((e) => e.role.toLowerCase().includes(q) || e.handle.toLowerCase().includes(q))) return true;
+    return false;
+  });
+});
+
+// Search results items
+const isSearching = computed(() => searchQuery.value.trim().length > 0);
+
+const searchResults = computed(() => {
+  const q = searchQuery.value.toLowerCase().trim();
+  if (!q) return [];
+  const results: Array<{ categoryId: SettingsCategory; categoryLabel: string; title: string; desc: string }> = [];
+
+  // 1. Connections
+  WOLFITWAY_PRODUCTS.forEach((p) => {
+    if (p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.domain.toLowerCase().includes(q)) {
+      results.push({ categoryId: "connections", categoryLabel: "Wolfitway Connections", title: p.name, desc: p.desc });
+    }
+  });
+
+  // 2. Themes
+  themesList.forEach((t) => {
+    if (t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q)) {
+      results.push({ categoryId: "themes", categoryLabel: "Appearance & Themes", title: t.name, desc: t.desc });
+    }
+  });
+
+  // 3. Fonts
+  fontsList.forEach((f) => {
+    if (f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q)) {
+      results.push({ categoryId: "fonts", categoryLabel: "Typography & Fonts", title: f.name, desc: f.type });
+    }
+  });
+
+  // 4. Export
+  if ("export json markdown csv backup data".includes(q)) {
+    results.push({ categoryId: "export", categoryLabel: "Data Export & Backup", title: "JSON & Markdown Vault Export", desc: "Download zero-telemetry offline database backups." });
+  }
+
+  // 5. Experts
+  SOVEREIGN_EXPERTS.forEach((e) => {
+    if (e.role.toLowerCase().includes(q) || e.handle.toLowerCase().includes(q) || e.mandate.toLowerCase().includes(q)) {
+      results.push({ categoryId: "experts", categoryLabel: "Council of Experts", title: `${e.avatar} ${e.role}`, desc: e.mandate });
+    }
+  });
+
+  return results;
+});
+
+function jumpToCategory(catId: SettingsCategory) {
+  activeCategory.value = catId;
+  searchQuery.value = "";
+}
 </script>
 
 <template>
-  <div class="settings-view">
-    <div class="settings-content-wrap">
-      <!-- Section 1: Wolfitway Ecosystem Connections -->
-      <section class="settings-section">
-        <div class="section-header">
-          <h3 class="section-title">⚡ Wolfitway Ecosystem Connections</h3>
-          <p class="section-desc">Connect your sovereign node to the decentralized creator network.</p>
+  <div class="settings-view-layout">
+    <!-- Left Master Sidebar -->
+    <aside class="settings-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title-row">
+          <span class="settings-gear-icon">⚙️</span>
+          <h2 class="sidebar-title">Settings &amp; Vault</h2>
+        </div>
+        <p class="sidebar-sub">Sovereign workspace configuration</p>
+
+        <!-- Search Input -->
+        <div class="settings-search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="settings-search-input"
+            placeholder="Search settings, tokens, themes..."
+          />
+          <button v-if="searchQuery" type="button" class="btn-clear-search" @click="searchQuery = ''">✕</button>
+        </div>
+      </div>
+
+      <!-- Categories Nav -->
+      <nav class="settings-nav">
+        <button
+          v-for="cat in filteredCategories"
+          :key="cat.id"
+          type="button"
+          class="nav-item-btn"
+          :class="{ active: activeCategory === cat.id && !isSearching }"
+          @click="jumpToCategory(cat.id)"
+        >
+          <span class="nav-item-icon">{{ cat.icon }}</span>
+          <span class="nav-item-label">{{ cat.label }}</span>
+          <span class="nav-item-badge">{{ cat.count }}</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer Hardware Status -->
+      <div class="sidebar-footer">
+        <div class="node-badge-card" @click="uiStore.showLicenseModal = true">
+          <div class="node-badge-header">
+            <span class="dot-live"></span>
+            <span class="node-status-title">{{ licenseStore.isActivated ? 'PRO SOVEREIGN NODE' : 'COMMUNITY NODE' }}</span>
+          </div>
+          <span class="node-id-preview">{{ licenseStore.deviceId }}</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="settings-main-pane">
+      <!-- Hidden file input for restore -->
+      <input
+        ref="importFileInput"
+        type="file"
+        accept=".json"
+        style="display: none"
+        @change="handleImportFile"
+      />
+
+      <!-- If actively searching and has search results -->
+      <div v-if="isSearching" class="search-results-pane">
+        <div class="search-header-banner">
+          <h3 class="pane-title">Search Results for "{{ searchQuery }}"</h3>
+          <span class="results-count">{{ searchResults.length }} items matched</span>
+        </div>
+
+        <div v-if="searchResults.length === 0" class="empty-search">
+          <span class="empty-icon">🔍</span>
+          <p>No settings matched your query. Try searching for "theme", "token", "export", or "font".</p>
+        </div>
+
+        <div v-else class="search-cards-grid">
+          <div
+            v-for="(res, idx) in searchResults"
+            :key="idx"
+            class="search-match-card"
+            @click="jumpToCategory(res.categoryId)"
+          >
+            <div class="search-card-top">
+              <span class="match-category-pill">{{ res.categoryLabel }}</span>
+              <span class="jump-arrow">Jump to tab →</span>
+            </div>
+            <h4 class="match-title">{{ res.title }}</h4>
+            <p class="match-desc">{{ res.desc }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Wolfitway Connections -->
+      <div v-else-if="activeCategory === 'connections'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title">⚡ Wolfitway Ecosystem Connections</h3>
+            <p class="pane-desc">Synchronize sovereign vault nodes with Wolfitway decentralized suite.</p>
+          </div>
         </div>
 
         <div class="connections-grid">
@@ -144,53 +478,258 @@ function handleResetWorkspace() {
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Section 2: Sovereign Data Export & Backup -->
-      <section class="settings-section">
-        <div class="section-header">
-          <h3 class="section-title">📦 Sovereign Data Backup &amp; Portability</h3>
-          <p class="section-desc">Download your encrypted local database or clean markdown logs with zero telemetry.</p>
-        </div>
-
-        <div class="export-actions-grid">
-          <div class="export-card">
-            <div class="export-info">
-              <span class="export-title">Wolfitway JSON Vault</span>
-              <span class="export-sub">Full ecosystem export including notes, roadmap, and timeline logs.</span>
-            </div>
-            <button type="button" class="btn-export" @click="exportJson">
-              Download JSON
-            </button>
-          </div>
-
-          <div class="export-card">
-            <div class="export-info">
-              <span class="export-title">Markdown Timeline Document</span>
-              <span class="export-sub">GitHub-flavored markdown for Git commits and static site publishing.</span>
-            </div>
-            <button type="button" class="btn-export" @click="exportMarkdown">
-              Download .md
-            </button>
-          </div>
-
-          <div class="export-card danger-card">
-            <div class="export-info">
-              <span class="export-title">Reload Sovereign Sample Projects</span>
-              <span class="export-sub">Reset workspace templates to default multi-stage funnel projects.</span>
-            </div>
-            <button type="button" class="btn-reset" @click="handleResetWorkspace">
-              Reload Defaults
-            </button>
+      <!-- Section: Data Export & Backup -->
+      <div v-else-if="activeCategory === 'export'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title">📦 Sovereign Data Backup &amp; Portability</h3>
+            <p class="pane-desc">Download encrypted JSON archives, Markdown documents, or tabular CSV sheets.</p>
           </div>
         </div>
-      </section>
 
-      <!-- Section 3: Council of Sovereign Experts Registry -->
-      <section class="settings-section">
-        <div class="section-header">
-          <h3 class="section-title">🐺 The Council of Sovereign Experts</h3>
-          <p class="section-desc">Specialized engineering and product council governing Wolf Timeline architecture.</p>
+        <div class="export-cards-grid">
+          <div class="export-feature-card">
+            <div class="export-icon-box">📄</div>
+            <div class="export-card-body">
+              <h4 class="export-item-title">Wolfitway JSON Vault</h4>
+              <p class="export-item-desc">Complete sovereign database snapshot containing all projects, timeline milestones, AI explorations, and roadmap phases.</p>
+              <div class="export-actions">
+                <button type="button" class="btn-primary-export" @click="exportJson">
+                  <span>📥</span> Download JSON Vault
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-feature-card">
+            <div class="export-icon-box">📝</div>
+            <div class="export-card-body">
+              <h4 class="export-item-title">Markdown Timeline Document</h4>
+              <p class="export-item-desc">GitHub-flavored markdown document perfect for publishing to static sites, documentation wikis, or Git commit logs.</p>
+              <div class="export-actions">
+                <button type="button" class="btn-primary-export" @click="exportMarkdown">
+                  <span>📥</span> Download .md Document
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-feature-card">
+            <div class="export-icon-box">📊</div>
+            <div class="export-card-body">
+              <h4 class="export-item-title">CSV Project Matrix Sheet</h4>
+              <p class="export-item-desc">Structured tabular spreadsheet with all project statuses, event counts, tags, and timestamps for Excel or Google Sheets.</p>
+              <div class="export-actions">
+                <button type="button" class="btn-primary-export" @click="exportCsv">
+                  <span>📥</span> Download CSV Matrix
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-feature-card">
+            <div class="export-icon-box">🔄</div>
+            <div class="export-card-body">
+              <h4 class="export-item-title">Restore / Import Vault</h4>
+              <p class="export-item-desc">Load a previously exported Wolfitway JSON file into your local node database without losing offline sovereignty.</p>
+              <div class="export-actions">
+                <button type="button" class="btn-secondary-action" @click="triggerImportFile">
+                  <span>📂</span> Select JSON Backup File
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-feature-card danger-feature-card">
+            <div class="export-icon-box">⚠️</div>
+            <div class="export-card-body">
+              <h4 class="export-item-title">Reload Sample Default Workspace</h4>
+              <p class="export-item-desc">Revert the active workspace to default sovereign sample projects, roadmap phases, and timeline logs.</p>
+              <div class="export-actions">
+                <button type="button" class="btn-danger-action" @click="handleResetWorkspace">
+                  <span>↺</span> Reload Sovereign Defaults
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Appearance & Themes -->
+      <div v-else-if="activeCategory === 'themes'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title">🎨 Appearance &amp; Cyber Themes</h3>
+            <p class="pane-desc">Choose your visual aesthetic, neon intensity, and glassmorphism levels.</p>
+          </div>
+        </div>
+
+        <div class="themes-selector-grid">
+          <div
+            v-for="th in themesList"
+            :key="th.id"
+            class="theme-card-option"
+            :class="{ selected: currentTheme === th.id }"
+            @click="applyTheme(th.id)"
+          >
+            <div class="theme-color-preview" :style="{ background: th.bg, borderColor: th.primary }">
+              <div class="theme-accent-circle" :style="{ background: th.primary, boxShadow: `0 0 10px ${th.primary}` }"></div>
+              <span v-if="currentTheme === th.id" class="theme-selected-check">✓ ACTIVE</span>
+            </div>
+            <div class="theme-info-box">
+              <h4 class="theme-name">{{ th.name }}</h4>
+              <p class="theme-desc">{{ th.desc }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual Effects Toggles -->
+        <div class="settings-subgroup">
+          <h4 class="subgroup-title">Visual Effects &amp; Glassmorphism</h4>
+          <div class="effects-row-grid">
+            <div class="toggle-card" @click="toggleGlow">
+              <div class="toggle-card-left">
+                <span class="toggle-icon">✨</span>
+                <div>
+                  <span class="toggle-title">Cyber Neon Glows</span>
+                  <span class="toggle-sub">Soft emerald and accent illumination on borders and active cards</span>
+                </div>
+              </div>
+              <div class="custom-switch" :class="{ on: glowEffects }">
+                <div class="switch-handle"></div>
+              </div>
+            </div>
+
+            <div class="toggle-card" @click="toggleGlass">
+              <div class="toggle-card-left">
+                <span class="toggle-icon">💎</span>
+                <div>
+                  <span class="toggle-title">Backdrop Glassmorphism</span>
+                  <span class="toggle-sub">Hardware-accelerated CSS backdrop-filter blur on modal drawers</span>
+                </div>
+              </div>
+              <div class="custom-switch" :class="{ on: glassmorphism }">
+                <div class="switch-handle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Typography & Fonts -->
+      <div v-else-if="activeCategory === 'fonts'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title">🔤 Typography &amp; Editor Fonts</h3>
+            <p class="pane-desc">Customize UI typography, code ligatures, and reading scale.</p>
+          </div>
+        </div>
+
+        <div class="fonts-selector-grid">
+          <div
+            v-for="f in fontsList"
+            :key="f.id"
+            class="font-card-option"
+            :class="{ selected: currentFont === f.id }"
+            @click="applyFont(f.id)"
+          >
+            <div class="font-card-header">
+              <span class="font-name">{{ f.name }}</span>
+              <span class="font-type-pill">{{ f.type }}</span>
+            </div>
+            <div class="font-preview-box">
+              <p class="font-sample-text">{{ f.sample }}</p>
+            </div>
+            <div class="font-card-footer">
+              <span v-if="currentFont === f.id" class="font-active-label">✓ Active Font</span>
+              <span v-else class="font-select-hint">Click to activate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Font Scale Slider -->
+        <div class="settings-subgroup">
+          <h4 class="subgroup-title">Base UI Scaling</h4>
+          <div class="font-scale-selector">
+            <button
+              type="button"
+              class="scale-btn"
+              :class="{ active: fontScale === '13' }"
+              @click="changeFontScale('13')"
+            >
+              Compact (13px)
+            </button>
+            <button
+              type="button"
+              class="scale-btn"
+              :class="{ active: fontScale === '14' }"
+              @click="changeFontScale('14')"
+            >
+              Standard (14px)
+            </button>
+            <button
+              type="button"
+              class="scale-btn"
+              :class="{ active: fontScale === '15' }"
+              @click="changeFontScale('15')"
+            >
+              Roomy (15px)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Hardware & Licensing -->
+      <div v-else-if="activeCategory === 'license'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title">🔐 Hardware Cryptography &amp; Licensing</h3>
+            <p class="pane-desc">Offline SHA-256 HMAC machine verification with zero-telemetry architecture.</p>
+          </div>
+        </div>
+
+        <div class="license-overview-grid">
+          <div class="license-status-card" :class="{ activated: licenseStore.isActivated }">
+            <div class="license-card-badge">
+              <span class="status-glow-dot"></span>
+              <span class="status-badge-text">{{ licenseStore.isActivated ? "PRO FOUNDER NODE ACTIVATED" : "COMMUNITY ALPHA NODE" }}</span>
+            </div>
+
+            <div class="license-id-group">
+              <span class="license-label">Machine Hardware Fingerprint</span>
+              <div class="license-id-row">
+                <code class="code-fingerprint">{{ licenseStore.deviceId }}</code>
+                <button type="button" class="btn-copy-sm" @click="copyDeviceId">Copy</button>
+              </div>
+            </div>
+
+            <div class="license-id-group" v-if="licenseStore.isActivated">
+              <span class="license-label">Active License Key</span>
+              <code class="code-license-key">{{ licenseStore.licenseKey }}</code>
+            </div>
+
+            <div class="license-actions-row">
+              <button
+                type="button"
+                class="btn-open-keygen"
+                @click="uiStore.showLicenseModal = true"
+              >
+                <span>🔑</span> Launch Sovereign Keygen &amp; Unlock
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Council of Sovereign Experts -->
+      <div v-else-if="activeCategory === 'experts'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title">🐺 The Council of Sovereign Experts</h3>
+            <p class="pane-desc">Specialized engineering and product council governing Wolf Timeline architecture.</p>
+          </div>
         </div>
 
         <div class="experts-grid">
@@ -210,48 +749,314 @@ function handleResetWorkspace() {
             <p class="expert-mandate">{{ expert.mandate }}</p>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+
+      <!-- Section: Performance & Reordering -->
+      <div v-else-if="activeCategory === 'performance'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title">🚀 Smooth Reordering &amp; Drag Physics</h3>
+            <p class="pane-desc">Fine-tune animations, drag elevation physics, and canvas reactivity.</p>
+          </div>
+        </div>
+
+        <div class="settings-subgroup">
+          <h4 class="subgroup-title">Drag &amp; Drop Animation Velocity</h4>
+          <div class="physics-options-grid">
+            <div
+              class="physics-card"
+              :class="{ active: reorderSpeed === 'fast' }"
+              @click="reorderSpeed = 'fast'; uiStore.showToast('Reorder animation set to Ultra Fast 150ms ✓')"
+            >
+              <span class="physics-icon">⚡</span>
+              <span class="physics-name">Ultra Fast</span>
+              <span class="physics-sub">150ms cubic-bezier transition</span>
+            </div>
+
+            <div
+              class="physics-card"
+              :class="{ active: reorderSpeed === 'smooth' }"
+              @click="reorderSpeed = 'smooth'; uiStore.showToast('Reorder animation set to Smooth Silk 220ms ✓')"
+            >
+              <span class="physics-icon">🌊</span>
+              <span class="physics-name">Smooth Silk</span>
+              <span class="physics-sub">220ms organic easing with elevation</span>
+            </div>
+
+            <div
+              class="physics-card"
+              :class="{ active: reorderSpeed === 'cinematic' }"
+              @click="reorderSpeed = 'cinematic'; uiStore.showToast('Reorder animation set to Cinematic 350ms ✓')"
+            >
+              <span class="physics-icon">🎬</span>
+              <span class="physics-name">Cinematic</span>
+              <span class="physics-sub">350ms fluid spring curve</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-subgroup">
+          <h4 class="subgroup-title">Reactivity &amp; Haptics</h4>
+          <div class="effects-row-grid">
+            <div class="toggle-card" @click="dragHaptics = !dragHaptics; uiStore.showToast(dragHaptics ? 'Drag haptic cues enabled' : 'Drag haptic cues disabled')">
+              <div class="toggle-card-left">
+                <span class="toggle-icon">🎯</span>
+                <div>
+                  <span class="toggle-title">Drag Position Snapping Feedback</span>
+                  <span class="toggle-sub">Visual scale pulse when hovering over valid dropzones</span>
+                </div>
+              </div>
+              <div class="custom-switch" :class="{ on: dragHaptics }">
+                <div class="switch-handle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
 <style scoped>
-.settings-view {
-  flex: 1;
+.settings-view-layout {
+  display: flex;
+  width: 100%;
   height: calc(100vh - 60px);
-  background: #040c08;
+  background: var(--bg-body, #040c08);
+  overflow: hidden;
+}
+
+/* Master Sidebar */
+.settings-sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: #060e0a;
+  border-right: 1px solid #14281f;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-header {
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid #102419;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-gear-icon {
+  font-size: 18px;
+}
+
+.sidebar-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.sidebar-sub {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Search Box */
+.settings-search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #030805;
+  border: 1px solid #14281f;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-search-box:focus-within {
+  border-color: var(--emerald-main, #10b981);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+
+.search-icon {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.settings-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 11.5px;
+  color: #fff;
+  font-family: inherit;
+}
+
+.settings-search-input::placeholder {
+  color: #4b5563;
+}
+
+.btn-clear-search {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.btn-clear-search:hover {
+  color: #fff;
+}
+
+/* Nav items */
+.settings-nav {
+  flex: 1;
   overflow-y: auto;
-  padding: 30px 40px;
-}
-
-.settings-content-wrap {
-  max-width: 900px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.settings-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.section-header {
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.section-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: #fff;
-  margin: 0;
+.nav-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
 }
 
-.section-desc {
+.nav-item-btn:hover {
+  background: #0a1711;
+  color: #e5e7eb;
+}
+
+.nav-item-btn.active {
+  background: #0d2419;
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.1);
+}
+
+.nav-item-icon {
+  font-size: 15px;
+}
+
+.nav-item-label {
+  flex: 1;
+}
+
+.nav-item-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: #06150e;
+  border: 1px solid #142c20;
+  border-radius: 10px;
+  color: var(--emerald-bright, #34d399);
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 12px 14px;
+  border-top: 1px solid #102419;
+}
+
+.node-badge-card {
+  background: #040a07;
+  border: 1px solid #14281f;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.node-badge-card:hover {
+  border-color: var(--emerald-main, #10b981);
+}
+
+.node-badge-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot-live {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.node-status-title {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--emerald-bright, #34d399);
+  letter-spacing: 0.04em;
+}
+
+.node-id-preview {
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  color: #6b7280;
+}
+
+/* Main Detail Pane */
+.settings-main-pane {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px 40px;
+  background: var(--bg-body, #040c08);
+}
+
+.category-pane {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #102419;
+}
+
+.pane-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.pane-desc {
   font-size: 12px;
   color: #9ca3af;
   margin: 0;
@@ -272,10 +1077,16 @@ function handleResetWorkspace() {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.connection-card:hover {
+  border-color: #1a3c2c;
 }
 
 .connection-card.active {
-  border-color: rgba(16, 185, 129, 0.4);
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.08);
 }
 
 .conn-card-top {
@@ -370,6 +1181,11 @@ function handleResetWorkspace() {
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-conn-toggle:hover {
+  background: #163627;
 }
 
 .btn-conn-toggle.connected {
@@ -379,67 +1195,503 @@ function handleResetWorkspace() {
 }
 
 /* Export Cards */
-.export-actions-grid {
+.export-cards-grid {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+.export-feature-card {
+  display: flex;
+  gap: 16px;
+  background: #08120e;
+  border: 1px solid #14281f;
+  border-radius: 12px;
+  padding: 18px;
+  align-items: center;
+  transition: border-color 0.2s ease;
+}
+
+.export-feature-card:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.export-icon-box {
+  font-size: 26px;
+  width: 48px;
+  height: 48px;
+  background: #040a07;
+  border: 1px solid #14281f;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.export-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.export-item-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.export-item-desc {
+  font-size: 11.5px;
+  color: #9ca3af;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.export-actions {
+  display: flex;
   gap: 10px;
 }
 
-.export-card {
+.btn-primary-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0d281c;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 6px;
+  padding: 7px 14px;
+  color: var(--emerald-bright, #34d399);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary-export:hover {
+  background: #143d2b;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+.btn-secondary-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0b1812;
+  border: 1px solid #1a382b;
+  border-radius: 6px;
+  padding: 7px 14px;
+  color: #d1d5db;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary-action:hover {
+  background: #12241c;
+  color: #fff;
+}
+
+.danger-feature-card {
+  border-color: rgba(239, 68, 68, 0.2);
+  background: #0d0707;
+}
+
+.btn-danger-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  padding: 7px 14px;
+  color: #ef4444;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-danger-action:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Themes Grid */
+.themes-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.theme-card-option {
+  background: #08120e;
+  border: 1px solid #14281f;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-card-option:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+}
+
+.theme-card-option.selected {
+  border-color: var(--emerald-main, #10b981);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.15);
+}
+
+.theme-color-preview {
+  height: 60px;
+  padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid #102419;
+}
+
+.theme-accent-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+
+.theme-selected-check {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.theme-info-box {
+  padding: 12px 14px;
+}
+
+.theme-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.theme-desc {
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* Subgroups */
+.settings-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subgroup-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e7eb;
+  margin: 0;
+}
+
+.effects-row-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.toggle-card {
   background: #08120e;
   border: 1px solid #14281f;
   border-radius: 10px;
-  padding: 14px 18px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
 }
 
-.export-info {
+.toggle-card:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.toggle-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle-icon {
+  font-size: 18px;
+}
+
+.toggle-title {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.toggle-sub {
+  display: block;
+  font-size: 10.5px;
+  color: #9ca3af;
+}
+
+/* Custom Switch */
+.custom-switch {
+  width: 38px;
+  height: 20px;
+  background: #14281f;
+  border-radius: 10px;
+  padding: 2px;
+  transition: background 0.2s ease;
+}
+
+.custom-switch.on {
+  background: var(--emerald-main, #10b981);
+}
+
+.switch-handle {
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.custom-switch.on .switch-handle {
+  transform: translateX(18px);
+}
+
+/* Fonts Grid */
+.fonts-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.font-card-option {
+  background: #08120e;
+  border: 1px solid #14281f;
+  border-radius: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.export-title {
+.font-card-option:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.font-card-option.selected {
+  border-color: var(--emerald-main, #10b981);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.12);
+}
+
+.font-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.font-name {
   font-size: 13px;
   font-weight: 700;
   color: #fff;
 }
 
-.export-sub {
-  font-size: 11.5px;
-  color: #9ca3af;
+.font-type-pill {
+  font-size: 9.5px;
+  background: #0a1c14;
+  border: 1px solid #143827;
+  color: var(--emerald-bright, #34d399);
+  padding: 2px 6px;
+  border-radius: 8px;
 }
 
-.btn-export {
-  background: #10241b;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+.font-preview-box {
+  background: #040a07;
+  border: 1px solid #102419;
   border-radius: 6px;
-  padding: 6px 14px;
-  color: var(--emerald-bright, #34d399);
+  padding: 10px;
+}
+
+.font-sample-text {
   font-size: 12px;
+  color: #e5e7eb;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.font-card-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.font-active-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--emerald-bright, #34d399);
+}
+
+.font-select-hint {
+  font-size: 10.5px;
+  color: #6b7280;
+}
+
+/* Font Scale Buttons */
+.font-scale-selector {
+  display: flex;
+  gap: 10px;
+}
+
+.scale-btn {
+  background: #08120e;
+  border: 1px solid #14281f;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.scale-btn:hover {
+  background: #0d1e16;
+  color: #fff;
+}
+
+.scale-btn.active {
+  background: #0d281c;
+  border-color: var(--emerald-main, #10b981);
+  color: #fff;
+}
+
+/* License overview */
+.license-overview-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.license-status-card {
+  background: #08120e;
+  border: 1px solid #14281f;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.license-status-card.activated {
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.08);
+}
+
+.license-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: #05140d;
+  border: 1px solid #103624;
+  border-radius: 20px;
+  align-self: flex-start;
+}
+
+.status-glow-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.status-badge-text {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--emerald-bright, #34d399);
+  letter-spacing: 0.04em;
+}
+
+.license-id-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.license-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.license-id-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.code-fingerprint, .code-license-key {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  color: #fff;
+  background: #040906;
+  border: 1px solid #102419;
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+.btn-copy-sm {
+  background: #0a1c14;
+  border: 1px solid #143827;
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--emerald-bright, #34d399);
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
 }
 
-.btn-export:hover {
-  background: #163327;
+.btn-copy-sm:hover {
+  background: #123022;
 }
 
-.btn-reset {
-  background: transparent;
-  border: 1px solid #ef4444;
-  border-radius: 6px;
-  padding: 6px 14px;
-  color: #ef4444;
-  font-size: 12px;
-  font-weight: 600;
+.btn-open-keygen {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #10b981;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  color: #040a07;
+  font-size: 12.5px;
+  font-weight: 800;
   cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
 }
 
-.btn-reset:hover {
-  background: rgba(239, 68, 68, 0.1);
+.btn-open-keygen:hover {
+  background: #34d399;
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.4);
 }
 
 /* Experts Grid */
@@ -453,7 +1705,7 @@ function handleResetWorkspace() {
   background: #08120e;
   border: 1px solid #14281f;
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -494,6 +1746,146 @@ function handleResetWorkspace() {
 }
 
 .expert-mandate {
+  font-size: 11.5px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Physics Cards */
+.physics-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.physics-card {
+  background: #08120e;
+  border: 1px solid #14281f;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.physics-card:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.physics-card.active {
+  background: #0a1f16;
+  border-color: var(--emerald-main, #10b981);
+}
+
+.physics-icon {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+
+.physics-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.physics-sub {
+  font-size: 10.5px;
+  color: #9ca3af;
+}
+
+/* Search results pane */
+.search-results-pane {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.search-header-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #102419;
+}
+
+.results-count {
+  font-size: 11.5px;
+  color: var(--emerald-bright, #34d399);
+  font-weight: 700;
+}
+
+.empty-search {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.empty-icon {
+  font-size: 32px;
+}
+
+.search-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search-match-card {
+  background: #08120e;
+  border: 1px solid #14281f;
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.search-match-card:hover {
+  border-color: var(--emerald-main, #10b981);
+  background: #0b1c15;
+  transform: translateX(4px);
+}
+
+.search-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.match-category-pill {
+  font-size: 10px;
+  font-weight: 700;
+  background: #071911;
+  border: 1px solid #123826;
+  color: var(--emerald-bright, #34d399);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.jump-arrow {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.match-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.match-desc {
   font-size: 11.5px;
   color: #9ca3af;
   margin: 0;

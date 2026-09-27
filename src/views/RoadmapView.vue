@@ -581,7 +581,7 @@ const activePhaseProgress = computed(() => {
   display: flex;
   min-height: 76px;
   cursor: grab;
-  transition: all 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
 }
 
 .phase-node-item:active {
@@ -589,14 +589,15 @@ const activePhaseProgress = computed(() => {
 }
 
 .phase-node-item.is-dragging {
-  opacity: 0.4;
+  opacity: 0.35;
+  transform: scale(0.98);
 }
 
 .phase-node-item.drag-over-item .node-card {
   border-color: #10b981;
   background: #0b2e20;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
-  transform: translateX(4px);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  transform: translateX(6px) scale(1.01);
 }
 
 .node-axis {
@@ -979,7 +980,7 @@ const activePhaseProgress = computed(() => {
   border-radius: 10px;
   padding: 10px 14px;
   cursor: grab;
-  transition: all 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 .practice-item:active {
@@ -987,13 +988,15 @@ const activePhaseProgress = computed(() => {
 }
 
 .practice-item.is-dragging {
-  opacity: 0.4;
+  opacity: 0.35;
+  transform: scale(0.98);
 }
 
 .practice-item.drag-over-item {
   border-color: #10b981;
   background: #0b2e20;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  transform: translateY(-2px) scale(1.01);
 }
 
 .practice-drag-handle {
