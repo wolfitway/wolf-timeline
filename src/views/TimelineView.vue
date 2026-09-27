@@ -5,6 +5,7 @@ import { useUiStore } from "@/stores/useUiStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { optimizeImageFile, downloadPhotoFile, exportPhotosToFolder } from "@/services/imageStorage";
 import { fetchSmartResource } from "@/services/resourceFetcher";
+import { renderMarkdown, toggleTaskInMarkdown, cleanMarkdownSnippet } from "@/services/markdownRenderer";
 import type { Note, TimelineEvent, AiExploration, WebBookmark, MoodImage } from "@/types";
 
 const notesStore = useNotesStore();
@@ -15,6 +16,35 @@ const roadmapStore = useRoadmapStore();
 const showAiExplorations = ref(true);
 const showDocs = ref(true);
 const showMoodGallery = ref(true);
+
+// Timeline Notes Live Preview mode
+const timelineNotesViewMode = ref<"preview" | "edit">("preview");
+
+function handleTimelinePreviewClick(e: MouseEvent) {
+  const target = e.target as HTMLElement;
+
+  // Copy code block button
+  if (target.classList.contains("btn-code-copy") || target.closest(".btn-code-copy")) {
+    const btn = target.classList.contains("btn-code-copy") ? target : (target.closest(".btn-code-copy") as HTMLElement);
+    const code = btn.getAttribute("data-code");
+    if (code) {
+      navigator.clipboard.writeText(decodeURIComponent(code));
+      uiStore.showToast("Code copied to clipboard ✓");
+    }
+    return;
+  }
+
+  // Task list checkbox click
+  if (target.classList.contains("task-checkbox") && notesStore.selectedNote) {
+    const input = target as HTMLInputElement;
+    const taskIdx = parseInt(input.getAttribute("data-task-index") || "-1", 10);
+    if (taskIdx >= 0) {
+      const updatedBody = toggleTaskInMarkdown(notesStore.selectedNote.body, taskIdx, input.checked);
+      notesStore.updateNote(notesStore.selectedNote.id, { body: updatedBody });
+      uiStore.showToast(`Task ${input.checked ? "checked" : "unchecked"} ✓`);
+    }
+  }
+}
 
 // Active tag filters
 const activeFeedTag = ref<string | null>(null);
@@ -992,7 +1022,7 @@ function toggleMoodTag(tag: string) {
             <span class="card-drag-handle" title="Drag to reorder">⋮</span>
           </div>
 
-          <p class="card-body-preview">{{ note.body }}</p>
+          <p class="card-body-preview">{{ cleanMarkdownSnippet(note.body, 130) }}</p>
 
           <div class="card-footer-row">
             <!-- Status Pill -->
@@ -1109,15 +1139,36 @@ function toggleMoodTag(tag: string) {
           </div>
         </div>
 
-        <!-- Notes Section with Deep Focus Trigger -->
-        <div class="detail-section">
+        <!-- Notes Section with Live Markdown Preview & Deep Focus Trigger -->
+        <div class="detail-section timeline-notes-section">
           <div class="section-title-row">
-            <h2 class="section-title">Notes</h2>
+            <div class="notes-title-left">
+              <h2 class="section-title">Notes &amp; Specs</h2>
+              <div class="notes-mode-pills">
+                <button
+                  type="button"
+                  class="btn-mode-pill"
+                  :class="{ active: timelineNotesViewMode === 'preview' }"
+                  @click="timelineNotesViewMode = 'preview'"
+                >
+                  👁 Live Preview
+                </button>
+                <button
+                  type="button"
+                  class="btn-mode-pill"
+                  :class="{ active: timelineNotesViewMode === 'edit' }"
+                  @click="timelineNotesViewMode = 'edit'"
+                >
+                  ✎ Edit Source
+                </button>
+              </div>
+            </div>
+
             <button
               type="button"
               class="btn-expand-focus"
               @click="uiStore.showFocusEditor = true"
-              title="Expand to Full Focus Mode (⤢)"
+              title="Expand to Deep Focus Zen Mode (⤢)"
             >
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="15 3 21 3 21 9"></polyline>
@@ -1125,9 +1176,37 @@ function toggleMoodTag(tag: string) {
                 <line x1="21" y1="3" x2="14" y2="10"></line>
                 <line x1="3" y1="21" x2="10" y2="14"></line>
               </svg>
+              <span>Zen Focus</span>
             </button>
           </div>
-          <p class="notes-body-text">{{ notesStore.selectedNote.body }}</p>
+
+          <!-- Live Rendered Markdown View (No Gibberish!) -->
+          <div
+            v-if="timelineNotesViewMode === 'preview'"
+            class="timeline-live-preview-box"
+            @click="handleTimelinePreviewClick"
+            v-html="renderMarkdown(notesStore.selectedNote.body)"
+          ></div>
+
+          <!-- Inline Source Editor -->
+          <div v-else class="timeline-inline-editor-wrap">
+            <textarea
+              v-model="notesStore.selectedNote.body"
+              class="timeline-inline-textarea"
+              placeholder="Write specs, checklists, code blocks in markdown..."
+              spellcheck="false"
+            ></textarea>
+            <div class="timeline-editor-foot">
+              <span class="foot-hint">Markdown enabled • Click 'Live Preview' to inspect</span>
+              <button
+                type="button"
+                class="btn-done-preview"
+                @click="timelineNotesViewMode = 'preview'"
+              >
+                Done Editing ✓
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- 1. Timeline Section with Drag & Drop Reordering and Full CRUD -->
@@ -2368,21 +2447,253 @@ function toggleMoodTag(tag: string) {
 
 .btn-expand-focus {
   background: transparent;
-  border: none;
-  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #08160f;
+  border: 1px solid #143525;
+  border-radius: 6px;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 700;
   cursor: pointer;
-  padding: 2px;
+  padding: 4px 10px;
+  transition: all 0.15s ease;
 }
 
 .btn-expand-focus:hover {
-  color: #34d399;
+  background: #0d2619;
+  border-color: var(--emerald-main, #10b981);
+  color: var(--emerald-bright, #34d399);
 }
 
-.notes-body-text {
-  font-size: 13px;
-  color: #cbd5e1;
-  line-height: 1.6;
+.notes-title-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notes-mode-pills {
+  display: flex;
+  background: #040a06;
+  border: 1px solid #12241b;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.btn-mode-pill {
+  background: transparent;
+  border: none;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #88929b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-mode-pill.active {
+  background: #0f241a;
+  color: var(--emerald-bright, #34d399);
+  border: 1px solid #1c452e;
+}
+
+/* Timeline Live Preview Box */
+.timeline-live-preview-box {
+  background: #060e0a;
+  border: 1px solid #14281f;
+  border-radius: 8px;
+  padding: 16px 20px;
+  max-height: 380px;
+  overflow-y: auto;
+  color: #e5e7eb;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+/* Markdown typography inside timeline preview */
+.timeline-live-preview-box :deep(.md-h1) {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  border-bottom: 1px solid #14281f;
+  padding-bottom: 6px;
+  margin: 12px 0 8px 0;
+}
+
+.timeline-live-preview-box :deep(.md-h2) {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--emerald-bright, #34d399);
+  margin: 12px 0 6px 0;
+}
+
+.timeline-live-preview-box :deep(.md-h3) {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #fff;
+  margin: 10px 0 4px 0;
+}
+
+.timeline-live-preview-box :deep(.md-code-inline) {
+  background: #0a1710;
+  border: 1px solid #153825;
+  color: var(--emerald-bright, #34d399);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+}
+
+.timeline-live-preview-box :deep(.md-codeblock-wrapper) {
+  background: #040906;
+  border: 1px solid #12241b;
+  border-radius: 6px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.timeline-live-preview-box :deep(.codeblock-header) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #091710;
+  padding: 5px 12px;
+  border-bottom: 1px solid #102117;
+}
+
+.timeline-live-preview-box :deep(.codeblock-lang) {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--emerald-bright, #34d399);
+  text-transform: uppercase;
+}
+
+.timeline-live-preview-box :deep(.btn-code-copy) {
+  background: #0d2217;
+  border: 1px solid #183e29;
+  color: #9ca3af;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.timeline-live-preview-box :deep(.md-pre) {
   margin: 0;
+  padding: 10px 14px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: #d1d5db;
+  overflow-x: auto;
+}
+
+.timeline-live-preview-box :deep(.md-task-item) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0;
+}
+
+.timeline-live-preview-box :deep(.task-checkbox) {
+  accent-color: var(--emerald-main, #10b981);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.timeline-live-preview-box :deep(.md-task-item.checked .task-label) {
+  text-decoration: line-through;
+  color: #6b7280;
+}
+
+.timeline-live-preview-box :deep(.md-callout) {
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 12px 0;
+}
+.timeline-live-preview-box :deep(.md-callout-note) {
+  background: rgba(59, 130, 246, 0.08);
+  border-left: 3px solid #3b82f6;
+}
+.timeline-live-preview-box :deep(.md-callout-tip) {
+  background: rgba(16, 185, 129, 0.08);
+  border-left: 3px solid #10b981;
+}
+.timeline-live-preview-box :deep(.md-callout-warning) {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid #f59e0b;
+}
+
+.timeline-live-preview-box :deep(.table-responsive) {
+  overflow-x: auto;
+  margin: 12px 0;
+}
+.timeline-live-preview-box :deep(.md-table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.timeline-live-preview-box :deep(.md-table th) {
+  background: #091710;
+  color: var(--emerald-bright, #34d399);
+  padding: 6px 10px;
+  border: 1px solid #142e20;
+}
+.timeline-live-preview-box :deep(.md-table td) {
+  padding: 6px 10px;
+  border: 1px solid #12241a;
+}
+
+/* Timeline Inline Editor Wrap */
+.timeline-inline-editor-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timeline-inline-textarea {
+  width: 100%;
+  min-height: 180px;
+  background: #030805;
+  border: 1px solid var(--emerald-main, #10b981);
+  border-radius: 8px;
+  padding: 14px;
+  color: #e5e7eb;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  line-height: 1.6;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.timeline-editor-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.foot-hint {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.btn-done-preview {
+  background: #0e2417;
+  border: 1px solid var(--emerald-main, #10b981);
+  color: var(--emerald-bright, #34d399);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-done-preview:hover {
+  background: var(--emerald-main, #10b981);
+  color: #030a06;
 }
 
 /* Timeline Vertical Tree */
