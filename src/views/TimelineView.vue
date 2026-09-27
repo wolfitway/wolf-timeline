@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
+import { optimizeImageFile } from "@/services/imageStorage";
 import type { Note, TimelineEvent, AiExploration, WebBookmark, MoodImage } from "@/types";
 
 const notesStore = useNotesStore();
@@ -212,10 +213,11 @@ function onMoodCardDragLeave(id: string) {
 function onMoodCardDrop(e: DragEvent, targetId: string) {
   e.preventDefault();
   dragOverMoodId.value = null;
-  if (!draggedMoodId.value || draggedMoodId.value === targetId || !notesStore.selectedNote?.mood_gallery) return;
+  const sourceId = draggedMoodId.value || e.dataTransfer?.getData("text/plain");
+  if (!sourceId || sourceId === targetId || !notesStore.selectedNote?.mood_gallery) return;
 
   const list = [...notesStore.selectedNote.mood_gallery];
-  const fromIdx = list.findIndex((m) => m.id === draggedMoodId.value);
+  const fromIdx = list.findIndex((m) => m.id === sourceId);
   const toIdx = list.findIndex((m) => m.id === targetId);
   if (fromIdx === -1 || toIdx === -1) return;
 
@@ -490,30 +492,32 @@ const editMoodTags = ref("");
 
 /**
  * Ingest image files instantly from file picker OR drag-drop.
+ * Uses smart client-side optimization and IndexedDB media storage.
  */
-function ingestMoodFiles(files: FileList | File[]) {
+async function ingestMoodFiles(files: FileList | File[]) {
   if (!files || files.length === 0 || !notesStore.selectedNote) return;
   const noteId = notesStore.selectedNote.id;
 
-  Array.from(files).forEach((file, index) => {
-    if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUri = e.target?.result as string;
-      if (!dataUri) return;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (!file.type.startsWith("image/")) continue;
+    try {
+      const { dataUrl, sizeBytes } = await optimizeImageFile(file, 1920, 0.88);
       const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
       const img: MoodImage = {
-        id: `mood_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${index}`,
-        url: dataUri,
+        id: `mood_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${i}`,
+        url: dataUrl,
         caption: cleanName || "Visual Reference",
-        tags: ["upload", "asset"],
+        tags: ["upload", "photo"],
         created_at: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       };
-      notesStore.addMoodImage(noteId, img);
-      uiStore.showToast(`Added "${cleanName}" to Mood Gallery ✓`);
-    };
-    reader.readAsDataURL(file);
-  });
+      await notesStore.addMoodImage(noteId, img);
+      uiStore.showToast(`Saved "${cleanName}" (${Math.round(sizeBytes / 1024)} KB) to Vault ✓`);
+    } catch (err) {
+      console.error("Failed to process image file:", err);
+      uiStore.showToast(`Failed to process ${file.name}`);
+    }
+  }
 }
 
 function onMoodFileInputChange(e: Event) {
@@ -577,10 +581,10 @@ function handleSaveEditMood() {
   uiStore.showToast("Mood reference updated ✓");
 }
 
-function handleDeleteMood(imgId: string) {
+async function handleDeleteMood(imgId: string) {
   if (!notesStore.selectedNote) return;
-  notesStore.deleteMoodImage(notesStore.selectedNote.id, imgId);
-  uiStore.showToast("Mood reference removed ✓");
+  await notesStore.deleteMoodImage(notesStore.selectedNote.id, imgId);
+  uiStore.showToast("Photo permanently deleted from database & vault ✓");
 }
 
 function openMoodLightbox(index: number) {
@@ -594,14 +598,15 @@ function openMoodLightbox(index: number) {
 }
 
 // Clipboard Paste support for images
-function handleGlobalPaste(e: ClipboardEvent) {
-  if (!e.clipboardData) return;
+async function handleGlobalPaste(e: ClipboardEvent) {
+  if (!e.clipboardData || !notesStore.selectedNote) return;
   const items = e.clipboardData.items;
   for (let i = 0; i < items.length; i++) {
     if (items[i].type.indexOf("image") !== -1) {
       const file = items[i].getAsFile();
       if (!file) continue;
-      ingestMoodFiles([file]);
+      e.preventDefault();
+      await ingestMoodFiles([file]);
       break;
     }
   }

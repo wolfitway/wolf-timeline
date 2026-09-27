@@ -3,6 +3,12 @@ import { ref, computed } from "vue";
 import type { Note, TimelineEvent, AiExploration, MoodImage, WebBookmark } from "@/types";
 import { INITIAL_NOTES } from "@/services/seedData";
 import { tauriListNotes, tauriAddNote, tauriUpdateNote, tauriDeleteNote } from "@/services/tauriIpc";
+import {
+  savePhotoToStorage,
+  deletePhotoFromStorage,
+  getPhotoFromStorage,
+  listPhotosForNote,
+} from "@/services/imageStorage";
 
 const STORAGE_KEY = "wolftimeline_notes_v5";
 
@@ -57,7 +63,20 @@ export const useNotesStore = defineStore("notes", () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(notes.value));
     } catch (e) {
-      console.error("Failed to save notes to localStorage:", e);
+      console.warn("LocalStorage full, trimming large data URIs from cache:", e);
+      try {
+        // Fallback: strip inline heavy data URLs from localStorage JSON (IndexedDB keeps them intact)
+        const lightweightNotes = notes.value.map((n) => ({
+          ...n,
+          mood_gallery: n.mood_gallery?.map((m) => ({
+            ...m,
+            url: m.url.startsWith("data:") && m.url.length > 5000 ? `idb://${m.id}` : m.url,
+          })),
+        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweightNotes));
+      } catch (err2) {
+        console.error("Critical storage error:", err2);
+      }
     }
   }
 
@@ -66,7 +85,7 @@ export const useNotesStore = defineStore("notes", () => {
     const localRaw = localStorage.getItem(STORAGE_KEY);
     if (localRaw) {
       try {
-        const parsed = JSON.parse(localRaw);
+        const parsed: Note[] = JSON.parse(localRaw);
         if (Array.isArray(parsed) && parsed.length > 0) {
           notes.value = parsed;
         } else {
@@ -78,6 +97,34 @@ export const useNotesStore = defineStore("notes", () => {
     } else {
       notes.value = JSON.parse(JSON.stringify(INITIAL_NOTES));
       saveToLocal();
+    }
+
+    // 2. Hydrate any IndexedDB photos for each note
+    for (const note of notes.value) {
+      try {
+        const idbPhotos = await listPhotosForNote(note.id);
+        if (idbPhotos && idbPhotos.length > 0) {
+          if (!note.mood_gallery) note.mood_gallery = [];
+          for (const stored of idbPhotos) {
+            const existing = note.mood_gallery.find((m) => m.id === stored.id);
+            if (existing) {
+              if (existing.url.startsWith("idb://") || !existing.url) {
+                existing.url = stored.dataUrl;
+              }
+            } else {
+              note.mood_gallery.push({
+                id: stored.id,
+                url: stored.dataUrl,
+                caption: stored.caption || stored.name,
+                tags: ["asset", "idb"],
+                created_at: stored.created_at,
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`Could not hydrate IDB photos for note ${note.id}:`, e);
+      }
     }
 
     selectedNoteId.value = notes.value[0]?.id || 1;
@@ -199,29 +246,54 @@ export const useNotesStore = defineStore("notes", () => {
     saveToLocal();
   }
 
-  function addMoodImage(noteId: number, img: MoodImage) {
+  async function addMoodImage(noteId: number, img: MoodImage) {
     const note = notes.value.find((n) => n.id === noteId);
     if (!note) return;
     if (!note.mood_gallery) note.mood_gallery = [];
     note.mood_gallery.unshift(img);
     saveToLocal();
+
+    // Persist full image binary to IndexedDB
+    if (img.url.startsWith("data:")) {
+      await savePhotoToStorage({
+        id: img.id,
+        noteId,
+        dataUrl: img.url,
+        name: img.caption || "Photo",
+        caption: img.caption || "Visual Reference",
+        sizeBytes: Math.round((img.url.length * 3) / 4),
+        created_at: img.created_at || new Date().toISOString(),
+      });
+    }
   }
 
-  function updateMoodImage(noteId: number, imgId: string, updates: Partial<MoodImage>) {
+  async function updateMoodImage(noteId: number, imgId: string, updates: Partial<MoodImage>) {
     const note = notes.value.find((n) => n.id === noteId);
     if (!note || !note.mood_gallery) return;
     const idx = note.mood_gallery.findIndex((m) => m.id === imgId);
     if (idx !== -1) {
       note.mood_gallery[idx] = { ...note.mood_gallery[idx], ...updates };
       saveToLocal();
+      if (updates.url && updates.url.startsWith("data:")) {
+        await savePhotoToStorage({
+          id: imgId,
+          noteId,
+          dataUrl: updates.url,
+          name: updates.caption || "Photo",
+          caption: updates.caption || "Visual Reference",
+          sizeBytes: Math.round((updates.url.length * 3) / 4),
+          created_at: new Date().toISOString(),
+        });
+      }
     }
   }
 
-  function deleteMoodImage(noteId: number, imgId: string) {
+  async function deleteMoodImage(noteId: number, imgId: string) {
     const note = notes.value.find((n) => n.id === noteId);
     if (!note || !note.mood_gallery) return;
     note.mood_gallery = note.mood_gallery.filter((m) => m.id !== imgId);
     saveToLocal();
+    await deletePhotoFromStorage(imgId);
   }
 
   function addBookmark(noteId: number, bm: WebBookmark) {
