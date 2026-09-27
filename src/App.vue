@@ -192,12 +192,15 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  min-height: 0;
   overflow: hidden;
 }
 
 .view-container {
   flex: 1;
   display: flex;
+  min-height: 0;
+  height: calc(100vh - 56px);
   overflow: hidden;
   background: var(--bg-canvas, #040c08);
 }

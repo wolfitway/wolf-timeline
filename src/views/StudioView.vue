@@ -9,8 +9,41 @@ const notesStore = useNotesStore();
 const uiStore = useUiStore();
 const shortcutsStore = useShortcutsStore();
 
-// Textarea reference for cursor positioning
+// Textarea and preview references for scrolling & cursor
 const editorTextarea = ref<HTMLTextAreaElement | null>(null);
+const previewContentRef = ref<HTMLDivElement | null>(null);
+const isSyncScrollEnabled = ref<boolean>(true);
+let isScrolling = false;
+
+function onEditorScroll() {
+  if (!isSyncScrollEnabled.value || isScrolling || !editorTextarea.value || !previewContentRef.value) return;
+  isScrolling = true;
+  const textarea = editorTextarea.value;
+  const preview = previewContentRef.value;
+  const maxScrollTextarea = textarea.scrollHeight - textarea.clientHeight;
+  if (maxScrollTextarea > 0) {
+    const ratio = textarea.scrollTop / maxScrollTextarea;
+    preview.scrollTop = ratio * (preview.scrollHeight - preview.clientHeight);
+  }
+  requestAnimationFrame(() => {
+    isScrolling = false;
+  });
+}
+
+function onPreviewScroll() {
+  if (!isSyncScrollEnabled.value || isScrolling || !editorTextarea.value || !previewContentRef.value) return;
+  isScrolling = true;
+  const textarea = editorTextarea.value;
+  const preview = previewContentRef.value;
+  const maxScrollPreview = preview.scrollHeight - preview.clientHeight;
+  if (maxScrollPreview > 0) {
+    const ratio = preview.scrollTop / maxScrollPreview;
+    textarea.scrollTop = ratio * (textarea.scrollHeight - textarea.clientHeight);
+  }
+  requestAnimationFrame(() => {
+    isScrolling = false;
+  });
+}
 
 // Studio Layout & View State
 type ViewMode = "split" | "editor" | "preview";
@@ -928,6 +961,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
             spellcheck="false"
             @input="handleBodyInput"
             @keydown="handleTextareaKeyDown"
+            @scroll="onEditorScroll"
           ></textarea>
         </div>
 
@@ -935,11 +969,24 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
         <div v-show="viewMode !== 'editor'" class="studio-preview-pane">
           <div class="pane-meta-strip">
             <span class="pane-label">SOVEREIGN LIVE PREVIEW</span>
-            <span class="pane-sync">Interactive Checklists Enabled ✓</span>
+            <div class="preview-meta-actions">
+              <button
+                type="button"
+                class="btn-sync-toggle"
+                :class="{ active: isSyncScrollEnabled }"
+                :title="isSyncScrollEnabled ? 'Synchronized scrolling active (click to decouple)' : 'Independent scrolling active (click to sync)'"
+                @click="isSyncScrollEnabled = !isSyncScrollEnabled"
+              >
+                <span>{{ isSyncScrollEnabled ? '🔗 Sync Scroll' : '🔓 Decoupled' }}</span>
+              </button>
+              <span class="pane-sync">Interactive Checklists Enabled ✓</span>
+            </div>
           </div>
           <div
+            ref="previewContentRef"
             class="preview-content"
             @click="handlePreviewClick"
+            @scroll="onPreviewScroll"
             v-html="renderMarkdown(notesStore.selectedNote.body)"
           ></div>
         </div>
@@ -999,7 +1046,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 <style scoped>
 .studio-view-layout {
   flex: 1;
-  height: calc(100vh - 60px);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   display: flex;
   background: var(--bg-body, #040c08);
   overflow: hidden;
@@ -1015,6 +1064,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   border-right: 1px solid #14281f;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -1208,7 +1260,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 
 .sidebar-notes-list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -1309,6 +1363,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
    ======================================================== */
 .studio-main-workspace {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1602,6 +1659,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
    ======================================================== */
 .studio-panes {
   flex: 1;
+  min-height: 0;
+  height: 100%;
   display: grid;
   overflow: hidden;
 }
@@ -1619,12 +1678,45 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 }
 
 .pane-meta-strip {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 6px 20px;
   border-bottom: 1px solid #102117;
   background: #050b08;
+}
+
+.preview-meta-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-sync-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #08160f;
+  border: 1px solid #153825;
+  color: #9ca3af;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-sync-toggle:hover {
+  border-color: var(--emerald-main, #10b981);
+  color: #fff;
+}
+
+.btn-sync-toggle.active {
+  background: #0d2619;
+  border-color: var(--emerald-bright, #34d399);
+  color: var(--emerald-bright, #34d399);
 }
 
 .pane-label {
@@ -1645,16 +1737,26 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   flex-direction: column;
   border-right: 1px solid #11221a;
   background: #040906;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .studio-preview-pane {
   display: flex;
   flex-direction: column;
   background: #050c08;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .studio-textarea {
   flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: transparent;
   border: none;
   padding: 24px;
@@ -1665,6 +1767,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   resize: none;
   outline: none;
   tab-size: 2;
+  box-sizing: border-box;
 }
 
 /* ========================================================
@@ -1672,11 +1775,56 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
    ======================================================== */
 .preview-content {
   flex: 1;
-  padding: 24px 32px;
+  min-height: 0;
+  height: 100%;
+  padding: 24px 32px 80px 32px;
   overflow-y: auto;
+  overflow-x: hidden;
   color: #e5e7eb;
   line-height: 1.7;
   font-size: 14px;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+/* Sleek Emerald Scrollbars for Studio */
+.studio-textarea::-webkit-scrollbar,
+.preview-content::-webkit-scrollbar,
+.sidebar-notes-list::-webkit-scrollbar,
+.markdown-toolbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.studio-textarea::-webkit-scrollbar-track,
+.preview-content::-webkit-scrollbar-track,
+.sidebar-notes-list::-webkit-scrollbar-track,
+.markdown-toolbar::-webkit-scrollbar-track {
+  background: #030805;
+}
+
+.studio-textarea::-webkit-scrollbar-thumb,
+.preview-content::-webkit-scrollbar-thumb,
+.sidebar-notes-list::-webkit-scrollbar-thumb,
+.markdown-toolbar::-webkit-scrollbar-thumb {
+  background: #143525;
+  border-radius: 4px;
+  border: 1px solid #030805;
+}
+
+.studio-textarea::-webkit-scrollbar-thumb:hover,
+.preview-content::-webkit-scrollbar-thumb:hover,
+.sidebar-notes-list::-webkit-scrollbar-thumb:hover,
+.markdown-toolbar::-webkit-scrollbar-thumb:hover {
+  background: var(--emerald-main, #10b981);
+}
+
+.studio-textarea,
+.preview-content,
+.sidebar-notes-list,
+.markdown-toolbar {
+  scrollbar-width: thin;
+  scrollbar-color: #143525 #030805;
 }
 
 .preview-content :deep(.md-h1) {
@@ -2051,7 +2199,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
    STUDIO FOOTER: COGNITIVE INTELLIGENCE & SECURITY
    ======================================================== */
 .studio-footer {
+  flex-shrink: 0;
   height: 38px;
+  min-height: 38px;
   background: #060e0a;
   border-top: 1px solid #11221a;
   display: flex;
