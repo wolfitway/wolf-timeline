@@ -356,8 +356,8 @@ function copyDeviceId() {
 }
 
 function copyFounderKey() {
-  navigator.clipboard.writeText("Drăgiuța Dan Ioan • WOLF-RO-DEV-BC66-AF84-F7F1 • wolfitway.com");
-  uiStore.showToast("Founder signature & node fingerprint copied ✓");
+  navigator.clipboard.writeText("Drăguța Dan-Ioan • Timiș, Romania • 15+ Yrs Solo Builder • Certified Trainer • wolfitway.com • wolfitwayos • wolfscentvideo.com • @wolfaistory • WOLF-RO-DEV-BC66-AF84-F7F1");
+  uiStore.showToast("Drăguța Dan-Ioan's credentials & signature copied ✓");
 }
 
 // Categories definitions for sidebar
@@ -379,7 +379,7 @@ const filteredCategories = computed(() => {
   if (!q) return categories.value;
   return categories.value.filter((cat) => {
     if (cat.label.toLowerCase().includes(q)) return true;
-    if (cat.id === "about" && ("about founder dragiuta dan ioan wolfitway romania village solo builder origin manifesto vision".includes(q))) return true;
+    if (cat.id === "about" && ("about founder draguta dragiuta dan ioan dan-ioan timis timisoara remetea mare 15 years solo builder certified trainer wolfitway wolfitwayos wolfscentvideo udemy wolfaistory youtube solo builder saas perspective".includes(q))) return true;
     if (cat.id === "shortcuts" && ("shortcuts keybindings hotkeys keys command".includes(q) || shortcutsStore.shortcuts.some((s) => s.label.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)))) return true;
     if (cat.id === "connections" && WOLFITWAY_PRODUCTS.some((p) => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))) return true;
     if (cat.id === "export" && ("json markdown csv backup restore".includes(q))) return true;
@@ -399,12 +399,12 @@ const searchResults = computed(() => {
   const results: Array<{ categoryId: SettingsCategory; categoryLabel: string; title: string; desc: string }> = [];
 
   // 0. About & Founder
-  if ("about founder dragiuta dan ioan wolfitway romania village solo builder origin manifesto story".includes(q)) {
+  if ("about founder draguta dragiuta dan ioan dan-ioan timis timisoara remetea mare 15 years solo builder certified trainer wolfitway wolfitwayos wolfscentvideo udemy wolfaistory youtube solo builder saas perspective".includes(q)) {
     results.push({
       categoryId: "about",
       categoryLabel: "About & Founder Story",
-      title: "Drăgiuța Dan Ioan • Solo Sovereign Builder",
-      desc: "Architected and built from a quiet village in Romania with zero telemetry, local AES-256 storage, and sovereign pride.",
+      title: "Drăguța Dan-Ioan • 15 Yrs Solo Builder, Certified Trainer & AI Pioneer",
+      desc: "From Timiș, Romania (near Timișoara). Creator of wolfitway.com, wolfitwayos, wolfscentvideo.com, @wolfaistory on YouTube. An introvert who trained himself to speak and empower entrepreneurs.",
     });
   }
 
@@ -556,9 +556,11 @@ function jumpToCategory(catId: SettingsCategory) {
           <div class="founder-hero-glow"></div>
           <div class="founder-hero-content">
             <div class="founder-badge-row">
-              <span class="founder-flag-badge">🇷🇴 ROMANIAN FORGE</span>
-              <span class="founder-role-badge">SOLO SOVEREIGN BUILDER</span>
-              <span class="founder-zero-badge">ZERO TELEMETRY GUARANTEED</span>
+              <span class="founder-flag-badge">🇷🇴 TIMIȘ FORGE (NEAR TIMIȘOARA)</span>
+              <span class="founder-role-badge">15+ YEARS SOLO BUILDER</span>
+              <span class="founder-cert-badge">🎓 CERTIFIED TRAINER</span>
+              <span class="founder-ai-badge">⚡ FRONTIER AI PIONEER</span>
+              <span class="founder-zero-badge">100% OFFLINE-FIRST ZERO TELEMETRY</span>
             </div>
 
             <div class="founder-profile-row">
@@ -567,46 +569,122 @@ function jumpToCategory(catId: SettingsCategory) {
                 <span class="avatar-pulse-ring"></span>
               </div>
               <div class="founder-title-col">
-                <h2 class="founder-name">Drăgiuța Dan Ioan</h2>
-                <p class="founder-handle">@dan • Solo Architect &amp; Creator of Wolfitway OS</p>
+                <h2 class="founder-name">Drăguța Dan-Ioan</h2>
+                <p class="founder-handle">@dan • 15+ Years Solo Builder • Certified Trainer • wolfitway.com • wolfitwayos • wolfscentvideo.com • @wolfaistory</p>
                 <div class="founder-location-pill">
-                  <span>📍 Crafted line-by-line from a village in Romania</span>
+                  <span>📍 Crafted line-by-line from Timiș, Romania (near Timișoara)</span>
                 </div>
               </div>
             </div>
 
             <blockquote class="founder-manifesto-quote">
               "You don't need a 50-person venture-backed Silicon Valley team burning millions in cloud telemetry to build god-tier software.
-              From a quiet village in Romania, with deep focus, Rust, clean code, and zero compromises, one maker can forge sovereign tools that respect human freedom and outpace entire tech giants."
+              With 15 years of solo building discipline, stepping past being an introvert to teach and lead as a certified trainer, one maker in Timiș can forge sovereign tools that respect human freedom and outpace entire tech giants."
             </blockquote>
           </div>
         </div>
 
-        <!-- The Romanian Village Origin Story -->
-        <div class="story-columns-grid">
+        <!-- Founder Ventures & Ecosystem Cards Grid -->
+        <div class="founder-ventures-grid">
+          <a href="https://wolfitway.com" target="_blank" rel="noopener noreferrer" class="venture-card">
+            <div class="venture-card-top">
+              <span class="venture-icon">🐺</span>
+              <span class="venture-link-pill">wolfitway.com ↗</span>
+            </div>
+            <h4 class="venture-title">Wolfitway &amp; Wolfitway OS</h4>
+            <span class="venture-role">Creator &amp; Chief Architect</span>
+            <p class="venture-desc">
+              Decentralized sovereign operating system and maker command center. Replaces 30+ fragmented surveillance SaaS subscriptions with 100% on-device hardware ownership.
+            </p>
+          </a>
+
+          <a href="https://wolfscentvideo.com" target="_blank" rel="noopener noreferrer" class="venture-card">
+            <div class="venture-card-top">
+              <span class="venture-icon">🎬</span>
+              <span class="venture-link-pill">wolfscentvideo.com ↗</span>
+            </div>
+            <h4 class="venture-title">Wolf Scent Video</h4>
+            <span class="venture-role">Builder &amp; Owner</span>
+            <p class="venture-desc">
+              High-impact AI-driven media generation, synthetic production pipelines, and cinematic creative storytelling laboratory.
+            </p>
+          </a>
+
+          <a href="https://youtube.com/@wolfaistory" target="_blank" rel="noopener noreferrer" class="venture-card highlight">
+            <div class="venture-card-top">
+              <span class="venture-icon">📺</span>
+              <span class="venture-link-pill">@wolfaistory ↗</span>
+            </div>
+            <h4 class="venture-title">YouTube: @wolfaistory</h4>
+            <span class="venture-role">Early AI Explorer &amp; Pioneer</span>
+            <p class="venture-desc">
+              The frontier laboratory where Dan tested, pushed, and benchmarked generative AI models and autonomous systems long before the tech mainstream caught on.
+            </p>
+          </a>
+
+          <div class="venture-card highlight-cyan">
+            <div class="venture-card-top">
+              <span class="venture-icon">🎙️</span>
+              <span class="venture-link-pill">Upcoming Channel ✦</span>
+            </div>
+            <h4 class="venture-title">New SaaS &amp; Solo Builder Channel</h4>
+            <span class="venture-role">Founder Perspective &amp; Mentorship</span>
+            <p class="venture-desc">
+              A new channel dedicated to helping entrepreneurs see a different perspective: how an introvert can train themselves to step forward, speak, ship, and thrive without VC dependence.
+            </p>
+          </div>
+
+          <div class="venture-card">
+            <div class="venture-card-top">
+              <span class="venture-icon">🎓</span>
+              <span class="venture-link-pill">Certified Trainer ↗</span>
+            </div>
+            <h4 class="venture-title">Certified Trainer &amp; Udemy</h4>
+            <span class="venture-role">Technical Author &amp; Mentor</span>
+            <p class="venture-desc">
+              Empowering global developers, creators, and operators with hands-on courses in cutting-edge development, system architecture, and AI-assisted workflows.
+            </p>
+          </div>
+        </div>
+
+        <!-- The Romanian Village Origin & AI Pioneer Story -->
+        <div class="story-columns-grid three-col">
           <div class="story-card">
             <div class="story-icon-row">
               <span class="story-icon">🌲</span>
-              <h3 class="story-title">The Village Origin</h3>
+              <h3 class="story-title">15 Years of Solitary Craft in Timiș</h3>
             </div>
             <p class="story-text">
-              While modern tech hubs in San Francisco and London optimize for investor pitches, VC burn rates, and relentless subscription surveillance, <strong>Dan Ioan Drăgiuța</strong> chose a different path: total isolation and extreme engineering craft in a Romanian village.
+              For 15 years, <strong>Drăguța Dan-Ioan</strong> has operated as an independent solo builder and systems architect based in Timiș, Romania (near Timișoara).
             </p>
             <p class="story-text">
-              Surrounded by mountain air and rural silence, every feature in Wolf Timeline—from the in-memory AES-256 vault to the interactive markdown live-preview engine—was forged through thousands of hours of solitary focus.
+              Avoiding bureaucratic standups and VC surveillance, every subsystem in Wolf Timeline—from native Rust Tauri bindings to in-memory AES-256 PBKDF2 encryption—is honed through thousands of hours of intense focus.
             </p>
           </div>
 
           <div class="story-card">
             <div class="story-icon-row">
-              <span class="story-icon">⚡</span>
-              <h3 class="story-title">The Wolfitway OS Vision</h3>
+              <span class="story-icon">🎙️</span>
+              <h3 class="story-title">The Introvert Who Learned to Speak</h3>
             </div>
             <p class="story-text">
-              The modern worker is trapped juggling 30+ fragmented SaaS tools: Jira, Notion, Linear, 1Password, Figma, Obsidian. Each tool rents your attention, sells your telemetry, and holds your files hostage in their cloud.
+              Naturally an introvert, Dan refused to let that become a ceiling. He deliberately trained himself to step forward, stand in front of audiences, and speak—earning accreditation as a <strong>Certified Trainer</strong> and Udemy instructor.
             </p>
             <p class="story-text">
-              <strong>Wolfitway OS</strong> was born to shatter that paradigm: one unified sovereign command center hosted directly on your hardware. You own the code. You own the database. No tracking. No telemetry. Period.
+              His mission with his upcoming channel is to help other introverted builders and entrepreneurs unlock their voice, embrace sovereign tools, and realize they don't need VC permission to win.
+            </p>
+          </div>
+
+          <div class="story-card">
+            <div class="story-icon-row">
+              <span class="story-icon">🧠</span>
+              <h3 class="story-title">Testing AI on @wolfaistory Ahead of the Curve</h3>
+            </div>
+            <p class="story-text">
+              Through his YouTube channel <strong>@wolfaistory</strong>, Dan was already hands-on stress-testing early neural architectures, generative video, and autonomous agent loops when most developers were still treating AI as a curiosity.
+            </p>
+            <p class="story-text">
+              That battle-tested frontline knowledge directly shaped Wolf Timeline's Council of Experts, decision debate room, and lightning-fast local-first execution.
             </p>
           </div>
         </div>
@@ -659,15 +737,19 @@ function jumpToCategory(catId: SettingsCategory) {
           <div class="specs-table-grid">
             <div class="spec-row">
               <span class="spec-k">Architect &amp; Solo Maker</span>
-              <span class="spec-v highlight">Drăgiuța Dan Ioan (@dan)</span>
+              <span class="spec-v highlight">Drăguța Dan-Ioan (@dan)</span>
             </div>
             <div class="spec-row">
               <span class="spec-k">Forge Geographic Origin</span>
-              <span class="spec-v">Rural Village, Romania (Carpathian Basin) 🇷🇴</span>
+              <span class="spec-v">Timiș County, Romania (Near Timișoara) 🇷🇴</span>
             </div>
             <div class="spec-row">
-              <span class="spec-k">Ecosystem Foundation</span>
-              <span class="spec-v">Wolfitway OS (wolfitway.com)</span>
+              <span class="spec-k">Track Record &amp; Credentials</span>
+              <span class="spec-v">15+ Years Solo Builder • Certified Professional Trainer • Udemy Author</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-k">Core Ecosystem &amp; Channels</span>
+              <span class="spec-v">wolfitway.com • wolfitwayos • wolfscentvideo.com • @wolfaistory</span>
             </div>
             <div class="spec-row">
               <span class="spec-k">Engine Stack</span>
@@ -692,11 +774,21 @@ function jumpToCategory(catId: SettingsCategory) {
           </div>
 
           <div class="specs-footer-links">
-            <a href="https://wolfitway.com" target="_blank" rel="noopener noreferrer" class="link-wolfitway">
-              🌐 wolfitway.com ↗
-            </a>
+            <div class="footer-links-group">
+              <a href="https://wolfitway.com" target="_blank" rel="noopener noreferrer" class="link-wolfitway">
+                🌐 wolfitway.com
+              </a>
+              <span class="link-sep">•</span>
+              <a href="https://wolfscentvideo.com" target="_blank" rel="noopener noreferrer" class="link-wolfitway">
+                🎬 wolfscentvideo.com
+              </a>
+              <span class="link-sep">•</span>
+              <a href="https://youtube.com/@wolfaistory" target="_blank" rel="noopener noreferrer" class="link-wolfitway">
+                📺 @wolfaistory
+              </a>
+            </div>
             <button type="button" class="btn-copy-node" @click="copyFounderKey">
-              📋 Copy Founder Fingerprint
+              📋 Copy Drăguța Dan-Ioan Credentials
             </button>
           </div>
         </div>
@@ -2770,6 +2862,28 @@ function jumpToCategory(catId: SettingsCategory) {
   letter-spacing: 0.05em;
 }
 
+.founder-cert-badge {
+  background: rgba(14, 165, 233, 0.15);
+  border: 1px solid #0284c7;
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.founder-ai-badge {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid #d97706;
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
 .founder-zero-badge {
   background: #081510;
   border: 1px solid #183325;
@@ -2855,12 +2969,130 @@ function jumpToCategory(catId: SettingsCategory) {
   color: #e5e7eb;
 }
 
+/* Founder Ventures & Ecosystem Grid */
+.founder-ventures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.venture-card {
+  background: #060e0a;
+  border: 1px solid #14281f;
+  border-radius: 12px;
+  padding: 18px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.venture-card:hover {
+  background: #091a11;
+  border-color: var(--emerald-main, #10b981);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
+}
+
+.venture-card.highlight {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.venture-card.highlight:hover {
+  border-color: #ef4444;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.2);
+}
+
+.venture-card.highlight-cyan {
+  border-color: rgba(6, 182, 212, 0.35);
+  background: #031114;
+}
+
+.venture-card.highlight-cyan:hover {
+  border-color: #06b6d4;
+  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.2);
+}
+
+.venture-card.highlight-cyan .venture-link-pill {
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #67e8f9;
+  background: #08232c;
+}
+
+.venture-card.highlight-cyan .venture-role {
+  color: #22d3ee;
+}
+
+.venture-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.venture-icon {
+  font-size: 22px;
+}
+
+.venture-link-pill {
+  font-size: 10px;
+  font-weight: 700;
+  background: #091711;
+  border: 1px solid #143526;
+  color: var(--emerald-bright, #34d399);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.venture-card.highlight .venture-link-pill {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  background: #180909;
+}
+
+.venture-title {
+  margin: 0 0 2px 0;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.venture-role {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--emerald-bright, #34d399);
+  margin-bottom: 8px;
+}
+
+.venture-card.highlight .venture-role {
+  color: #f87171;
+}
+
+.venture-desc {
+  margin: 0;
+  font-size: 11.5px;
+  color: #88929b;
+  line-height: 1.5;
+  flex: 1;
+}
+
 /* Origin Story Grid */
 .story-columns-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 24px;
+}
+
+.story-columns-grid.three-col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 1024px) {
+  .story-columns-grid.three-col {
+    grid-template-columns: 1fr;
+  }
 }
 
 .story-card {
@@ -3059,5 +3291,16 @@ function jumpToCategory(catId: SettingsCategory) {
   background: #153424;
   border-color: var(--emerald-main, #10b981);
   color: #fff;
+}
+
+.footer-links-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.link-sep {
+  color: #1f3f2f;
+  font-size: 11px;
 }
 </style>
