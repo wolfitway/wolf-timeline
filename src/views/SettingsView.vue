@@ -17,6 +17,7 @@ const shortcutsStore = useShortcutsStore();
 
 // Navigation Tabs
 export type SettingsCategory =
+  | "about"
   | "connections"
   | "shortcuts"
   | "export"
@@ -354,8 +355,14 @@ function copyDeviceId() {
   uiStore.showToast("Device Hardware Fingerprint copied ✓");
 }
 
+function copyFounderKey() {
+  navigator.clipboard.writeText("Drăgiuța Dan Ioan • WOLF-RO-DEV-BC66-AF84-F7F1 • wolfitway.com");
+  uiStore.showToast("Founder signature & node fingerprint copied ✓");
+}
+
 // Categories definitions for sidebar
 const categories = computed(() => [
+  { id: "about" as SettingsCategory, label: "About & Founder Story", icon: "🐺", count: "RO" },
   { id: "connections" as SettingsCategory, label: "Wolfitway Connections", icon: "⚡", count: WOLFITWAY_PRODUCTS.length },
   { id: "shortcuts" as SettingsCategory, label: "Keyboard Shortcuts", icon: "⌨️", count: shortcutsStore.shortcuts.length },
   { id: "export" as SettingsCategory, label: "Data Export & Backup", icon: "📦", count: 4 },
@@ -372,6 +379,7 @@ const filteredCategories = computed(() => {
   if (!q) return categories.value;
   return categories.value.filter((cat) => {
     if (cat.label.toLowerCase().includes(q)) return true;
+    if (cat.id === "about" && ("about founder dragiuta dan ioan wolfitway romania village solo builder origin manifesto vision".includes(q))) return true;
     if (cat.id === "shortcuts" && ("shortcuts keybindings hotkeys keys command".includes(q) || shortcutsStore.shortcuts.some((s) => s.label.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)))) return true;
     if (cat.id === "connections" && WOLFITWAY_PRODUCTS.some((p) => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))) return true;
     if (cat.id === "export" && ("json markdown csv backup restore".includes(q))) return true;
@@ -389,6 +397,16 @@ const searchResults = computed(() => {
   const q = searchQuery.value.toLowerCase().trim();
   if (!q) return [];
   const results: Array<{ categoryId: SettingsCategory; categoryLabel: string; title: string; desc: string }> = [];
+
+  // 0. About & Founder
+  if ("about founder dragiuta dan ioan wolfitway romania village solo builder origin manifesto story".includes(q)) {
+    results.push({
+      categoryId: "about",
+      categoryLabel: "About & Founder Story",
+      title: "Drăgiuța Dan Ioan • Solo Sovereign Builder",
+      desc: "Architected and built from a quiet village in Romania with zero telemetry, local AES-256 storage, and sovereign pride.",
+    });
+  }
 
   // 1. Shortcuts
   shortcutsStore.shortcuts.forEach((s) => {
@@ -527,6 +545,159 @@ function jumpToCategory(catId: SettingsCategory) {
             </div>
             <h4 class="match-title">{{ res.title }}</h4>
             <p class="match-desc">{{ res.desc }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: About & Founder Story -->
+      <div v-else-if="activeCategory === 'about'" class="category-pane">
+        <!-- Hero Founder Card -->
+        <div class="founder-hero-card">
+          <div class="founder-hero-glow"></div>
+          <div class="founder-hero-content">
+            <div class="founder-badge-row">
+              <span class="founder-flag-badge">🇷🇴 ROMANIAN FORGE</span>
+              <span class="founder-role-badge">SOLO SOVEREIGN BUILDER</span>
+              <span class="founder-zero-badge">ZERO TELEMETRY GUARANTEED</span>
+            </div>
+
+            <div class="founder-profile-row">
+              <div class="founder-avatar-box">
+                <span class="founder-wolf-emoji">🐺</span>
+                <span class="avatar-pulse-ring"></span>
+              </div>
+              <div class="founder-title-col">
+                <h2 class="founder-name">Drăgiuța Dan Ioan</h2>
+                <p class="founder-handle">@dan • Solo Architect &amp; Creator of Wolfitway OS</p>
+                <div class="founder-location-pill">
+                  <span>📍 Crafted line-by-line from a village in Romania</span>
+                </div>
+              </div>
+            </div>
+
+            <blockquote class="founder-manifesto-quote">
+              "You don't need a 50-person venture-backed Silicon Valley team burning millions in cloud telemetry to build god-tier software.
+              From a quiet village in Romania, with deep focus, Rust, clean code, and zero compromises, one maker can forge sovereign tools that respect human freedom and outpace entire tech giants."
+            </blockquote>
+          </div>
+        </div>
+
+        <!-- The Romanian Village Origin Story -->
+        <div class="story-columns-grid">
+          <div class="story-card">
+            <div class="story-icon-row">
+              <span class="story-icon">🌲</span>
+              <h3 class="story-title">The Village Origin</h3>
+            </div>
+            <p class="story-text">
+              While modern tech hubs in San Francisco and London optimize for investor pitches, VC burn rates, and relentless subscription surveillance, <strong>Dan Ioan Drăgiuța</strong> chose a different path: total isolation and extreme engineering craft in a Romanian village.
+            </p>
+            <p class="story-text">
+              Surrounded by mountain air and rural silence, every feature in Wolf Timeline—from the in-memory AES-256 vault to the interactive markdown live-preview engine—was forged through thousands of hours of solitary focus.
+            </p>
+          </div>
+
+          <div class="story-card">
+            <div class="story-icon-row">
+              <span class="story-icon">⚡</span>
+              <h3 class="story-title">The Wolfitway OS Vision</h3>
+            </div>
+            <p class="story-text">
+              The modern worker is trapped juggling 30+ fragmented SaaS tools: Jira, Notion, Linear, 1Password, Figma, Obsidian. Each tool rents your attention, sells your telemetry, and holds your files hostage in their cloud.
+            </p>
+            <p class="story-text">
+              <strong>Wolfitway OS</strong> was born to shatter that paradigm: one unified sovereign command center hosted directly on your hardware. You own the code. You own the database. No tracking. No telemetry. Period.
+            </p>
+          </div>
+        </div>
+
+        <!-- Pillar Cards Grid -->
+        <div class="sovereign-pillars-grid">
+          <div class="pillar-card">
+            <span class="pillar-number">01</span>
+            <h4 class="pillar-heading">Zero Cloud Leaks</h4>
+            <p class="pillar-sub">
+              Your keystrokes, strategy notes, and passwords never leave your client machine. In-memory RAM buffer with instant zeroization on lock.
+            </p>
+          </div>
+
+          <div class="pillar-card">
+            <span class="pillar-number">02</span>
+            <h4 class="pillar-heading">Uncompromising Speed</h4>
+            <p class="pillar-sub">
+              Sub-millisecond latency. Built on native Rust &amp; Tauri with a hyper-optimized 298KB frontend. No multi-gigabyte Electron bloat.
+            </p>
+          </div>
+
+          <div class="pillar-card">
+            <span class="pillar-number">03</span>
+            <h4 class="pillar-heading">Offline-First Invariant</h4>
+            <p class="pillar-sub">
+              Whether on a flight, in an air-gapped lab, or off-grid in the Carpathian mountains, every timeline, roadmap, and gallery works at 100%.
+            </p>
+          </div>
+
+          <div class="pillar-card">
+            <span class="pillar-number">04</span>
+            <h4 class="pillar-heading">Hardware Keygen</h4>
+            <p class="pillar-sub">
+              Cryptographic offline node activation using deterministic SHA-256 device hashing. No central license server phone-home checks.
+            </p>
+          </div>
+        </div>
+
+        <!-- Technical Telemetry & Builder Node Box -->
+        <div class="origin-specs-card">
+          <div class="specs-header">
+            <span class="specs-icon">📡</span>
+            <div>
+              <h4 class="specs-title">Origin Node Specification &amp; Telemetry</h4>
+              <p class="specs-sub">Cryptographic provenance and hardware origin details.</p>
+            </div>
+          </div>
+
+          <div class="specs-table-grid">
+            <div class="spec-row">
+              <span class="spec-k">Architect &amp; Solo Maker</span>
+              <span class="spec-v highlight">Drăgiuța Dan Ioan (@dan)</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-k">Forge Geographic Origin</span>
+              <span class="spec-v">Rural Village, Romania (Carpathian Basin) 🇷🇴</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-k">Ecosystem Foundation</span>
+              <span class="spec-v">Wolfitway OS (wolfitway.com)</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-k">Engine Stack</span>
+              <span class="spec-v">Rust (Tauri Core) + Vue 3 + TypeScript + Pinia</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-k">Storage Subsystem</span>
+              <span class="spec-v">Sovereign IndexedDB v2 + Local-First Filesystem Access</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-k">Cryptography Invariants</span>
+              <span class="spec-v">PBKDF2-SHA256 (100k iters) + AES-256-GCM Hardware Lock</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-k">Production Bundle</span>
+              <span class="spec-v">&lt; 300 KB Gzip (Ultra-lightweight)</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-k">Offline Node Signature</span>
+              <span class="spec-v font-mono">WOLF-RO-DEV-BC66-AF84-F7F1</span>
+            </div>
+          </div>
+
+          <div class="specs-footer-links">
+            <a href="https://wolfitway.com" target="_blank" rel="noopener noreferrer" class="link-wolfitway">
+              🌐 wolfitway.com ↗
+            </a>
+            <button type="button" class="btn-copy-node" @click="copyFounderKey">
+              📋 Copy Founder Fingerprint
+            </button>
           </div>
         </div>
       </div>
@@ -2545,5 +2716,348 @@ function jumpToCategory(catId: SettingsCategory) {
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 11px;
+}
+
+/* ========================================================
+   ABOUT & FOUNDER STORY CATEGORY STYLES
+   ======================================================== */
+.founder-hero-card {
+  position: relative;
+  background: linear-gradient(135deg, #07170f 0%, #030805 100%);
+  border: 1px solid var(--emerald-main, #10b981);
+  border-radius: 14px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.founder-hero-glow {
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.founder-badge-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.founder-flag-badge {
+  background: #11281e;
+  border: 1px solid var(--emerald-main, #10b981);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.founder-role-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #1f4f39;
+  color: var(--emerald-bright, #34d399);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.founder-zero-badge {
+  background: #081510;
+  border: 1px solid #183325;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.founder-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.founder-avatar-box {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  background: #0a2015;
+  border: 2px solid var(--emerald-main, #10b981);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.founder-wolf-emoji {
+  font-size: 32px;
+}
+
+.avatar-pulse-ring {
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--emerald-bright, #34d399);
+  border-radius: 18px;
+  opacity: 0.4;
+  animation: pulseAvatar 2s infinite ease-out;
+}
+
+@keyframes pulseAvatar {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+
+.founder-name {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+
+.founder-handle {
+  font-size: 13px;
+  color: var(--emerald-bright, #34d399);
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.founder-location-pill {
+  display: inline-flex;
+  background: #08160f;
+  border: 1px solid #1a3c2c;
+  color: #d1d5db;
+  font-size: 11.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.founder-manifesto-quote {
+  margin: 0;
+  padding: 16px 20px;
+  background: rgba(4, 12, 8, 0.7);
+  border-left: 3px solid var(--emerald-bright, #34d399);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #e5e7eb;
+}
+
+/* Origin Story Grid */
+.story-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.story-card {
+  background: #07100c;
+  border: 1px solid #14281f;
+  border-radius: 12px;
+  padding: 22px;
+}
+
+.story-icon-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.story-icon {
+  font-size: 20px;
+}
+
+.story-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.story-text {
+  font-size: 13px;
+  color: #9ca3af;
+  line-height: 1.6;
+  margin: 0 0 10px 0;
+}
+
+.story-text:last-child {
+  margin-bottom: 0;
+}
+
+.story-text strong {
+  color: #fff;
+}
+
+/* Sovereign Pillars */
+.sovereign-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.pillar-card {
+  background: #060d09;
+  border: 1px solid #12241b;
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pillar-number {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--emerald-bright, #34d399);
+  margin-bottom: 8px;
+  font-family: var(--font-mono, monospace);
+}
+
+.pillar-heading {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.pillar-sub {
+  margin: 0;
+  font-size: 11.5px;
+  color: #88929b;
+  line-height: 1.5;
+}
+
+/* Origin Specs Card */
+.origin-specs-card {
+  background: #060e0a;
+  border: 1px solid #14281f;
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin-bottom: 20px;
+}
+
+.specs-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.specs-icon {
+  font-size: 22px;
+}
+
+.specs-title {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.specs-sub {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.specs-table-grid {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #11221a;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid #101d16;
+  background: #040906;
+}
+
+.spec-row:last-child {
+  border-bottom: none;
+}
+
+.spec-row:nth-child(even) {
+  background: #060d09;
+}
+
+.spec-k {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.spec-v {
+  font-size: 12px;
+  color: #e5e7eb;
+  font-weight: 700;
+}
+
+.spec-v.highlight {
+  color: var(--emerald-bright, #34d399);
+}
+
+.spec-v.font-mono {
+  font-family: var(--font-mono, monospace);
+  background: #0d1e16;
+  border: 1px solid #183827;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.specs-footer-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.link-wolfitway {
+  color: var(--emerald-bright, #34d399);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.link-wolfitway:hover {
+  text-decoration: underline;
+}
+
+.btn-copy-node {
+  background: #0e2017;
+  border: 1px solid #1f4432;
+  color: #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-node:hover {
+  background: #153424;
+  border-color: var(--emerald-main, #10b981);
+  color: #fff;
 }
 </style>
