@@ -660,6 +660,13 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
               📑 Templates ▾
             </button>
 
+            <!-- Click Outside Backdrop -->
+            <div
+              v-if="showTemplateMenu"
+              class="dropdown-backdrop"
+              @click="showTemplateMenu = false"
+            ></div>
+
             <!-- Dropdown Menu -->
             <div v-if="showTemplateMenu" class="template-menu-popup">
               <div class="menu-header">SOVEREIGN TEMPLATES</div>
@@ -1068,7 +1075,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   flex-direction: column;
   min-height: 0;
   height: 100%;
-  overflow: hidden;
+  position: relative;
+  z-index: 50;
+  overflow: visible;
 }
 
 .sidebar-header {
@@ -1077,6 +1086,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
+  z-index: 60;
+  overflow: visible;
 }
 
 .sidebar-title-row {
@@ -1122,6 +1134,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 
 .template-dropdown-wrapper {
   position: relative;
+  z-index: 70;
 }
 
 .btn-template-trigger {
@@ -1140,17 +1153,23 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   background: #153225;
 }
 
+.dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  background: transparent;
+}
+
 .template-menu-popup {
   position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 6px;
-  width: 280px;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 290px;
   background: #07120d;
   border: 1px solid var(--emerald-main, #10b981);
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(16, 185, 129, 0.2);
-  z-index: 100;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.95), 0 0 20px rgba(16, 185, 129, 0.3);
+  z-index: 9999;
   padding: 8px 0;
 }
 
