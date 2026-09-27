@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wolf Timeline</title>
+  <link rel="icon" type="image/png" href="assets/wolf-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-layout">
+
+    <!-- Top Navigation Bar (Shared across views) -->
+    <header class="topbar" id="appTopBar">
+      <div class="brand">
+        <img src="assets/wolf-logo.png" alt="Wolf Logo" class="wolf-logo-img" />
+        <span class="brand-name">Wolf Timeline</span>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" id="navTabs">
+        <button class="nav-tab active" data-tab="timeline">Timeline</button>
+        <button class="nav-tab" data-tab="studio">Studio</button>
+        <button class="nav-tab" data-tab="roadmap">Roadmap</button>
+        <button class="nav-tab" data-tab="secrets">🔐 Secret Vault</button>
+        <button class="nav-tab" data-tab="settings">Settings</button>
+      </nav>
+
+      <!-- Topbar Right Pill -->
+      <div class="topbar-actions">
+        <button id="commandPaletteBtn" class="topbar-search-btn" title="Quick Search &amp; Command Palette (⌘K / Ctrl+K)">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="search-btn-text">Search</span>
+          <kbd class="topbar-search-kbd">⌘K</kbd>
+        </button>
+
+        <div class="aes-badge" title="Local-First Hardware-Backed AES-256-GCM Vault">
+          <svg class="lock-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Local-First AES-256</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="main-viewport">
+
+      <!-- ============================================== -->
+      <!-- VIEW 1: TIMELINE VIEW (Image 1) -->
+      <!-- ============================================== -->
+      <div id="timelineView" class="view-panel active">
+        <div class="content-split">
+          
+          <!-- Left Column: Quick Capture + List of Cards -->
+          <section class="left-pane">
+            <div class="capture-action-row">
+              <button id="quickCaptureTriggerBtn" class="btn-quick-capture">
+                <span class="plus-sign">+</span> Quick Capture
+              </button>
+            </div>
+
+            <!-- Inline Fast Filter / Search Input -->
+            <div class="card-search-row">
+              <div class="search-input-wrap">
+                <svg class="search-lens-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input id="cardFilterInput" type="text" class="card-filter-input" placeholder="Filter projects, tags, text... (⌘K)" />
+                <button id="clearCardFilterBtn" class="clear-search-btn hidden" title="Clear filter">✕</button>
+              </div>
+            </div>
+
+            <div id="cardsList" class="cards-list"></div>
+          </section>
+
+          <!-- Right Column: Detail Inspector -->
+          <aside class="right-pane" id="detailPane">
+            
+            <div class="pane-header">
+              <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; width:100%;">
+                <div style="flex:1; min-width:0;">
+                  <h2 id="detailTitle" class="detail-title wysiwyg-field" title="Click to rename note directly on canvas" contenteditable="true" spellcheck="false">Q3 Infrastructure Overhaul</h2>
+                  <div class="pane-badges-row">
+                    <span id="detailStatusBadge" class="badge-status status-ideation">
+                      <span class="dot"></span>
+                      <span id="detailStatusText">Ideation</span>
+                    </span>
+                    <span id="detailUpdatedTime" class="badge-subtle">Updated 10m ago</span>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                  <button id="deleteActiveNoteBtn" class="rm-edit-btn btn-danger-hover" title="Delete Active Note" aria-label="Delete Active Note">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="detail-section">
+              <div class="section-title-row" style="display:flex; align-items:center; justify-content:space-between;">
+                <h3 class="section-title">Notes</h3>
+                <button id="expandNotesFocusBtn" class="rm-edit-btn" title="Expand to Distraction-Free Focus Mode">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <polyline points="9 21 3 21 3 15"></polyline>
+                    <line x1="21" y1="3" x2="14" y2="10"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                  </svg>
+                </button>
+              </div>
+              <div class="notes-container">
+                <div id="detailNotesText" class="notes-body" title="Click to write or expand into deep focus mode"></div>
+                <textarea id="detailNotesEdit" class="notes-textarea hidden"></textarea>
+              </div>
+            </div>
+
+            <!-- Timeline Section -->
+            <div class="detail-section">
+              <h3 class="section-title">Timeline</h3>
+              <div id="timelineList" class="timeline-vertical-list"></div>
+              
+              <button id="addTimelineEventBtn" class="btn-add-timeline-event">
+                <span class="plus-icon">+</span> Add Timeline Event
+              </button>
+            </div>
+
+            <!-- Drawers -->
+            <div class="drawers-container">
+              <div class="drawer-card" id="drawerAi">
+                <button class="drawer-toggle" data-drawer="drawerAi">
+                  <span class="drawer-label"><span class="drawer-chevron">▲</span> AI Explorations</span>
+                  <span class="drawer-pill" id="aiExplorationsCount">2</span>
+                </button>
+                <div class="drawer-content" id="drawerAiContent"></div>
+                <div class="drawer-action-footer">
+                  <button id="addAiExplorationBtn" class="btn-drawer-add">
+                    <span class="plus-icon">+</span> Log AI Conversation / Decision
+                  </button>
+                </div>
+              </div>
+
+              <div class="drawer-card" id="drawerDocs">
+                <button class="drawer-toggle" data-drawer="drawerDocs">
+                  <span class="drawer-label"><span class="drawer-chevron">▼</span> Docs</span>
+                  <span class="drawer-pill" id="docsCount">3</span>
+                </button>
+                <div class="drawer-content hidden" id="drawerDocsContent">
+                  <div class="drawer-item">
+                    <span class="drawer-item-title">Architecture RFC v1.4</span>
+                    <span class="drawer-item-badge">PDF</span>
+                  </div>
+                  <div class="drawer-item">
+                    <span class="drawer-item-title">Kubernetes Cluster Config</span>
+                    <span class="drawer-item-badge">YAML</span>
+                  </div>
+                  <div class="drawer-item">
+                    <span class="drawer-item-title">Platform Incident SLA Runbook</span>
+                    <span class="drawer-item-badge">MD</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Drawer 3: Mood Gallery (Drop images & Visual reference board) -->
+              <div class="drawer-card" id="drawerMood">
+                <button class="drawer-toggle" data-drawer="drawerMood">
+                  <span class="drawer-label"><span class="drawer-chevron">▼</span> 🖼️ Mood Gallery</span>
+                  <span class="drawer-pill" id="moodGalleryCount">0</span>
+                </button>
+                <div class="drawer-content hidden" id="drawerMoodContent">
+                  <!-- Image Drop Zone -->
+                  <div id="moodDropzone" class="mood-dropzone" tabindex="0" role="button" aria-label="Drop images here or click to browse">
+                    <input type="file" id="moodFileInput" accept="image/*" multiple style="display:none;" />
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" class="dropzone-icon">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <span class="dropzone-text">Drop images here or <span class="highlight">browse</span></span>
+                    <span class="dropzone-subtext">PNG, JPG, WebP, SVG • Local &amp; sovereign</span>
+                  </div>
+
+                  <!-- Add image by URL -->
+                  <div class="mood-url-row">
+                    <input id="moodUrlInput" type="text" class="form-input-sm" placeholder="Paste image link (https://...)" />
+                    <button id="addMoodUrlBtn" class="btn-sm-emerald" type="button">+ Add</button>
+                  </div>
+
+                  <!-- Grid of images in project moodboard -->
+                  <div id="moodGrid" class="mood-grid"></div>
+                </div>
+              </div>
+
+              <!-- Drawer 4: Web Research & Bookmarks (Fetch & Save internet link) -->
+              <div class="drawer-card" id="drawerWeb">
+                <button class="drawer-toggle" data-drawer="drawerWeb">
+                  <span class="drawer-label"><span class="drawer-chevron">▼</span> 🔗 Web Links &amp; Research</span>
+                  <span class="drawer-pill" id="webLinksCount">0</span>
+                </button>
+                <div class="drawer-content hidden" id="drawerWebContent">
+                  <div class="weblink-input-wrap">
+                    <div class="weblink-input-row">
+                      <input id="webLinkInput" type="url" class="form-input-sm" placeholder="Paste link (e.g. https://github.com/...)" />
+                      <button id="fetchWebLinkBtn" class="btn-sm-emerald" type="button">Fetch &amp; Save</button>
+                    </div>
+                    <input id="webLinkNoteInput" type="text" class="form-input-sm weblink-sub-input" placeholder="Optional context, takeaway, or note..." />
+                  </div>
+                  <div id="webLinksList" class="weblinks-list"></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Bottom Action Toolbar -->
+            <div class="bottom-action-toolbar">
+              <button id="pushToRoadmapBtn" class="action-btn">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                <span>Push to Roadmap</span>
+              </button>
+
+              <button id="addToVaultBtn" class="action-btn">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add to Vault</span>
+              </button>
+
+              <button id="openInStudioBtn" class="action-btn">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Open in Studio</span>
+              </button>
+            </div>
+
+          </aside>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- VIEW 2: STUDIO VIEW (Image 3) -->
+      <!-- ============================================== -->
+      <div id="studioView" class="view-panel">
+        <div class="studio-container">
+          
+          <!-- Studio Header Bar -->
+          <div class="studio-header">
+            <div class="studio-header-left">
+              <div class="brand-mini">
+                <img src="assets/wolf-logo.png" alt="Wolf Logo" class="wolf-logo-img-mini" />
+                <span class="brand-name-mini">Wolf Timeline</span>
+              </div>
+              <span class="studio-divider">|</span>
+              <h2 id="studioItemTitle" class="studio-title">Renewable microgrid optimizer</h2>
+              <div class="studio-status-pills">
+                <span class="badge-status status-exploring">
+                  <span class="dot"></span> Exploring
+                </span>
+                <span class="badge-status status-not-started">
+                  <span class="dot"></span> Not started
+                </span>
+              </div>
+            </div>
+
+            <button id="closeStudioBtn" class="studio-close-btn" title="Back to Timeline">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Studio Body -->
+          <div class="studio-body">
+            
+            <!-- Notes Box with Rich Goal/Context/Open Questions -->
+            <div class="studio-card notes-card">
+              <div class="studio-card-header">
+                <h3 class="studio-card-title">Notes</h3>
+                <button id="editStudioNotesBtn" class="studio-icon-btn" title="Edit Notes">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <div id="studioNotesBody" class="studio-notes-content"></div>
+              <textarea id="studioNotesTextarea" class="notes-textarea hidden" style="min-height: 140px; margin-top: 10px;"></textarea>
+            </div>
+
+            <!-- Studio Rich Timeline -->
+            <div class="studio-card timeline-card">
+              <div class="studio-card-header">
+                <div class="studio-timeline-heading">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="timeline-head-icon">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                  <h3 class="studio-card-title">Timeline</h3>
+                </div>
+              </div>
+
+              <div class="studio-timeline-list" id="studioTimelineList">
+                
+                <div class="studio-timeline-row">
+                  <div class="studio-node-left">
+                    <div class="studio-icon-circle icon-green">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path>
+                      </svg>
+                    </div>
+                    <div class="studio-node-info">
+                      <div class="studio-node-title">Idea added</div>
+                      <div class="studio-node-date">May 12, 2024 at 10:03 AM</div>
+                    </div>
+                  </div>
+                  <div class="studio-node-author ai">
+                    <span>AI Assistant</span>
+                    <span class="sparkle">✦</span>
+                  </div>
+                </div>
+
+                <div class="studio-timeline-row">
+                  <div class="studio-node-left">
+                    <div class="studio-icon-circle icon-blue">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                      </svg>
+                    </div>
+                    <div class="studio-node-info">
+                      <div class="studio-node-title">Market research added</div>
+                      <div class="studio-node-date">May 13, 2024 at 2:47 PM</div>
+                    </div>
+                  </div>
+                  <div class="studio-node-author user">
+                    <span>You</span>
+                  </div>
+                </div>
+
+                <div class="studio-timeline-row">
+                  <div class="studio-node-left">
+                    <div class="studio-icon-circle icon-purple">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z"></path>
+                        <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z"></path>
+                      </svg>
+                    </div>
+                    <div class="studio-node-info">
+                      <div class="studio-node-title">Exploration: RL approach</div>
+                      <div class="studio-node-date">May 14, 2024 at 9:15 AM</div>
+                    </div>
+                  </div>
+                  <div class="studio-node-author ai">
+                    <span>AI Assistant</span>
+                    <span class="sparkle">✦</span>
+                  </div>
+                </div>
+
+                <div class="studio-timeline-row">
+                  <div class="studio-node-left">
+                    <div class="studio-icon-circle icon-amber">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                      </svg>
+                    </div>
+                    <div class="studio-node-info">
+                      <div class="studio-node-title">Notes updated</div>
+                      <div class="studio-node-date">May 15, 2024 at 4:32 PM</div>
+                    </div>
+                  </div>
+                  <div class="studio-node-author user">
+                    <span>You</span>
+                  </div>
+                </div>
+
+                <div class="studio-timeline-row">
+                  <div class="studio-node-left">
+                    <div class="studio-icon-circle icon-emerald">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                    </div>
+                    <div class="studio-node-info">
+                      <div class="studio-node-title">Feasibility check completed</div>
+                      <div class="studio-node-date">May 16, 2024 at 11:08 AM</div>
+                    </div>
+                  </div>
+                  <div class="studio-node-author ai">
+                    <span>AI Assistant</span>
+                    <span class="sparkle">✦</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Studio Drawers -->
+            <div class="studio-drawers">
+              <div class="drawer-card">
+                <button class="drawer-toggle">
+                  <span class="drawer-label"><span class="sparkle-icon">✦</span> AI Explorations (2)</span>
+                  <span class="drawer-chevron">▼</span>
+                </button>
+              </div>
+
+              <div class="drawer-card">
+                <button class="drawer-toggle">
+                  <span class="drawer-label">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:inline; vertical-align:middle; margin-right:6px;">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    </svg> Docs (1)
+                  </span>
+                  <span class="drawer-chevron">▼</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- VIEW 3: ROADMAP VIEW (Image 4) -->
+      <!-- ============================================== -->
+      <div id="roadmapView" class="view-panel">
+        <div class="roadmap-container">
+          
+          <!-- Roadmap Header -->
+          <div class="roadmap-topbar">
+            <div class="roadmap-topbar-left">
+              <svg class="avatar-head-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <h2 class="roadmap-main-heading">Human-Mode Roadmap</h2>
+            </div>
+
+            <div class="roadmap-topbar-right">
+              <div class="roadmap-brand-badge">
+                <img src="assets/wolf-logo.png" alt="Wolf Logo" class="wolf-logo-img-mini" />
+                <div class="brand-subtext-group">
+                  <span class="brand-title-sm">Wolf Timeline</span>
+                  <span class="brand-motto-sm">TRACK. ADAPT. EVOLVE.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Roadmap 2-Column Split -->
+          <div class="roadmap-split" id="roadmapSplitView">
+            
+            <!-- Left: Connected Roadmap Phases -->
+            <div class="roadmap-left-pane" id="roadmapLeftPane">
+              <div class="roadmap-pane-tag-row">
+                <div class="roadmap-pane-tag">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                  </svg>
+                  <span>ROADMAP</span>
+                </div>
+                <div class="roadmap-pane-actions">
+                  <button id="toggleAllPhasesBtn" class="btn-text-action" title="Expand or Collapse All Cards">Collapse All</button>
+                  <button id="addRoadmapPhaseBtn" class="btn-text-action" title="Add new roadmap milestone directly on canvas">+ Add Phase</button>
+                </div>
+              </div>
+
+              <div class="roadmap-phases-list" id="roadmapPhasesList"></div>
+
+              <div class="roadmap-footer-motto">
+                <img src="assets/wolf-logo.png" alt="Wolf mark" class="wolf-mark-tiny" />
+                <span>EVOLVE WITH INTENTION</span>
+              </div>
+            </div>
+
+            <!-- Right: Roadmap Phase Detail Inspector & WYSIWYG Canvas -->
+            <div class="roadmap-detail-pane" id="roadmapDetailPane">
+              
+              <div class="roadmap-detail-header">
+                <div class="wolf-avatar-circle">
+                  <img src="assets/wolf-logo.png" alt="Wolf Avatar" class="wolf-avatar-img" />
+                </div>
+                <div class="roadmap-detail-header-text">
+                  <div class="rm-title-row">
+                    <h3 id="rmDetailTitle" class="rm-detail-title wysiwyg-field" title="Click to edit title directly on canvas" contenteditable="true" spellcheck="false">Calmer Presence</h3>
+                    <div class="rm-header-actions">
+                      <button id="expandRoadmapCanvasBtn" class="rm-edit-btn" title="Toggle Fullscreen Canvas / Split View">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="15 3 21 3 21 9"></polyline>
+                          <polyline points="9 21 3 21 3 15"></polyline>
+                          <line x1="21" y1="3" x2="14" y2="10"></line>
+                          <line x1="3" y1="21" x2="10" y2="14"></line>
+                        </svg>
+                      </button>
+                      <button id="deleteRoadmapPhaseDirectBtn" class="rm-edit-btn btn-danger-hover" title="Delete Active Milestone Phase">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- WYSIWYG Status Dropdown on Canvas -->
+                  <div class="rm-status-dropdown-wrapper">
+                    <button type="button" id="rmDetailStatus" class="badge-status status-in-progress wysiwyg-badge" title="Click to change milestone status directly on canvas">
+                      <span class="dot"></span> <span id="rmDetailStatusLabel">In Progress</span>
+                      <span class="dropdown-chevron">▾</span>
+                    </button>
+                    <div id="rmStatusMenu" class="rm-status-menu hidden">
+                      <button type="button" class="rm-status-option" data-status="in-progress">
+                        <span class="dot dot-green"></span> In Progress
+                      </button>
+                      <button type="button" class="rm-status-option" data-status="live">
+                        <span class="dot dot-blue"></span> Live
+                      </button>
+                      <button type="button" class="rm-status-option" data-status="up-next">
+                        <span class="dot dot-amber"></span> Up Next
+                      </button>
+                      <button type="button" class="rm-status-option" data-status="backlog">
+                        <span class="dot dot-hollow"></span> Backlog / Planned
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- WYSIWYG Description directly on canvas -->
+              <p id="rmDetailDescription" class="rm-detail-description wysiwyg-field" title="Click to edit description directly on canvas" contenteditable="true" spellcheck="false">
+                Build the foundation for calmer, more intentional daily presence. Move from reaction to response. Create space. Choose with clarity.
+              </p>
+
+              <!-- Two Column Stats: FOCUS / OUTCOME (WYSIWYG editable on canvas) -->
+              <div class="rm-stats-grid">
+                <div class="rm-stat-box">
+                  <span class="rm-stat-label">FOCUS</span>
+                  <span id="rmStatFocus" class="rm-stat-value wysiwyg-field" title="Click to edit focus directly on canvas" contenteditable="true" spellcheck="false">Daily calm systems</span>
+                </div>
+                <div class="rm-stat-box">
+                  <span class="rm-stat-label">OUTCOME</span>
+                  <span id="rmStatOutcome" class="rm-stat-value wysiwyg-field" title="Click to edit outcome directly on canvas" contenteditable="true" spellcheck="false">More space, less noise</span>
+                </div>
+              </div>
+
+              <!-- KEY PRACTICES Checklist with WYSIWYG editing and Inline Add -->
+              <div class="rm-practices-section">
+                <div class="rm-practices-header-row">
+                  <h4 class="rm-practices-heading">KEY PRACTICES (CLICK TO EDIT • DRAG TO REORDER)</h4>
+                  <button id="addPracticeBtn" class="btn-text-action" title="Add a practice checklist item">+ Add Practice</button>
+                </div>
+                <div class="rm-practices-list" id="rmPracticesList"></div>
+
+                <!-- Inline Quick-Add Practice directly on canvas -->
+                <div class="rm-inline-add-row">
+                  <input type="text" id="inlineNewPracticeInput" class="rm-inline-add-input" placeholder="+ Add key practice directly on canvas and press Enter..." />
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="rm-progress-bar-container">
+                <div class="rm-progress-track">
+                  <div class="rm-progress-fill" style="width: 48%;"></div>
+                  <div class="rm-progress-thumb" style="left: 48%;"></div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- VIEW 4: SETTINGS VIEW (Replaces Vault, includes Wolfitway Connections, Export & Experts) -->
+      <!-- ============================================== -->
+      <div id="settingsView" class="view-panel">
+        <div class="vscode-settings-layout">
+          
+          <!-- LEFT SETTINGS SIDEBAR (VS Code Style) -->
+          <aside class="vscode-settings-sidebar">
+            <div class="vscode-settings-header">
+              <div class="vscode-settings-title-row">
+                <span class="vscode-gear-icon">⚙️</span>
+                <h2 class="vscode-settings-title">Settings</h2>
+              </div>
+              <div class="vscode-search-box">
+                <svg class="vscode-search-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="settingsSearchInput" placeholder="Search settings..." spellcheck="false" autocomplete="off" />
+                <button type="button" id="clearSettingsSearchBtn" class="btn-clear-search hidden" title="Clear">✕</button>
+              </div>
+            </div>
+
+            <nav class="vscode-settings-nav" id="settingsNav">
+              <button type="button" class="settings-nav-item active" data-section="sec-license">
+                <span class="nav-icon">🛡️</span>
+                <span class="nav-label">Sovereign License</span>
+                <span class="nav-badge green" id="navLicenseStatusBadge">ACTIVE</span>
+              </button>
+              <button type="button" class="settings-nav-item" data-section="sec-connections">
+                <span class="nav-icon">⚡</span>
+                <span class="nav-label">Ecosystem (Mock)</span>
+                <span class="nav-badge count">4</span>
+              </button>
+              <button type="button" class="settings-nav-item" data-section="sec-agents">
+                <span class="nav-icon">🤖</span>
+                <span class="nav-label">AI Agents (Mock)</span>
+                <span class="nav-badge green">LIVE</span>
+              </button>
+              <button type="button" class="settings-nav-item" data-section="sec-export">
+                <span class="nav-icon">📦</span>
+                <span class="nav-label">Sovereign Data Export</span>
+                <span class="nav-badge">VAULT</span>
+              </button>
+              <button type="button" class="settings-nav-item" data-section="sec-experts">
+                <span class="nav-icon">🐺</span>
+                <span class="nav-label">Council of Experts</span>
+                <span class="nav-badge count">7</span>
+              </button>
+            </nav>
+
+            <div class="vscode-settings-sidebar-footer">
+              <div class="sidebar-vault-status">
+                <span class="dot dot-green"></span>
+                <span>Zero Telemetry Node</span>
+              </div>
+              <div class="sidebar-version-tag">Wolf Timeline v0.1.0-alpha</div>
+            </div>
+          </aside>
+
+          <!-- RIGHT SETTINGS CONTENT (Effortlessly Scrollable) -->
+          <main class="vscode-settings-content" id="settingsScrollContainer">
+            <div class="vscode-settings-body">
+
+              <!-- SECTION 0: SOVEREIGN NODE LICENSE -->
+              <section id="sec-license" class="vscode-settings-section">
+                <div class="vscode-section-header">
+                  <h3 class="vscode-section-title">
+                    <span class="section-icon">🛡️</span> Sovereign Node License
+                  </h3>
+                  <p class="vscode-section-desc">Hardware-bound cryptographic activation seat and offline verification status.</p>
+                </div>
+
+                <div class="license-settings-card">
+                  <div class="license-status-header">
+                    <div>
+                      <div class="license-status-badge active" id="settingsLicenseBadge">
+                        <span class="dot dot-green"></span> <span id="settingsLicenseStatusText">Active Node Seat (Lifetime Alpha)</span>
+                      </div>
+                      <div class="license-settings-sub" id="settingsLicenseDeviceText">Device ID: WOLF-DEV-FETCHING...</div>
+                    </div>
+                    <div class="license-settings-actions">
+                      <button type="button" id="reopenActivationBtn" class="btn-vault-action" style="font-size:11px; padding:6px 12px;">License Key Details</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SECTION 1: WOLFITWAY ECOSYSTEM CONNECTIONS (MOCK) -->
+              <section id="sec-connections" class="vscode-settings-section">
+                <div class="vscode-section-header">
+                  <div class="section-title-row">
+                    <h3 class="vscode-section-title">
+                      <span class="section-icon">⚡</span> Wolfitway Ecosystem Connections
+                    </h3>
+                    <span class="mock-pill-badge">SIMULATED GATEWAY MOCK</span>
+                  </div>
+                  <p class="vscode-section-desc">Mock connection gateways to Wolfitway sovereign cloud relays, creator storefronts, and decentralized identity.</p>
+                </div>
+
+                <!-- Mock Connection Controls Bar -->
+                <div class="mock-controls-bar">
+                  <div class="mock-control-col">
+                    <label class="mock-control-label" for="mockGatewaySelect">Simulated Gateway Relay</label>
+                    <select id="mockGatewaySelect" class="vscode-select-compact">
+                      <option value="relay.wolfitway.com">relay.wolfitway.com (Simulated Prod - 14ms)</option>
+                      <option value="sandbox.wolfitway.com">sandbox.wolfitway.com (Staging Sandbox)</option>
+                      <option value="localhost">127.0.0.1:8080 (Local Airgap Daemon)</option>
+                    </select>
+                  </div>
+                  <button type="button" id="mockPingAllBtn" class="btn-vscode-compact">
+                    ⚡ Test Gateway Ping
+                  </button>
+                </div>
+
+                <div class="connections-grid" id="connectionsGrid">
+                  <!-- Rendered dynamically with API tokens and toggle states -->
+                </div>
+              </section>
+
+              <!-- SECTION 2: AUTONOMOUS AI AGENTS (MOCK) -->
+              <section id="sec-agents" class="vscode-settings-section">
+                <div class="vscode-section-header">
+                  <div class="section-title-row">
+                    <h3 class="vscode-section-title">
+                      <span class="section-icon">🤖</span> Autonomous AI Agents
+                    </h3>
+                    <span class="mock-pill-badge">MOCK AGENT NETWORK</span>
+                  </div>
+                  <p class="vscode-section-desc">Background reasoning agents for timeline clustering, build-in-public social posts, and zero-telemetry audits.</p>
+                </div>
+
+                <!-- AI Provider Selection Mock -->
+                <div class="agent-config-card">
+                  <div class="agent-config-row">
+                    <div class="agent-config-info">
+                      <span class="agent-config-label">Inference Engine / Provider</span>
+                      <span class="agent-config-sub">Select the neural backbone for autonomous timeline agents.</span>
+                    </div>
+                    <select id="mockAgentProviderSelect" class="vscode-select">
+                      <option value="gemini-flash" selected>Google Gemini 2.5 Flash (Ultra-Fast 1M Context)</option>
+                      <option value="claude-sonnet">Anthropic Claude 3.5 Sonnet (Deep Architectural Logic)</option>
+                      <option value="ollama-llama">Local Ollama Llama 3 (100% Offline Air-Gapped)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- AI Agents Grid -->
+                <div class="agents-grid" id="aiAgentsGrid">
+                  <!-- Rendered dynamically: Wolf Timeline Synthesizer, Social Build-In-Public Agent, Council Guard Auditor, Radar Milestone Scout -->
+                </div>
+
+                <!-- Agent Live Simulation Output Console -->
+                <div class="agent-console-card">
+                  <div class="agent-console-header">
+                    <div class="agent-console-title">
+                      <span class="terminal-dot"></span> Mock Agent Runtime Stream
+                    </div>
+                    <button type="button" id="triggerAgentSimulationBtn" class="btn-agent-action">
+                      ▶ Trigger Agent Simulation Run
+                    </button>
+                  </div>
+                  <pre id="agentConsoleOutput" class="agent-console-body">[Agent Daemon] Initialized 4 autonomous agents.
+[Inference Relay] Connected to Gemini 2.5 Flash (Mock Latency: 12ms).
+[Status] All agents in standby. Ready for simulation trigger.</pre>
+                </div>
+              </section>
+
+              <!-- SECTION 3: SOVEREIGN DATA EXPORT (ALL USER DATA!) -->
+              <section id="sec-export" class="vscode-settings-section">
+                <div class="vscode-section-header">
+                  <h3 class="vscode-section-title">
+                    <span class="section-icon">📦</span> Sovereign Data Export &amp; Full Vault Backup
+                  </h3>
+                  <p class="vscode-section-desc">You own 100% of your data. Export your entire workspace, notes, radar milestones, and settings into zero-telemetry open formats.</p>
+                </div>
+
+                <!-- Live Vault Statistics Summary -->
+                <div class="vault-stats-banner" id="vaultStatsBanner">
+                  <div class="vault-stat-item">
+                    <span class="vault-stat-num" id="statNotesCount">0</span>
+                    <span class="vault-stat-label">Notes &amp; Ideas</span>
+                  </div>
+                  <div class="vault-stat-item">
+                    <span class="vault-stat-num" id="statRadarCount">0</span>
+                    <span class="vault-stat-label">Radar Milestones</span>
+                  </div>
+                  <div class="vault-stat-item">
+                    <span class="vault-stat-num" id="statEventsCount">0</span>
+                    <span class="vault-stat-label">Timeline Events</span>
+                  </div>
+                  <div class="vault-stat-item">
+                    <span class="vault-stat-num" id="statVaultSize">0 KB</span>
+                    <span class="vault-stat-label">Estimated Vault Size</span>
+                  </div>
+                  <div class="vault-stat-item highlight">
+                    <span class="vault-stat-num">100%</span>
+                    <span class="vault-stat-label">Offline Sovereign</span>
+                  </div>
+                </div>
+
+                <!-- Export Action Cards Grid -->
+                <div class="export-cards-grid">
+                  <!-- Card 1: Full Workspace JSON -->
+                  <div class="export-card primary-card">
+                    <div class="export-card-header">
+                      <div class="export-card-icon">📦</div>
+                      <div>
+                        <h4 class="export-card-title">Full Workspace JSON Vault</h4>
+                        <p class="export-card-desc">Complete zero-loss backup containing all notes, categories, radar blips, timeline items, AI explorations, and workspace settings.</p>
+                      </div>
+                    </div>
+                    <div class="export-card-actions">
+                      <button type="button" id="vaultExportAllJsonBtn" class="btn-vscode-primary">
+                        ⬇ Download Full Vault JSON
+                      </button>
+                      <button type="button" id="vaultExportJsonBtn" class="btn-vscode-secondary" style="display:none;">
+                        Legacy JSON Export
+                      </button>
+                      <button type="button" id="copyVaultJsonBtn" class="btn-vscode-secondary">
+                        📋 Copy JSON to Clipboard
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Card 2: Markdown Playbook -->
+                  <div class="export-card">
+                    <div class="export-card-header">
+                      <div class="export-card-icon">📄</div>
+                      <div>
+                        <h4 class="export-card-title">Markdown Playbook &amp; Timeline</h4>
+                        <p class="export-card-desc">Formatted human-readable Markdown documentation with headings, tags, chronologies, and decision rationale.</p>
+                      </div>
+                    </div>
+                    <div class="export-card-actions">
+                      <button type="button" id="vaultExportMdBtn" class="btn-vscode-secondary">
+                        ⬇ Export Markdown Playbook (.md)
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Card 3: Tabular CSV -->
+                  <div class="export-card">
+                    <div class="export-card-header">
+                      <div class="export-card-icon">📊</div>
+                      <div>
+                        <h4 class="export-card-title">Tabular CSV Spreadsheets</h4>
+                        <p class="export-card-desc">Flat tabular dataset export formatted for Excel, Google Sheets, Airtable, or Notion import.</p>
+                      </div>
+                    </div>
+                    <div class="export-card-actions">
+                      <button type="button" id="vaultExportCsvBtn" class="btn-vscode-secondary">
+                        ⬇ Export CSV Dataset (.csv)
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Card 4: Vault Restore & Demo Reset -->
+                  <div class="export-card">
+                    <div class="export-card-header">
+                      <div class="export-card-icon">📥</div>
+                      <div>
+                        <h4 class="export-card-title">Vault Restore &amp; Demo Playbooks</h4>
+                        <p class="export-card-desc">Restore a previously saved Wolfitway JSON vault or reset to sovereign demo projects.</p>
+                      </div>
+                    </div>
+                    <div class="export-card-actions">
+                      <button type="button" id="vaultImportJsonBtn" class="btn-vscode-secondary">
+                        📂 Import Vault JSON
+                      </button>
+                      <button type="button" id="resetDemoProjectsBtn" class="btn-vscode-danger">
+                        ↺ Reload Demo Projects
+                      </button>
+                      <input type="file" id="vaultImportFileInput" accept=".json" style="display:none;" />
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SECTION 4: THE COUNCIL OF SOVEREIGN EXPERTS -->
+              <section id="sec-experts" class="vscode-settings-section">
+                <div class="vscode-section-header">
+                  <h3 class="vscode-section-title">
+                    <span class="section-icon">🐺</span> The Council of Sovereign Experts
+                  </h3>
+                  <p class="vscode-section-desc">The 7 specialized architectural disciplines governing the integrity, privacy, velocity, and design of Wolf Timeline.</p>
+                </div>
+
+                <div class="experts-grid" id="expertsGrid">
+                  <!-- Rendered dynamically from EXPERTS registry -->
+                </div>
+              </section>
+
+            </div>
+          </main>
+
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- VIEW 5: SOVEREIGN SECRET VAULT (Password & Secret Manager) -->
+      <!-- ============================================== -->
+      <div id="secretsView" class="view-panel">
+        
+        <!-- LOCKED STATE (Vault Guard) -->
+        <div id="secretsLockedState" class="vault-locked-state">
+          <div class="vault-locked-card">
+            <div class="vault-locked-shield">
+              <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <div class="vault-locked-brand">
+              <img src="assets/wolf-logo.png" alt="Wolf Logo" class="modal-wolf-logo" />
+              <span class="modal-brand-text">WOLF TIMELINE</span>
+            </div>
+            <h2 class="vault-locked-title" id="vaultLockedTitle">Sovereign Secret Vault</h2>
+            <p class="vault-locked-sub" id="vaultLockedSub">
+              Enter your Master Passphrase to decrypt and access your API tokens, developer passwords, and credentials.
+            </p>
+
+            <form id="vaultUnlockForm" class="vault-unlock-form" onsubmit="return false;">
+              <div class="vault-input-group">
+                <input type="password" id="masterPassphraseInput" class="vault-passphrase-field" placeholder="Enter Master Passphrase..." autocomplete="current-password" spellcheck="false" />
+                <button type="button" id="togglePassphraseVisibilityBtn" class="btn-vault-eye" title="Show/Hide">👁️</button>
+              </div>
+              <div id="secretsVaultError" class="vault-auth-error hidden"></div>
+              <button type="submit" id="unlockSecretsVaultBtn" class="btn-vault-unlock">
+                🔓 Unlock Secret Vault
+              </button>
+            </form>
+
+            <div class="vault-locked-footer">
+              <span>🔒 Zero-Knowledge 100,000 PBKDF2 • AES-256-GCM • Offline Airgapped</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- UNLOCKED STATE (Active Secret Locker) -->
+        <div id="secretsUnlockedState" class="vault-unlocked-state" style="display: none;">
+          <div class="secrets-view-container">
+            
+            <!-- Vault Action Bar -->
+            <div class="secrets-action-bar">
+              <div class="secrets-search-wrap">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="secretsSearchInput" placeholder="Search secrets, services, usernames..." spellcheck="false" autocomplete="off" />
+                <button type="button" id="clearSecretsSearchBtn" class="btn-clear-search hidden" title="Clear">✕</button>
+              </div>
+
+              <!-- Category Filter Tabs -->
+              <div class="secrets-category-tabs" id="secretsCategoryTabs">
+                <button type="button" class="secret-cat-btn active" data-cat="all">All Items</button>
+                <button type="button" class="secret-cat-btn" data-cat="api">⚡ API Keys</button>
+                <button type="button" class="secret-cat-btn" data-cat="login">🔑 Logins</button>
+                <button type="button" class="secret-cat-btn" data-cat="db">🗄️ Database</button>
+                <button type="button" class="secret-cat-btn" data-cat="token">🔐 Tokens</button>
+              </div>
+
+              <div class="secrets-action-buttons">
+                <button type="button" id="openSecretScannerModalBtn" class="btn-secrets-action primary">
+                  ⚡ Scan .txt / .env
+                </button>
+                <button type="button" id="openAddSecretModalBtn" class="btn-secrets-action secondary">
+                  ➕ Add Secret
+                </button>
+                <button type="button" id="lockSecretsVaultBtn" class="btn-secrets-action lock" title="Lock Vault">
+                  🔒 Lock
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats & Auto-Lock Pill Banner -->
+            <div class="secrets-stats-banner">
+              <div class="secrets-stat-group">
+                <span class="secrets-stat-pill"><strong id="statVaultTotalCount">0</strong> Total Secrets</span>
+                <span class="secrets-stat-pill"><strong id="statVaultApiCount">0</strong> API Keys</span>
+                <span class="secrets-stat-pill"><strong id="statVaultLoginCount">0</strong> Logins</span>
+                <span class="secrets-stat-pill"><strong id="statVaultDbCount">0</strong> Database URIs</span>
+              </div>
+              <div class="secrets-lock-status">
+                <span class="dot dot-green"></span>
+                <span id="vaultAutoLockTimerText">Auto-lock in 5:00</span>
+              </div>
+            </div>
+
+            <!-- Secrets Grid Container -->
+            <div class="secrets-list-grid" id="secretsListContainer">
+              <!-- Rendered dynamically: Firefox/1Password style cards -->
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 0: SOVEREIGN HARDWARE NODE ACTIVATION -->
+  <!-- ============================================== -->
+  <dialog id="licenseActivationModal" class="modal-backdrop license-backdrop">
+    <div class="modal-window license-window">
+      <button type="button" id="closeLicenseModalBtn" class="license-modal-close-btn hidden" aria-label="Close modal">✕</button>
+      
+      <div class="license-header">
+        <div class="license-icon-shield">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+            <rect x="9" y="9" width="6" height="6"></rect>
+            <line x1="9" y1="1" x2="9" y2="4"></line>
+            <line x1="15" y1="1" x2="15" y2="4"></line>
+            <line x1="9" y1="20" x2="9" y2="23"></line>
+            <line x1="15" y1="20" x2="15" y2="23"></line>
+            <line x1="20" y1="9" x2="23" y2="9"></line>
+            <line x1="20" y1="14" x2="23" y2="14"></line>
+            <line x1="1" y1="9" x2="4" y2="9"></line>
+            <line x1="1" y1="14" x2="4" y2="14"></line>
+          </svg>
+        </div>
+        <div class="modal-brand" style="margin-bottom:4px;">
+          <img src="assets/wolf-logo.png" alt="Wolf Logo" class="modal-wolf-logo" />
+          <span class="modal-brand-text">WOLF TIMELINE</span>
+        </div>
+        <h2 class="license-title">Sovereign Node Activation</h2>
+        <p class="license-subtitle">Welcome to the Private Alpha. Each desktop seat is cryptographically bound to hardware for local sovereignty, privacy, and zero telemetry.</p>
+      </div>
+
+      <div class="license-body">
+        <!-- 1-Click Self-Serve Keygen & Activation -->
+        <div class="license-self-serve-card">
+          <div class="license-self-serve-header">
+            <span class="license-self-serve-badge">✨ INSTANT ALPHA ACCESS</span>
+          </div>
+          <p class="license-self-serve-desc">
+            Instantly compute your hardware-bound cryptographic key and authorize your desktop seat in one click.
+          </p>
+          <button type="button" id="autoGenerateLicenseBtn" class="btn-auto-activate-license">
+            ⚡ Generate Key & Activate Seat
+          </button>
+        </div>
+
+        <!-- Hardware Fingerprint -->
+        <div class="license-box">
+          <div class="license-box-title">HARDWARE DEVICE ID (NODE FINGERPRINT)</div>
+          <div class="license-hwid-row">
+            <span id="licenseDeviceFingerprint" class="license-hwid-text">WOLF-DEV-FETCHING...</span>
+            <button type="button" id="copyDeviceFingerprintBtn" class="btn-copy-hwid" title="Copy Device ID">
+              <span id="copyHwidBtnText">📋 Copy ID</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Manual Key Entry (Fallback / Custom keys) -->
+        <details class="license-manual-details">
+          <summary class="license-manual-summary">Or enter an alpha / founder key manually</summary>
+          <div class="license-manual-content">
+            <div class="license-input-wrap">
+              <input type="text" id="licenseKeyInput" class="license-key-field" placeholder="WOLF-KEY-XXXX-XXXX-XXXX" spellcheck="false" autocomplete="off" />
+            </div>
+            <div id="licenseErrorMsg" class="license-error hidden"></div>
+            <button type="button" id="activateLicenseBtn" class="btn-activate-license" style="margin-top: 10px;">
+              Verify & Activate Key
+            </button>
+          </div>
+        </details>
+
+        <!-- Direct Founder Help & Feedback -->
+        <div class="license-help-card">
+          <div class="license-help-title">Need help, have feedback, or want a custom build?</div>
+          <div class="license-help-links">
+            <a href="mailto:wolfitway@gmail.com" class="license-help-link" title="Email Wolfitway">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              wolfitway@gmail.com
+            </a>
+            <a href="https://x.com/wolfitway" target="_blank" rel="noopener noreferrer" class="license-help-link" title="DM @wolfitway on X">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              @wolfitway on 𝕏
+            </a>
+          </div>
+        </div>
+
+        <div class="license-footer-notes">
+          <span>🔒 100% Offline Cryptographic Verification • Zero Telemetry</span>
+        </div>
+      </div>
+
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 1: QUICK CAPTURE MODAL (Image 2) -->
+  <!-- ============================================== -->
+  <dialog id="quickCaptureModal" class="modal-backdrop">
+    <div class="modal-window">
+      
+      <!-- Top Brand Mark & Title -->
+      <div class="modal-header-centered">
+        <div class="modal-brand">
+          <img src="assets/wolf-logo.png" alt="Wolf Logo" class="modal-wolf-logo" />
+          <span class="modal-brand-text">WOLF TIMELINE</span>
+        </div>
+        <h2 class="modal-title">New Idea</h2>
+      </div>
+
+      <!-- Fields Form -->
+      <form id="quickCaptureForm" class="modal-form" onsubmit="return false;">
+        
+        <div class="form-group">
+          <label class="form-label" for="qcTitle">Title / Hook</label>
+          <input id="qcTitle" type="text" class="form-input" placeholder="A new angle on focus and creative flow" autofocus required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="qcUrl">URL (optional)</label>
+          <div class="input-with-icon">
+            <svg class="input-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <input id="qcUrl" type="text" class="form-input has-icon" placeholder="Paste URL here" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div class="category-pills" id="qcCategoryPills">
+            <button type="button" class="cat-pill active" data-cat="idea">Idea</button>
+            <button type="button" class="cat-pill" data-cat="task">Task</button>
+            <button type="button" class="cat-pill" data-cat="insight">Insight</button>
+            <button type="button" class="cat-pill" data-cat="note">Note</button>
+            <button type="button" class="cat-pill" data-cat="project">Project</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="qcTags">Tags (optional)</label>
+          <div class="input-with-icon">
+            <svg class="input-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            <input id="qcTags" type="text" class="form-input has-icon" placeholder="Add tags..." />
+          </div>
+        </div>
+
+        <!-- Hidden extra details expandable -->
+        <div id="qcMoreDetailsGroup" class="form-group hidden">
+          <label class="form-label" for="qcNotes">Detailed Notes & Context</label>
+          <textarea id="qcNotes" class="form-textarea" placeholder="Add context, execution details, open questions..."></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="form-submit-row">
+          <button type="submit" id="saveVaultBtn" class="btn-save-vault">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Save to Encrypted Vault</span>
+          </button>
+        </div>
+
+        <!-- Modal Footer helper links -->
+        <div class="modal-footer-links">
+          <button type="button" id="toggleMoreDetailsBtn" class="link-btn">+ Add more details</button>
+          <span class="hotkey-tip">⌘ + Enter to save</span>
+        </div>
+
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 2: ADD TIMELINE EVENT MODAL -->
+  <!-- ============================================== -->
+  <dialog id="addEventModal" class="modal-backdrop">
+    <div class="modal-window small-modal">
+      <div class="modal-header-centered">
+        <h3 class="modal-title">+ Add Timeline Event</h3>
+      </div>
+      <form id="addEventForm" class="modal-form" onsubmit="return false;">
+        <div class="form-group">
+          <label class="form-label" for="eventTitleInput">Event Title</label>
+          <input id="eventTitleInput" type="text" class="form-input" placeholder="e.g. Stakeholder input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="eventDescInput">Description / Note</label>
+          <input id="eventDescInput" type="text" class="form-input" placeholder="e.g. Collected feedback from team" />
+        </div>
+        <div class="form-submit-row dual-btns">
+          <button type="button" id="cancelEventBtn" class="btn-subtle">Cancel</button>
+          <button type="submit" id="saveEventBtn" class="btn-save-vault">Add Event</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 3: EDIT ROADMAP PHASE MODAL -->
+  <!-- ============================================== -->
+  <dialog id="editRoadmapModal" class="modal-backdrop">
+    <div class="modal-window">
+      <div class="modal-header-centered">
+        <h3 class="modal-title">Edit Roadmap Phase</h3>
+      </div>
+      <form id="editRoadmapForm" class="modal-form" onsubmit="return false;">
+        <div class="form-group">
+          <label class="form-label" for="ermTitle">Phase Title</label>
+          <input id="ermTitle" type="text" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ermSubtitle">Subtitle</label>
+          <input id="ermSubtitle" type="text" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ermStatus">Status</label>
+          <select id="ermStatus" class="form-input">
+            <option value="in-progress">In Progress</option>
+            <option value="up-next">Up Next</option>
+            <option value="live">Live</option>
+            <option value="backlog">Planned</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ermDescription">Description</label>
+          <textarea id="ermDescription" class="form-textarea" style="min-height:70px;"></textarea>
+        </div>
+        <div class="form-row-2" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="ermFocus">Focus</label>
+            <input id="ermFocus" type="text" class="form-input" placeholder="e.g. Daily calm systems" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ermOutcome">Outcome</label>
+            <input id="ermOutcome" type="text" class="form-input" placeholder="e.g. More space, less noise" />
+          </div>
+        </div>
+        <div class="form-submit-row dual-btns" style="margin-top: 10px;">
+          <button type="button" id="deleteRoadmapPhaseBtn" class="btn-subtle" style="color:#f87171; border-color:#3f1919;">Delete Phase</button>
+          <button type="button" id="cancelEditRoadmapBtn" class="btn-subtle">Cancel</button>
+          <button type="submit" id="saveEditRoadmapBtn" class="btn-save-vault">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 4: ADD ROADMAP PHASE MODAL -->
+  <!-- ============================================== -->
+  <dialog id="addRoadmapModal" class="modal-backdrop">
+    <div class="modal-window">
+      <div class="modal-header-centered">
+        <h3 class="modal-title">+ New Roadmap Phase</h3>
+      </div>
+      <form id="addRoadmapForm" class="modal-form" onsubmit="return false;">
+        <div class="form-group">
+          <label class="form-label" for="armTitle">Phase Title</label>
+          <input id="armTitle" type="text" class="form-input" placeholder="e.g. Sovereign Creator Funnel" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="armSubtitle">Subtitle</label>
+          <input id="armSubtitle" type="text" class="form-input" placeholder="e.g. Self-contained value delivery system" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="armStatus">Status</label>
+          <select id="armStatus" class="form-input">
+            <option value="up-next" selected>Up Next</option>
+            <option value="in-progress">In Progress</option>
+            <option value="live">Live</option>
+            <option value="backlog">Planned</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="armDescription">Description</label>
+          <textarea id="armDescription" class="form-textarea" placeholder="Core intent and philosophy behind this milestone..." style="min-height:70px;"></textarea>
+        </div>
+        <div class="form-row-2" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="armFocus">Focus</label>
+            <input id="armFocus" type="text" class="form-input" placeholder="e.g. High focus flow" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="armOutcome">Outcome</label>
+            <input id="armOutcome" type="text" class="form-input" placeholder="e.g. High-margin leverage" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="armPractices">Initial Practices (one per line)</label>
+          <textarea id="armPractices" class="form-textarea" placeholder="Daily alignment ritual&#10;Zero telemetry enforcement" style="min-height:60px;"></textarea>
+        </div>
+        <div class="form-submit-row dual-btns" style="margin-top: 10px;">
+          <button type="button" id="cancelAddRoadmapBtn" class="btn-subtle">Cancel</button>
+          <button type="submit" id="saveAddRoadmapBtn" class="btn-save-vault">Create Phase</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 5: ADD KEY PRACTICE MODAL -->
+  <!-- ============================================== -->
+  <dialog id="addPracticeModal" class="modal-backdrop">
+    <div class="modal-window small-modal">
+      <div class="modal-header-centered">
+        <h3 class="modal-title">+ Add Key Practice</h3>
+      </div>
+      <form id="addPracticeForm" class="modal-form" onsubmit="return false;">
+        <div class="form-group">
+          <label class="form-label" for="newPracticeInput">Practice Checklist Item</label>
+          <input id="newPracticeInput" type="text" class="form-input" placeholder="e.g. Evening reflection & reset" required />
+        </div>
+        <div class="form-submit-row dual-btns">
+          <button type="button" id="cancelPracticeBtn" class="btn-subtle">Cancel</button>
+          <button type="submit" id="savePracticeBtn" class="btn-save-vault">Add Practice</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 6: LOG AI EXPLORATION / DECISION MODAL -->
+  <!-- ============================================== -->
+  <dialog id="addAiExplorationModal" class="modal-backdrop">
+    <div class="modal-window" style="width: 580px;">
+      <div class="modal-header-centered">
+        <div class="modal-brand">
+          <span style="color:var(--emerald-bright); font-size:16px;">✦</span>
+          <span class="modal-brand-text">AI EXPLORATION &amp; DECISION VAULT</span>
+        </div>
+        <h3 class="modal-title" style="font-size:22px;">Log AI Conversation</h3>
+      </div>
+      <form id="addAiExplorationForm" class="modal-form" onsubmit="return false;">
+        <div class="form-group">
+          <label class="form-label" for="aiExpTitle">Topic / Decision Question</label>
+          <input id="aiExpTitle" type="text" class="form-input" placeholder="e.g. Why we chose SQLite over DuckDB for local storage" required />
+        </div>
+        <div class="form-row-2" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="aiExpModel">AI Model / Source</label>
+            <input id="aiExpModel" type="text" class="form-input" placeholder="e.g. Gemini 2.5 / Claude 3.7" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="aiExpUrl">Reference Link / Chat URL</label>
+            <input id="aiExpUrl" type="text" class="form-input" placeholder="e.g. https://chatgpt.com/share/..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="aiExpRationale">Key Decision &amp; Rationale</label>
+          <textarea id="aiExpRationale" class="form-textarea" placeholder="Why did we make this decision? What trade-offs were accepted?" style="min-height:70px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="aiExpTranscript">Full Conversation / Reasoning Log</label>
+          <textarea id="aiExpTranscript" class="form-textarea" placeholder="Paste the prompt, response, or synthesis transcript here..." style="min-height:120px; font-family:var(--font-mono); font-size:12px;"></textarea>
+        </div>
+        <div class="form-submit-row dual-btns">
+          <button type="button" id="cancelAiExpBtn" class="btn-subtle">Cancel</button>
+          <button type="submit" id="saveAiExpBtn" class="btn-save-vault">Commit Exploration</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 7: VIEW AI EXPLORATION READER MODAL -->
+  <!-- ============================================== -->
+  <dialog id="viewAiExplorationModal" class="modal-backdrop">
+    <div class="modal-window" style="width: 650px; max-height: 85vh; display:flex; flex-direction:column;">
+      <div class="modal-header-centered" style="margin-bottom:14px;">
+        <span id="viewAiModelBadge" class="tag-badge" style="color:var(--emerald-bright); margin-bottom:4px;">Gemini 2.5</span>
+        <h3 id="viewAiTitle" class="modal-title" style="font-size:20px; text-align:center;">Decision Title</h3>
+        <span id="viewAiDate" style="font-size:11px; color:var(--text-dim);">Logged 10m ago</span>
+      </div>
+      <div id="viewAiUrlContainer" style="margin-bottom:12px; text-align:center;">
+        <a id="viewAiUrlLink" href="#" target="_blank" class="link-btn" style="display:inline-flex; align-items:center; gap:5px;">
+          <span>🔗 Open Reference Conversation</span>
+        </a>
+      </div>
+      <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:14px; padding-right:6px;">
+        <div class="notes-block" style="background:#060d09; border:1px solid #14271f; border-radius:8px; padding:12px 14px;">
+          <h4 style="color:var(--emerald-bright); font-size:12px; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Decision &amp; Rationale</h4>
+          <p id="viewAiRationale" style="font-size:13px; color:var(--text-gray); line-height:1.5;"></p>
+        </div>
+        <div class="notes-block" style="background:#050907; border:1px solid #102018; border-radius:8px; padding:12px 14px;">
+          <h4 style="color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Full Conversation / Transcript</h4>
+          <pre id="viewAiTranscript" style="font-family:var(--font-mono); font-size:11.5px; color:#c7d2ce; white-space:pre-wrap; line-height:1.5;"></pre>
+        </div>
+      </div>
+      <div class="form-submit-row dual-btns" style="margin-top:16px;">
+        <button type="button" id="deleteAiExpBtn" class="btn-subtle" style="color:#f87171; border-color:#3f1919;">Delete</button>
+        <button type="button" id="closeViewAiBtn" class="btn-save-vault">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 8: DISTRACTION-FREE FULLSCREEN FOCUS EDITOR -->
+  <!-- ============================================== -->
+  <dialog id="focusEditorModal" class="focus-editor-backdrop">
+    <div class="focus-editor-window">
+      <!-- Top Focus Navigation -->
+      <header class="focus-topbar">
+        <div class="focus-topbar-left">
+          <button id="closeFocusEditorCross" class="focus-close-btn" title="Save & Exit Focus Mode (Esc)">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          <div class="focus-meta">
+            <span class="focus-badge">DEEP FOCUS MODE</span>
+            <h2 id="focusEditorTitle" class="focus-title">Project Title</h2>
+          </div>
+        </div>
+
+        <div class="focus-topbar-center">
+          <div class="focus-tab-group">
+            <button id="focusTabEdit" class="focus-tab active">✏️ Markdown Editor</button>
+            <button id="focusTabPreview" class="focus-tab">👁️ Live Preview</button>
+          </div>
+        </div>
+
+        <div class="focus-topbar-right">
+          <span id="focusWordCount" class="focus-stats">0 words</span>
+          <button id="saveFocusEditorBtn" class="btn-save-vault" style="width: auto; padding: 8px 20px;">
+            <span>Save &amp; Return</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Focus Editor Body -->
+      <div class="focus-editor-body">
+        <textarea id="focusTextarea" class="focus-textarea" placeholder="Pour your thoughts, goals, architectural context, and open questions without distraction..." autofocus></textarea>
+        <div id="focusPreviewContainer" class="focus-preview hidden"></div>
+      </div>
+
+      <!-- Focus Footer -->
+      <footer class="focus-footer">
+        <div class="focus-shortcuts">
+          <span><kbd>Esc</kbd> Save &amp; Exit</span>
+          <span><kbd>⌘/Ctrl + S</kbd> Quick Save</span>
+          <span><kbd>Markdown</kbd> Supported</span>
+        </div>
+        <span class="focus-encrypted-badge">🔒 Local-First AES-256 Encrypted</span>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 9: IMAGE LIGHTBOX MODAL (Full Resolution Artwork & References) -->
+  <!-- ============================================== -->
+  <dialog id="imageLightboxModal" class="modal-backdrop">
+    <div class="modal-window lightbox-window">
+      <div class="lightbox-header">
+        <div class="lightbox-title-wrap">
+          <span class="lightbox-icon">🖼️</span>
+          <span id="lightboxCaption" class="lightbox-caption">Artwork / Moodboard Preview</span>
+        </div>
+        <button type="button" id="closeLightboxBtn" class="lightbox-close-btn" title="Close Lightbox (Esc)">✕</button>
+      </div>
+      <div class="lightbox-body">
+        <img id="lightboxImg" src="" alt="Full Resolution Visual" class="lightbox-img" />
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 10: COMMAND PALETTE & FUZZY SEARCH (⌘K) -->
+  <!-- ============================================== -->
+  <dialog id="commandPaletteModal" class="modal-backdrop command-palette-backdrop">
+    <div class="modal-window command-palette-window">
+      <div class="palette-input-wrap">
+        <svg class="palette-search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input id="paletteInput" type="text" class="palette-input" placeholder="Type to search projects, roadmaps, links, AI decisions, or execute command..." autocomplete="off" spellcheck="false" />
+        <kbd class="palette-kbd">Esc</kbd>
+      </div>
+
+      <div class="palette-results-container" id="paletteResults">
+        <!-- Results rendered dynamically: Projects, Roadmap, Web Links, AI Decisions, Actions -->
+      </div>
+
+      <footer class="palette-footer">
+        <div class="palette-shortcuts">
+          <span><kbd>↑</kbd> <kbd>↓</kbd> Navigate</span>
+          <span><kbd>↵</kbd> Select</span>
+          <span><kbd>Esc</kbd> Close</span>
+        </div>
+        <span class="palette-hint">Instant Local-First Fuzzy Search</span>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 11: SECRET SCANNER & .TXT INGESTION -->
+  <!-- ============================================== -->
+  <dialog id="secretScannerModal" class="modal-backdrop">
+    <div class="modal-window scanner-modal-window">
+      <div class="modal-header-centered">
+        <div class="modal-brand">
+          <img src="assets/wolf-logo.png" alt="Wolf Logo" class="modal-wolf-logo" />
+          <span class="modal-brand-text">WOLF TIMELINE</span>
+        </div>
+        <h2 class="modal-title">⚡ Smart Secret &amp; Credential Scanner</h2>
+        <p class="modal-subtitle">Drop a <code>.txt</code> or <code>.env</code> file or paste messy text. Original files remain 100% untouched.</p>
+      </div>
+
+      <div class="scanner-modal-body">
+        <!-- Dropzone & Paste Tabs -->
+        <div class="scanner-input-container">
+          <div class="scanner-dropzone" id="secretScannerDropzone">
+            <div class="scanner-drop-icon">📂</div>
+            <div class="scanner-drop-text">
+              <strong>Drag &amp; drop your .txt or .env file here</strong>, or <span class="browse-link" id="triggerBrowseFileLink">browse file</span>
+            </div>
+            <span class="scanner-drop-sub">OpenAI, Stripe, Google, GitHub, AWS, DB strings, user:pass formats</span>
+            <input type="file" id="secretScannerFileInput" accept=".txt,.env,.json,.csv,.md,.conf,.cfg,.ini" style="display:none;" />
+          </div>
+
+          <div class="scanner-paste-section">
+            <label class="scanner-label" for="secretScannerPasteArea">Or Paste Raw Content Directly:</label>
+            <textarea id="secretScannerPasteArea" class="scanner-textarea" rows="4" placeholder="Paste .env, notes, or credentials text here...&#10;e.g. OPENAI_API_KEY=sk-proj-...&#10;github: ghp_...&#10;postgres://admin:secret@db.host.com:5432/main"></textarea>
+          </div>
+
+          <button type="button" id="runSecretScannerBtn" class="btn-scanner-detect">
+            ⚡ Detect &amp; Extract Credentials
+          </button>
+        </div>
+
+        <!-- Extraction Results View -->
+        <div id="secretScannerResultsWrap" class="scanner-results-wrap hidden">
+          <div class="scanner-results-header">
+            <div class="scanner-results-title">
+              <span>Detected Credentials (<span id="scannedCountBadge">0</span>)</span>
+            </div>
+            <div class="scanner-results-actions-top">
+              <button type="button" id="toggleSelectAllScannedBtn" class="btn-compact-text">Select All</button>
+            </div>
+          </div>
+
+          <div class="scanner-results-list" id="secretScannerResultsList">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <div class="scanner-results-footer">
+            <button type="button" id="saveScannedSecretsBtn" class="btn-save-scanned">
+              🔒 Encrypt Selected to Secret Vault
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <button type="button" id="closeSecretScannerBtn" class="btn-modal-corner-close" title="Close">✕</button>
+    </div>
+  </dialog>
+
+  <!-- ============================================== -->
+  <!-- MODAL 12: MANUAL SECRET EDITOR (ADD / EDIT) -->
+  <!-- ============================================== -->
+  <dialog id="secretEditorModal" class="modal-backdrop">
+    <div class="modal-window editor-modal-window">
+      <div class="modal-header-centered">
+        <div class="modal-brand">
+          <img src="assets/wolf-logo.png" alt="Wolf Logo" class="modal-wolf-logo" />
+          <span class="modal-brand-text">WOLF TIMELINE</span>
+        </div>
+        <h2 class="modal-title" id="secretEditorModalTitle">Add New Secret</h2>
+      </div>
+
+      <form id="secretEditorForm" class="modal-form" onsubmit="return false;">
+        <input type="hidden" id="secretEditorIdInput" value="" />
+
+        <div class="form-row-split">
+          <div class="form-field">
+            <label class="form-label" for="secretServiceInput">Service / Name *</label>
+            <input type="text" id="secretServiceInput" class="form-input" placeholder="e.g. OpenAI Production, GitHub, Stripe Live" required />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="secretCategoryInput">Category *</label>
+            <select id="secretCategoryInput" class="form-select">
+              <option value="api">⚡ API Key / Token</option>
+              <option value="login">🔑 Login Credential (User/Pass)</option>
+              <option value="db">🗄️ Database Connection URI</option>
+              <option value="token">🔐 SSH / PGP / Secret Key</option>
+              <option value="other">📝 Secure Note / Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="secretUsernameInput">Username / Identifier / Key Name</label>
+          <input type="text" id="secretUsernameInput" class="form-input" placeholder="e.g. admin@wolfitway.com, sk-proj-primary, root" />
+        </div>
+
+        <div class="form-field">
+          <div class="form-label-row">
+            <label class="form-label" for="secretPasswordInput">Secret / Password Value *</label>
+            <button type="button" id="generateSecretRandomBtn" class="btn-form-action-sub">🎲 Generate Strong</button>
+          </div>
+          <div class="password-input-wrapper">
+            <input type="password" id="secretPasswordInput" class="form-input font-mono" placeholder="Enter secret or generated password..." required spellcheck="false" />
+            <button type="button" id="toggleSecretEditorPasswordEye" class="btn-input-eye" title="Reveal">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="secretHostInput">Host URL / Endpoint (Optional)</label>
+          <input type="text" id="secretHostInput" class="form-input font-mono" placeholder="e.g. https://api.openai.com/v1, postgresql://..." />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="secretNotesInput">Secure Notes (Optional)</label>
+          <textarea id="secretNotesInput" class="form-textarea" rows="2" placeholder="Private notes or usage instructions..."></textarea>
+        </div>
+
+        <div class="modal-actions-right">
+          <button type="button" id="cancelSecretEditorBtn" class="btn-modal-cancel">Cancel</button>
+          <button type="submit" id="saveSecretEditorBtn" class="btn-modal-primary">🔒 Encrypt &amp; Save</button>
+        </div>
+      </form>
+
+      <button type="button" id="closeSecretEditorBtn" class="btn-modal-corner-close" title="Close">✕</button>
+    </div>
+  </dialog>
+
+  <script src="main.js"></script>
+</body>
+</html>
