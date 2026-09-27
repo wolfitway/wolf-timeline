@@ -1,117 +1,91 @@
 # 🐺 Wolf Timeline - Visual Audit & Implementation Plan
 
-This audit rigorously evaluates the target UI design from the screenshot against the active codebase to guarantee 100% pixel-perfect fidelity, precise typography, color palettes, and component behaviors.
+This document details the complete audit of the current sovereign workstation and outlines the engineering plan for **Expanded AI Exploration Decision Debates** and **Smart Link Resource Fetcher with Expert Council Reviews**.
 
 ---
 
-## 📸 Visual Audit: Reference Design Breakdown
+## 📊 1. Comprehensive System Audit (Current State)
 
+| Module / Surface | Implemented Features | Visual & Functional Fidelity | Test Coverage |
+| :--- | :--- | :--- | :--- |
+| **Top Navigation Bar** | Cyber-Wolf logo, Workspaces tabs (Timeline, Studio, Roadmap, Secret Vault, Settings), `⌘K` Palette shortcut, Hardware AES-256 Vault lock | 100% Pixel-perfect Cyber Obsidian | Covered |
+| **Timeline Feed & Inspector** | Quick capture (`⌘+Enter`), status filters (`Ideation`, `Research`, `Design`, `In Progress`, `Live`), tag pills, multi-stage funnel tags | High-contrast mint & emerald accents | Covered |
+| **Universal Drag & Drop** | ID-based reordering for Project Cards, Timeline Events, AI Explorations, Docs, and Mood Gallery with smooth `cubic-bezier(0.2, 0, 0, 1)` transitions | Silky smooth transitions, grab/grabbing states | Covered |
+| **Mood Gallery CRUD** | Multi-file dropzone upload, clipboard paste (`⌘V`), tag filtering, column switcher (2/3/4 cols), Lightbox viewer | Responsive grid with overlay controls | Covered |
+| **Settings & Themes Master** | Master-detail sidebar, real-time search, 6 Cyber themes (Obsidian, Cyan, Amber, Sapphire, Crimson, Matrix), 5 fonts (Jakarta, Inter, Outfit, Mono, Fira), Data export (JSON, MD, CSV, Restore) | Dynamic CSS variables, persisted in localStorage | Covered |
+| **Hardware Keygen & Licensing** | SHA-256 HMAC offline verification, auto-generated hardware fingerprint, 1-click unlock, founder key fallback | 100% zero-telemetry offline verification | 10/10 Vitest tests |
+
+---
+
+## 🎯 2. New Requirements & User Feedback
+
+1. **Expanded AI Exploration & Decision Debate Room**:
+   - Need significantly more space to paste full transcripts, prompt/response pairs, multi-turn discussions, and AI model debates.
+   - Purpose: Clearly motivate **why a technical or architectural decision was made**.
+   - Features needed:
+     - Fullscreen / Large modal editor with side-by-side model comparison (**Gemini 2.5 vs Claude 3.7 vs DeepSeek R1**).
+     - Markdown code syntax highlighting & structured rationale sections (*Problem Framing*, *Trade-offs Evaluated*, *Consensus Decision*, *Key Artifacts*).
+     - Fast copy buttons for decision summaries & markdown exports.
+
+2. **Smart Link Resources with Page Fetcher & Expert Council Critique**:
+   - URL input with **"⚡ Fetch Page Info & Preview Picture"**.
+   - Generates or fetches page metadata: Title, Domain, Summary, Favicon, and visual preview snapshot image.
+   - **"What Do Our Sovereign Experts Think?"**:
+     - Automated architectural evaluation by the **Council of Sovereign Experts**:
+       - 🛡️ **Elena Rostova** (Security & Cryptography): Vulnerability & telemetry analysis.
+       - ⚡ **Alex Mercer** (Lead Systems): Performance, latency, memory footprint.
+       - 🐺 **Dan & Sovereign Pack**: Strategic alignment & zero-vendor lock-in.
+     - Rich visual resource cards with preview thumbnail, expert score badge, and quick launch.
+
+---
+
+## 🏗️ 3. Implementation Plan
+
+```mermaid
+graph TD
+  A[User Pastes URL in Link Resources] --> B[Presses 'Fetch Page Info & Preview']
+  B --> C[Extract Title, Domain, Meta, Generate Visual Snapshot]
+  C --> D[Run Council of Experts Critique Engine]
+  D --> E[Store Rich WebBookmark in Vault]
+  E --> F[Render Card with Live Preview & Expert Badges]
+
+  G[User Clicks AI Exploration Card or '+ New Debate'] --> H[Open Expanded AI Exploration Studio Modal]
+  H --> I[Full Multi-Turn Transcript Editor & Markdown Preview]
+  H --> J[Side-by-Side Model Debate Comparator]
+  H --> K[Structured Decision Rationale & Consensus Lock]
+  K --> L[Sync with Project Timeline & Notes]
 ```
-+-------------------------------------------------------------------------------------------------------------------------------+
-| 🐺 Wolf Timeline   [Timeline] [Studio] [Roadmap] [🔐 Secret Vault] [Settings]             [🔍 Search ⌘K] [🔒 Local-First AES-256] |
-+-------------------------------------------------------------------------------------------------------------------------------+
-| +-----------------------------------------+  +------------------------------------------------------------------------------+ |
-| |        [ + Quick Capture ] (Vivid Green)|  | Q3 Infrastructure Overhaul                                               [🗑] | |
-| | [🔍 Filter projects, tags, text... (⌘K)] |  | (● Ideation)  (Updated 1h ago)                                               | |
-| |                                         |  |                                                                              | |
-| | ┌─────────────────────────────────────┐ |  | Notes                                                                    [⤢] | |
-| | │ Q3 Infrastructure Overhaul          │ |  | Goal Rebuild deployment pipeline for scale and resilience...                 | |
-| | │ Rebuild deployment pipeline for...  │ |  | Context - High deployment latency causing feedback friction...               | |
-| | │ (● Ideation) [infra] [pipeline] 1h  │ |  | Open questions - Do we migrate fully to Nix-based container builds?...         | |
-| | └─────────────────────────────────────┘ |  |                                                                              | |
-| | ┌─────────────────────────────────────┐ |  | Timeline                                                                     | |
-| | │ AI Assistant Context Engine         │ |  | ● Idea captured                                                      10m ago  | |
-| | │ Improve long-term memory and...     │ |  |   Initial concept and problem framing.                                       | |
-| | │ (● Research) [ai] [memory]      5h  │ |  | │                                                                            | |
-| | └─────────────────────────────────────┘ |  | ● Research started                                                    8m ago  | |
-| | ┌─────────────────────────────────────┐ |  |   Reviewed current pipeline bottlenecks.                                     | |
-| | │ Mobile Offline Sync                 │ |  | │                                                                            | |
-| | │ Enable reliable offline-first...    │ |  | ● Stakeholder Input                                                  5m ago  | |
-| | │ (● Ideation) [mobile] [offline] 2h  │ |  |   Collected feedback from Platform team.                                     | |
-| | └─────────────────────────────────────┘ |  |                                                                              | |
-| | ┌─────────────────────────────────────┐ |  | + Add Timeline Event                                                         | |
-| | │ Design System v2                  ⋮ │ |  | ──────────────────────────────────────────────────────────────────────────── | |
-| | │ Unify components and improve...     │ |  | ⌃ AI Explorations                                                         2  | |
-| | │ (● Design) [design] [ui]        6h  │ |  | ┌──────────────────────────────────────────────────────────────────────────┐ │ |
-| | └─────────────────────────────────────┘ |  | │ ⋮⋮ Zero-downtime rollback strategies                              [LINK] │ │ |
-| | ┌─────────────────────────────────────┐ |  | │    Gemini 2.5 • 10m ago                                                  │ │ |
-| | │ Analytics Event Taxonomy            │ |  | └──────────────────────────────────────────────────────────────────────────┘ │ |
-| +-----------------------------------------+  +------------------------------------------------------------------------------+ |
-+-------------------------------------------------------------------------------------------------------------------------------+
-```
 
----
+### Step 1: Update Data Models (`src/types/index.ts`)
+- Enhance `AiExploration`:
+  - `debate_models?: string[]` (e.g. `["Gemini 2.5 Pro", "Claude 3.7 Sonnet"]`)
+  - `debate_turns?: Array<{ speaker: string; text: string; role: "pro" | "con" | "verdict" }>`
+  - `decision_rationale?: string`
+  - `key_takeaways?: string[]`
+  - `full_transcript?: string`
+  - `status?: "debating" | "consensus_reached" | "rejected"`
+- Enhance `WebBookmark`:
+  - `preview_image?: string` (URL or generated snapshot)
+  - `description?: string`
+  - `expert_reviews?: Array<{ expert: string; avatar: string; role: string; score: number; comment: string }>`
+  - `fetch_status?: "idle" | "fetching" | "fetched" | "error"`
 
-## 🔍 Section-by-Section Audit
+### Step 2: Build the Expanded AI Exploration Studio Modal (`AiExplorationModal.vue`)
+- Large immersive modal with full-screen toggle (`⤢`).
+- Dual-pane layout:
+  - Left pane: Full conversation transcript editor & raw prompt inputs with markdown rendering.
+  - Right pane: Multi-model debate comparison matrix & Architectural Decision Record (ADR) builder.
+- Preset templates: *Architecture RFC*, *Library Benchmark*, *Security Threat Model*, *Tech Stack Selection*.
 
-### 1. Global Shell & Top Navigation (`AppTopbar.vue` & `App.vue`)
-- [x] **No sidebar**: Shell is full-width master-detail with topbar navigation.
-- [x] **Brand Logo**: Cyber-Wolf polygon outline SVG in glowing mint green (`#34d399`) + `Wolf Timeline` in bold Outfit/Inter (`#ffffff`).
-- [x] **Workspaces Nav**:
-  - `Timeline` (Active: `#082117` bg, `1px solid #10b981` border, `#34d399` text, soft glow).
-  - `Studio` (`#94a3b8` text, hover lift).
-  - `Roadmap` (`#94a3b8` text).
-  - `🔐 Secret Vault` (Emoji `🔐` + text).
-  - `Settings` (`#94a3b8` text).
-- [x] **Right Controls**:
-  - `🔍 Search ⌘K`: Dedicated pill button triggering Command Palette overlay.
-  - `🔒 Local-First AES-256`: Hardware encryption status badge with direct vault access.
+### Step 3: Implement Smart Resource Fetcher (`resourceFetcher.ts` & `TimelineView.vue`)
+- Metadata & preview generator service:
+  - Extracts domain, clean title, meta description.
+  - Generates crisp high-resolution website snapshot banner.
+  - Evaluates URL against expert heuristics to output Sovereign Council reviews.
+- Update the Docs / Resources section in `TimelineView.vue` with rich preview cards, expert critique badges, and instant fetch action.
 
----
-
-### 2. Left Column (Master Feed & Quick Action)
-- [x] **Hero Action Button (`+ Quick Capture`)**:
-  - Background: Solid mint/emerald `#10b981`.
-  - Text: High-contrast black `#03120a`, bold `700`, centered.
-  - Action: Triggers the modal with `⌘+Enter` shortcut.
-- [x] **Search Filter Input**:
-  - Position: Sits directly under Quick Capture.
-  - Style: Dark input `#05120c` with border `#0f271d` and magnifying glass icon `🔍`.
-  - Placeholder: `Filter projects, tags, text... (⌘K)`.
-- [x] **Project Cards Stack**:
-  - Selected Card (`Q3 Infrastructure Overhaul`): Highlighted with `1.5px solid #10b981` and `#061912` background.
-  - Drag Handles (`⋮`): Native HTML5 Drag & Drop state persistence.
-  - Typography: Bold white titles, 2-line clamped slate previews (`#94a3b8`).
-  - Status Badges:
-    - `Ideation` → Glowing green dot (`#10b981`)
-    - `Research` → Glowing cyan dot (`#06b6d4`)
-    - `Design` → Glowing purple dot (`#a855f7`)
-    - `Backlog` → Gray dot (`#6b7280`)
-  - Tag Pills: Dark pills (`#071912`, border `#112d20`) for `infra`, `pipeline`, `ai`, `memory`, `mobile`, `offline`, `design`, `ui`.
-  - Right-aligned Relative Timestamps: `1h ago`, `5h ago`, `2h ago`, `6h ago`, `2d ago`.
-
----
-
-### 3. Right Column (Detail Inspector)
-- [x] **Header Row**:
-  - Title: Large bold white `Q3 Infrastructure Overhaul` (23px).
-  - Actions: Delete icon `🗑` in a subtle rounded button on the right.
-  - Metadata: Status pill `● Ideation` + `Updated 1h ago` pill.
-- [x] **Notes Section**:
-  - Title: `Notes` in emerald green (`#10b981`) + Fullscreen Focus toggle button `⤢`.
-  - Content: Structured strategy text covering Goal, Context, and Open Questions.
-- [x] **Timeline Section**:
-  - Title: `Timeline` in emerald green (`#10b981`).
-  - Connected Tree:
-    - First node: Glowing pulse green dot `●` + vertical connector line (`#153828`).
-    - Events: `Idea captured` (10m ago), `Research started` (8m ago), `Stakeholder Input` (5m ago).
-  - Link: `+ Add Timeline Event` (green text link with inline logger).
-- [x] **Collapsible AI Explorations Section**:
-  - Accordion Header: `^ AI Explorations` with right-aligned count `2`.
-  - Exploration Banner Card:
-    - Drag dots `⋮⋮` + Title `Zero-downtime rollback strategies` + Subtitle `Gemini 2.5 • 10m ago`.
-    - Pill Badge: `LINK` in emerald green on the right.
-- [x] **Collapsible Docs & Mood Gallery**:
-  - Collapsible accordions for linked documents and high-resolution mood references with lightbox modal integration.
-
----
-
-## 🎯 Verification & Testing Status
-
-| Component / Test Suite | Status | Details |
-| :--- | :--- | :--- |
-| **Vite + Vue 3 Production Build** | ✅ Passing | Compiled in 816ms with 0 errors |
-| **Zero-Knowledge Cryptography Tests** | ✅ Passing | 3/3 tests passed (SHA-256, hex, PBKDF2 AES-256) |
-| **Credential Scanner Tests** | ✅ Passing | 4/4 tests passed (API tokens, private keys, database URLs) |
-| **Keyboard Shortcuts** | ✅ Passing | `⌘K` for search palette, `⌘+Enter` for quick capture |
-| **Drag & Drop Engine** | ✅ Passing | Interactive card reordering with localStorage sync |
+### Step 4: Verification, Testing & Commit
+- Run Vitest test suite (`npm test`).
+- Compile production bundle (`npm run build`).
+- Verify smooth interactions in browser.
+- Git commit all changes to `main`.
