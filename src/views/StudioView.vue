@@ -1163,12 +1163,12 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 .template-menu-popup {
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
-  width: 290px;
+  left: 0;
+  width: 305px;
   background: #07120d;
   border: 1px solid var(--emerald-main, #10b981);
   border-radius: 8px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.95), 0 0 20px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.95), 0 0 22px rgba(16, 185, 129, 0.3);
   z-index: 9999;
   padding: 8px 0;
 }
