@@ -22,96 +22,212 @@ const activeMoodTag = ref<string | null>(null);
 // Layout & Grid options for Mood Gallery
 const moodGridCols = ref<number>(3); // 2, 3, or 4
 
-// Drag & Drop tracking
-const draggedNoteIndex = ref<number | null>(null);
-const draggedEventIndex = ref<number | null>(null);
-const draggedAiIndex = ref<number | null>(null);
-const draggedDocIndex = ref<number | null>(null);
-const draggedMoodIndex = ref<number | null>(null);
+// Mood file upload dropzone state
+const isGalleryDraggingFiles = ref(false);
+const moodFileInput = ref<HTMLInputElement | null>(null);
 
-/* --- Note Cards Drag & Drop --- */
-function onNoteDragStart(index: number) {
-  draggedNoteIndex.value = index;
+/* =========================================================================
+   UNIVERSAL DRAG & DROP ENGINE (ID-BASED WITH VISUAL FEEDBACK)
+   ========================================================================= */
+
+// 1. Note Cards
+const draggedNoteId = ref<number | null>(null);
+const dragOverNoteId = ref<number | null>(null);
+
+function onNoteDragStart(e: DragEvent, id: number) {
+  draggedNoteId.value = id;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(id));
+  }
 }
-function onNoteDragOver(e: DragEvent) {
+function onNoteDragOver(e: DragEvent, id: number) {
   e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+  dragOverNoteId.value = id;
 }
-function onNoteDrop(targetIndex: number) {
-  if (draggedNoteIndex.value === null || draggedNoteIndex.value === targetIndex) return;
+function onNoteDragLeave(id: number) {
+  if (dragOverNoteId.value === id) dragOverNoteId.value = null;
+}
+function onNoteDrop(e: DragEvent, targetId: number) {
+  e.preventDefault();
+  dragOverNoteId.value = null;
+  if (draggedNoteId.value === null || draggedNoteId.value === targetId) return;
+
   const list = [...notesStore.notes];
-  const [removed] = list.splice(draggedNoteIndex.value, 1);
-  list.splice(targetIndex, 0, removed);
+  const fromIdx = list.findIndex((n) => n.id === draggedNoteId.value);
+  const toIdx = list.findIndex((n) => n.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  const [removed] = list.splice(fromIdx, 1);
+  list.splice(toIdx, 0, removed);
   notesStore.reorderNotes(list);
-  draggedNoteIndex.value = null;
+  draggedNoteId.value = null;
   uiStore.showToast("Project cards reordered ✓");
 }
+function onNoteDragEnd() {
+  draggedNoteId.value = null;
+  dragOverNoteId.value = null;
+}
 
-/* --- Timeline Events Drag & Drop --- */
-function onEventDragStart(index: number) {
-  draggedEventIndex.value = index;
+// 2. Timeline Events
+const draggedEventId = ref<string | null>(null);
+const dragOverEventId = ref<string | null>(null);
+
+function onEventDragStart(e: DragEvent, id: string) {
+  draggedEventId.value = id;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+  }
 }
-function onEventDragOver(e: DragEvent) {
+function onEventDragOver(e: DragEvent, id: string) {
   e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+  dragOverEventId.value = id;
 }
-function onEventDrop(targetIndex: number) {
-  if (draggedEventIndex.value === null || !notesStore.selectedNote?.events) return;
+function onEventDragLeave(id: string) {
+  if (dragOverEventId.value === id) dragOverEventId.value = null;
+}
+function onEventDrop(e: DragEvent, targetId: string) {
+  e.preventDefault();
+  dragOverEventId.value = null;
+  if (!draggedEventId.value || draggedEventId.value === targetId || !notesStore.selectedNote?.events) return;
+
   const list = [...notesStore.selectedNote.events];
-  const [removed] = list.splice(draggedEventIndex.value, 1);
-  list.splice(targetIndex, 0, removed);
+  const fromIdx = list.findIndex((ev) => ev.id === draggedEventId.value);
+  const toIdx = list.findIndex((ev) => ev.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  const [removed] = list.splice(fromIdx, 1);
+  list.splice(toIdx, 0, removed);
   notesStore.reorderTimelineEvents(notesStore.selectedNote.id, list);
-  draggedEventIndex.value = null;
+  draggedEventId.value = null;
   uiStore.showToast("Timeline events reordered ✓");
 }
+function onEventDragEnd() {
+  draggedEventId.value = null;
+  dragOverEventId.value = null;
+}
 
-/* --- AI Explorations Drag & Drop --- */
-function onAiDragStart(index: number) {
-  draggedAiIndex.value = index;
+// 3. AI Explorations
+const draggedAiId = ref<string | null>(null);
+const dragOverAiId = ref<string | null>(null);
+
+function onAiDragStart(e: DragEvent, id: string) {
+  draggedAiId.value = id;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+  }
 }
-function onAiDragOver(e: DragEvent) {
+function onAiDragOver(e: DragEvent, id: string) {
   e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+  dragOverAiId.value = id;
 }
-function onAiDrop(targetIndex: number) {
-  if (draggedAiIndex.value === null || !notesStore.selectedNote?.ai_explorations) return;
+function onAiDragLeave(id: string) {
+  if (dragOverAiId.value === id) dragOverAiId.value = null;
+}
+function onAiDrop(e: DragEvent, targetId: string) {
+  e.preventDefault();
+  dragOverAiId.value = null;
+  if (!draggedAiId.value || draggedAiId.value === targetId || !notesStore.selectedNote?.ai_explorations) return;
+
   const list = [...notesStore.selectedNote.ai_explorations];
-  const [removed] = list.splice(draggedAiIndex.value, 1);
-  list.splice(targetIndex, 0, removed);
+  const fromIdx = list.findIndex((ai) => ai.id === draggedAiId.value);
+  const toIdx = list.findIndex((ai) => ai.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  const [removed] = list.splice(fromIdx, 1);
+  list.splice(toIdx, 0, removed);
   notesStore.reorderAiExplorations(notesStore.selectedNote.id, list);
-  draggedAiIndex.value = null;
+  draggedAiId.value = null;
   uiStore.showToast("AI explorations reordered ✓");
 }
+function onAiDragEnd() {
+  draggedAiId.value = null;
+  dragOverAiId.value = null;
+}
 
-/* --- Bookmarks / Docs Drag & Drop --- */
-function onDocDragStart(index: number) {
-  draggedDocIndex.value = index;
+// 4. Docs & Bookmarks
+const draggedDocId = ref<string | null>(null);
+const dragOverDocId = ref<string | null>(null);
+
+function onDocDragStart(e: DragEvent, id: string) {
+  draggedDocId.value = id;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+  }
 }
-function onDocDragOver(e: DragEvent) {
+function onDocDragOver(e: DragEvent, id: string) {
   e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+  dragOverDocId.value = id;
 }
-function onDocDrop(targetIndex: number) {
-  if (draggedDocIndex.value === null || !notesStore.selectedNote?.bookmarks) return;
+function onDocDragLeave(id: string) {
+  if (dragOverDocId.value === id) dragOverDocId.value = null;
+}
+function onDocDrop(e: DragEvent, targetId: string) {
+  e.preventDefault();
+  dragOverDocId.value = null;
+  if (!draggedDocId.value || draggedDocId.value === targetId || !notesStore.selectedNote?.bookmarks) return;
+
   const list = [...notesStore.selectedNote.bookmarks];
-  const [removed] = list.splice(draggedDocIndex.value, 1);
-  list.splice(targetIndex, 0, removed);
+  const fromIdx = list.findIndex((b) => b.id === draggedDocId.value);
+  const toIdx = list.findIndex((b) => b.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  const [removed] = list.splice(fromIdx, 1);
+  list.splice(toIdx, 0, removed);
   notesStore.reorderBookmarks(notesStore.selectedNote.id, list);
-  draggedDocIndex.value = null;
-  uiStore.showToast("Docs & bookmarks reordered ✓");
+  draggedDocId.value = null;
+  uiStore.showToast("Docs reordered ✓");
+}
+function onDocDragEnd() {
+  draggedDocId.value = null;
+  dragOverDocId.value = null;
 }
 
-/* --- Mood Gallery Drag & Drop --- */
-function onMoodDragStart(index: number) {
-  draggedMoodIndex.value = index;
+// 5. Mood Gallery Cards
+const draggedMoodId = ref<string | null>(null);
+const dragOverMoodId = ref<string | null>(null);
+
+function onMoodCardDragStart(e: DragEvent, id: string) {
+  draggedMoodId.value = id;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+  }
 }
-function onMoodDragOver(e: DragEvent) {
+function onMoodCardDragOver(e: DragEvent, id: string) {
   e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+  dragOverMoodId.value = id;
 }
-function onMoodDrop(targetIndex: number) {
-  if (draggedMoodIndex.value === null || !notesStore.selectedNote?.mood_gallery) return;
+function onMoodCardDragLeave(id: string) {
+  if (dragOverMoodId.value === id) dragOverMoodId.value = null;
+}
+function onMoodCardDrop(e: DragEvent, targetId: string) {
+  e.preventDefault();
+  dragOverMoodId.value = null;
+  if (!draggedMoodId.value || draggedMoodId.value === targetId || !notesStore.selectedNote?.mood_gallery) return;
+
   const list = [...notesStore.selectedNote.mood_gallery];
-  const [removed] = list.splice(draggedMoodIndex.value, 1);
-  list.splice(targetIndex, 0, removed);
+  const fromIdx = list.findIndex((m) => m.id === draggedMoodId.value);
+  const toIdx = list.findIndex((m) => m.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  const [removed] = list.splice(fromIdx, 1);
+  list.splice(toIdx, 0, removed);
   notesStore.reorderMoodImages(notesStore.selectedNote.id, list);
-  draggedMoodIndex.value = null;
+  draggedMoodId.value = null;
   uiStore.showToast("Mood gallery images reordered ✓");
+}
+function onMoodCardDragEnd() {
+  draggedMoodId.value = null;
+  dragOverMoodId.value = null;
 }
 
 /* =========================================================================
@@ -360,58 +476,63 @@ function handleDeleteDoc(docId: string) {
 }
 
 /* =========================================================================
-   4. MOOD GALLERY CRUD & SMART UPLOAD/PASTE
+   4. MOOD GALLERY CRUD, INSTANT FILE UPLOAD & CLIPBOARD PASTE
    ========================================================================= */
 const showAddMood = ref(false);
 const newMoodUrl = ref("");
 const newMoodCaption = ref("");
 const newMoodTags = ref("");
-const moodFileInput = ref<HTMLInputElement | null>(null);
-const isDraggingOverDropzone = ref(false);
 
 const editingMoodId = ref<string | null>(null);
 const editMoodUrl = ref("");
 const editMoodCaption = ref("");
 const editMoodTags = ref("");
 
-function handleMoodFileUpload(e: Event) {
-  const target = e.target as HTMLInputElement;
-  const files = target.files;
-  if (!files || files.length === 0) return;
+/**
+ * Ingest image files instantly from file picker OR drag-drop.
+ */
+function ingestMoodFiles(files: FileList | File[]) {
+  if (!files || files.length === 0 || !notesStore.selectedNote) return;
+  const noteId = notesStore.selectedNote.id;
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
+  Array.from(files).forEach((file, index) => {
+    if (!file.type.startsWith("image/")) return;
     const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      const dataUri = uploadEvent.target?.result as string;
-      if (files.length === 1) {
-        newMoodUrl.value = dataUri;
-        if (!newMoodCaption.value) {
-          newMoodCaption.value = file.name.replace(/\.[^/.]+$/, "");
-        }
-      } else {
-        // Multi-file upload adds directly to store
-        if (notesStore.selectedNote) {
-          notesStore.addMoodImage(notesStore.selectedNote.id, {
-            id: `mood_${Date.now()}_${i}`,
-            url: dataUri,
-            caption: file.name.replace(/\.[^/.]+$/, ""),
-            tags: ["upload"],
-            created_at: new Date().toLocaleDateString(),
-          });
-        }
-      }
+    reader.onload = (e) => {
+      const dataUri = e.target?.result as string;
+      if (!dataUri) return;
+      const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+      const img: MoodImage = {
+        id: `mood_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${index}`,
+        url: dataUri,
+        caption: cleanName || "Visual Reference",
+        tags: ["upload", "asset"],
+        created_at: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      };
+      notesStore.addMoodImage(noteId, img);
+      uiStore.showToast(`Added "${cleanName}" to Mood Gallery ✓`);
     };
     reader.readAsDataURL(file);
-  }
+  });
+}
 
-  if (files.length > 1) {
-    uiStore.showToast(`${files.length} images added to Mood Gallery ✓`);
-    showAddMood.value = false;
+function onMoodFileInputChange(e: Event) {
+  const target = e.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    ingestMoodFiles(target.files);
+    target.value = ""; // reset for next upload
   }
 }
 
-function handleAddMood() {
+function onGalleryDropFiles(e: DragEvent) {
+  e.preventDefault();
+  isGalleryDraggingFiles.value = false;
+  if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+    ingestMoodFiles(e.dataTransfer.files);
+  }
+}
+
+function handleAddMoodManual() {
   if (!newMoodUrl.value.trim() || !notesStore.selectedNote) return;
   const tagList = newMoodTags.value
     .split(",")
@@ -422,8 +543,8 @@ function handleAddMood() {
     id: `mood_${Date.now()}`,
     url: newMoodUrl.value.trim(),
     caption: newMoodCaption.value.trim() || "Visual Reference",
-    tags: tagList,
-    created_at: new Date().toLocaleDateString(),
+    tags: tagList.length ? tagList : ["moodboard"],
+    created_at: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
   };
   notesStore.addMoodImage(notesStore.selectedNote.id, img);
   newMoodUrl.value = "";
@@ -480,22 +601,7 @@ function handleGlobalPaste(e: ClipboardEvent) {
     if (items[i].type.indexOf("image") !== -1) {
       const file = items[i].getAsFile();
       if (!file) continue;
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const dataUri = uploadEvent.target?.result as string;
-        if (notesStore.selectedNote) {
-          notesStore.addMoodImage(notesStore.selectedNote.id, {
-            id: `mood_${Date.now()}`,
-            url: dataUri,
-            caption: `Pasted Visual (${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })})`,
-            tags: ["clipboard", "moodboard"],
-            created_at: new Date().toLocaleDateString(),
-          });
-          uiStore.showToast("Pasted image added to Mood Gallery ✓");
-          showMoodGallery.value = true;
-        }
-      };
-      reader.readAsDataURL(file);
+      ingestMoodFiles([file]);
       break;
     }
   }
@@ -751,14 +857,20 @@ function toggleMoodTag(tag: string) {
       <!-- Cards Feed List -->
       <div class="cards-feed-list">
         <div
-          v-for="(note, index) in filteredNotesList"
+          v-for="note in filteredNotesList"
           :key="note.id"
           class="project-card"
-          :class="{ selected: notesStore.selectedNote?.id === note.id }"
+          :class="{
+            selected: notesStore.selectedNote?.id === note.id,
+            'is-dragging': draggedNoteId === note.id,
+            'drag-over-item': dragOverNoteId === note.id && draggedNoteId !== note.id
+          }"
           draggable="true"
-          @dragstart="onNoteDragStart(index)"
-          @dragover="onNoteDragOver"
-          @drop="onNoteDrop(index)"
+          @dragstart="onNoteDragStart($event, note.id)"
+          @dragover="onNoteDragOver($event, note.id)"
+          @dragleave="onNoteDragLeave(note.id)"
+          @drop="onNoteDrop($event, note.id)"
+          @dragend="onNoteDragEnd"
           @click="notesStore.selectedNoteId = note.id"
         >
           <div class="card-title-row">
@@ -908,33 +1020,33 @@ function toggleMoodTag(tag: string) {
         <div class="detail-section timeline-section">
           <div class="section-title-row">
             <h2 class="section-title">Timeline ({{ filteredEvents.length }})</h2>
-            <span class="section-reorder-hint">Drag dots to reorder</span>
+            <span class="section-reorder-hint">Drag items to reorder</span>
           </div>
 
           <div class="vertical-timeline-tree">
             <div
-              v-for="(ev, idx) in filteredEvents"
+              v-for="ev in filteredEvents"
               :key="ev.id"
               class="timeline-node-row"
+              :class="{
+                'is-dragging': draggedEventId === ev.id,
+                'drag-over-item': dragOverEventId === ev.id && draggedEventId !== ev.id
+              }"
               draggable="true"
-              @dragstart="onEventDragStart(idx)"
-              @dragover="onEventDragOver"
-              @drop="onEventDrop(idx)"
+              @dragstart="onEventDragStart($event, ev.id)"
+              @dragover="onEventDragOver($event, ev.id)"
+              @dragleave="onEventDragLeave(ev.id)"
+              @drop="onEventDrop($event, ev.id)"
+              @dragend="onEventDragEnd"
             >
               <div class="timeline-axis">
-                <div
-                  class="timeline-dot"
-                  :class="{ 'first-dot': idx === 0, 'subsequent-dot': idx > 0 }"
-                  title="Drag dot to reorder event"
-                ></div>
-                <div
-                  v-if="idx < filteredEvents.length - 1"
-                  class="timeline-connector-line"
-                ></div>
+                <div class="timeline-dot" title="Drag to reorder"></div>
+                <div class="timeline-connector-line"></div>
               </div>
               <div class="timeline-content">
                 <div class="timeline-header-line">
                   <div class="event-title-wrap">
+                    <span class="card-drag-handle sm" title="Drag to reorder">⋮</span>
                     <span class="timeline-event-title">{{ ev.title }}</span>
                     <span v-if="ev.author" class="timeline-event-author">by {{ ev.author }}</span>
                   </div>
@@ -1048,13 +1160,19 @@ function toggleMoodTag(tag: string) {
           <div v-if="showAiExplorations" class="collapsible-content">
             <div v-if="filteredAiExplorations.length" class="ai-cards-stack">
               <div
-                v-for="(ai, idx) in filteredAiExplorations"
+                v-for="ai in filteredAiExplorations"
                 :key="ai.id"
                 class="ai-exploration-banner"
+                :class="{
+                  'is-dragging': draggedAiId === ai.id,
+                  'drag-over-item': dragOverAiId === ai.id && draggedAiId !== ai.id
+                }"
                 draggable="true"
-                @dragstart="onAiDragStart(idx)"
-                @dragover="onAiDragOver"
-                @drop="onAiDrop(idx)"
+                @dragstart="onAiDragStart($event, ai.id)"
+                @dragover="onAiDragOver($event, ai.id)"
+                @dragleave="onAiDragLeave(ai.id)"
+                @drop="onAiDrop($event, ai.id)"
+                @dragend="onAiDragEnd"
               >
                 <div class="ai-banner-left">
                   <span class="ai-drag-dots" title="Drag to reorder">⋮⋮</span>
@@ -1181,13 +1299,19 @@ function toggleMoodTag(tag: string) {
           <div v-if="showDocs" class="collapsible-content">
             <div v-if="filteredBookmarks.length" class="docs-stack">
               <div
-                v-for="(doc, idx) in filteredBookmarks"
+                v-for="doc in filteredBookmarks"
                 :key="doc.id"
                 class="doc-item"
+                :class="{
+                  'is-dragging': draggedDocId === doc.id,
+                  'drag-over-item': dragOverDocId === doc.id && draggedDocId !== doc.id
+                }"
                 draggable="true"
-                @dragstart="onDocDragStart(idx)"
-                @dragover="onDocDragOver"
-                @drop="onDocDrop(idx)"
+                @dragstart="onDocDragStart($event, doc.id)"
+                @dragover="onDocDragOver($event, doc.id)"
+                @dragleave="onDocDragLeave(doc.id)"
+                @drop="onDocDrop($event, doc.id)"
+                @dragend="onDocDragEnd"
               >
                 <div class="doc-item-left">
                   <div class="doc-title-row">
@@ -1264,8 +1388,14 @@ function toggleMoodTag(tag: string) {
           </div>
         </div>
 
-        <!-- 4. Refactored Mood Gallery Section with Full CRUD, Tags, Drag & Drop, and Lightbox -->
-        <div class="collapsible-section mood-gallery-section">
+        <!-- 4. Refactored Mood Gallery Section with Drag & Drop Reorder, Instant Upload Dropzone -->
+        <div
+          class="collapsible-section mood-gallery-section"
+          :class="{ 'gallery-drop-active': isGalleryDraggingFiles }"
+          @dragover.prevent="isGalleryDraggingFiles = true"
+          @dragleave.prevent="isGalleryDraggingFiles = false"
+          @drop.prevent="onGalleryDropFiles"
+        >
           <div class="collapsible-header-row">
             <button
               type="button"
@@ -1311,13 +1441,26 @@ function toggleMoodTag(tag: string) {
                 </button>
               </div>
 
+              <!-- Upload Button (Direct File Ingest) -->
+              <label class="btn-add-mood-quick file-label" title="Upload image files from disk">
+                📁 Upload
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  class="hidden-file-input"
+                  @change="onMoodFileInputChange"
+                />
+              </label>
+
+              <!-- Manual URL Add Toggle -->
               <button
                 type="button"
                 class="btn-add-mood-quick"
                 @click="showAddMood = !showAddMood"
-                title="Add Image"
+                title="Paste Image URL or details"
               >
-                + Add Image
+                + URL
               </button>
             </div>
           </div>
@@ -1346,25 +1489,59 @@ function toggleMoodTag(tag: string) {
               </button>
             </div>
 
-            <!-- Mood Gallery Grid -->
+            <!-- Instant Drag & Drop Upload Banner / Drop Target -->
+            <div
+              class="mood-drop-banner"
+              :class="{ 'banner-active': isGalleryDraggingFiles }"
+              @click="moodFileInput?.click()"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Click or Drop images anywhere to upload • Drag cards to reorder • Paste (⌘V)</span>
+              <input
+                ref="moodFileInput"
+                type="file"
+                accept="image/*"
+                multiple
+                class="hidden-file-input"
+                @change="onMoodFileInputChange"
+              />
+            </div>
+
+            <!-- Mood Gallery Grid with robust Drag & Drop -->
             <div
               v-if="filteredMoodGallery.length"
               class="mood-grid"
               :class="`cols-${moodGridCols}`"
             >
               <div
-                v-for="(img, idx) in filteredMoodGallery"
+                v-for="img in filteredMoodGallery"
                 :key="img.id"
                 class="mood-card-item"
+                :class="{
+                  'is-dragging': draggedMoodId === img.id,
+                  'drag-over-item': dragOverMoodId === img.id && draggedMoodId !== img.id
+                }"
                 draggable="true"
-                @dragstart="onMoodDragStart(idx)"
-                @dragover="onMoodDragOver"
-                @drop="onMoodDrop(idx)"
+                @dragstart="onMoodCardDragStart($event, img.id)"
+                @dragover="onMoodCardDragOver($event, img.id)"
+                @dragleave="onMoodCardDragLeave(img.id)"
+                @drop="onMoodCardDrop($event, img.id)"
+                @dragend="onMoodCardDragEnd"
               >
-                <div class="mood-img-wrap" @click="openMoodLightbox(idx)">
-                  <img :src="img.url" :alt="img.caption" class="mood-thumb" loading="lazy" />
+                <div class="mood-img-wrap" @click="openMoodLightbox(filteredMoodGallery.findIndex(m => m.id === img.id))">
+                  <img
+                    :src="img.url"
+                    :alt="img.caption"
+                    class="mood-thumb"
+                    draggable="false"
+                    loading="lazy"
+                  />
                   <div class="mood-img-overlay">
-                    <span class="zoom-badge">🔍 Enlarge ({{ idx + 1 }}/{{ filteredMoodGallery.length }})</span>
+                    <span class="zoom-badge">🔍 Enlarge</span>
                   </div>
                   <span class="card-drag-handle-badge" title="Drag to reorder">⋮</span>
                 </div>
@@ -1391,7 +1568,7 @@ function toggleMoodTag(tag: string) {
             </div>
 
             <div v-else class="resource-empty-hint">
-              <span>No mood images found. Click "+ Add Image" or paste (⌘V) an image from your clipboard!</span>
+              <span>No mood images found. Drag & drop images onto this card or click "📁 Upload" to add some!</span>
             </div>
 
             <!-- Edit Mood Item Form -->
@@ -1409,47 +1586,20 @@ function toggleMoodTag(tag: string) {
               </div>
             </div>
 
-            <!-- Add Mood Form with File Dropzone & URL Input -->
+            <!-- Add Mood Form (Manual URL Input) -->
             <div v-if="showAddMood" class="inline-adder-card">
               <div class="adder-header">
-                <span class="card-edit-badge">Add Visual Reference</span>
+                <span class="card-edit-badge">Add Visual Reference by URL</span>
                 <button type="button" class="btn-item-icon" @click="showAddMood = false">✕</button>
               </div>
 
-              <div
-                class="mood-upload-zone"
-                :class="{ 'dropzone-active': isDraggingOverDropzone }"
-                @dragover.prevent="isDraggingOverDropzone = true"
-                @dragleave.prevent="isDraggingOverDropzone = false"
-                @drop.prevent="isDraggingOverDropzone = false; handleMoodFileUpload($event)"
-                @click="moodFileInput?.click()"
-              >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <span>Click or Drag & Drop Images Here (.jpg, .png, .webp, .svg)</span>
-                <span class="upload-hint-sub">Supports multi-file upload & direct clipboard paste (⌘V)</span>
-                <input
-                  ref="moodFileInput"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  class="hidden-file-input"
-                  @change="handleMoodFileUpload"
-                />
-              </div>
-
-              <span class="upload-or-divider">─── or paste image URL ───</span>
-
-              <input v-model="newMoodUrl" type="text" class="adder-input" placeholder="https://... or data:image/..." />
-              <input v-model="newMoodCaption" type="text" class="adder-input" placeholder="Caption / description (e.g. Cyber-Obsidian UI)..." />
+              <input v-model="newMoodUrl" type="text" class="adder-input" placeholder="https://... image URL or data:image/..." />
+              <input v-model="newMoodCaption" type="text" class="adder-input" placeholder="Caption / description (e.g. Obsidian Terminal)..." />
               <input v-model="newMoodTags" type="text" class="adder-input" placeholder="Tags (comma-separated, e.g. ui, obsidian, neon)..." />
 
               <div class="adder-actions">
                 <button type="button" class="btn-adder-cancel" @click="showAddMood = false">Cancel</button>
-                <button type="button" class="btn-adder-save" @click="handleAddMood">Add to Gallery</button>
+                <button type="button" class="btn-adder-save" @click="handleAddMoodManual">Add to Gallery</button>
               </div>
             </div>
           </div>
@@ -1636,6 +1786,7 @@ function toggleMoodTag(tag: string) {
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .project-card:active {
@@ -1651,6 +1802,18 @@ function toggleMoodTag(tag: string) {
   background: #061912;
   border: 1.5px solid #10b981;
   box-shadow: 0 0 16px rgba(16, 185, 129, 0.08);
+}
+
+.project-card.is-dragging {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.project-card.drag-over-item {
+  border-color: #10b981;
+  background: #0b2e20;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.3);
+  transform: translateY(-2px);
 }
 
 .card-title-row {
@@ -2021,10 +2184,21 @@ function toggleMoodTag(tag: string) {
   position: relative;
   min-height: 48px;
   cursor: grab;
+  border-radius: 8px;
+  transition: all 0.15s ease;
 }
 
 .timeline-node-row:active {
   cursor: grabbing;
+}
+
+.timeline-node-row.is-dragging {
+  opacity: 0.4;
+}
+
+.timeline-node-row.drag-over-item {
+  background: #092017;
+  outline: 1.5px dashed #10b981;
 }
 
 .timeline-axis {
@@ -2042,16 +2216,8 @@ function toggleMoodTag(tag: string) {
   margin-top: 4px;
   z-index: 2;
   box-sizing: border-box;
-}
-
-.timeline-dot.first-dot {
   background: #10b981;
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
-}
-
-.timeline-dot.subsequent-dot {
-  background: #1c3d2e;
-  border: 2px solid #06140f;
 }
 
 .timeline-connector-line {
@@ -2267,10 +2433,21 @@ function toggleMoodTag(tag: string) {
   align-items: flex-start;
   justify-content: space-between;
   cursor: grab;
+  transition: all 0.15s ease;
 }
 
 .ai-exploration-banner:active {
   cursor: grabbing;
+}
+
+.ai-exploration-banner.is-dragging {
+  opacity: 0.4;
+}
+
+.ai-exploration-banner.drag-over-item {
+  border-color: #10b981;
+  background: #0b2e20;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
 }
 
 .ai-banner-left {
@@ -2395,10 +2572,20 @@ function toggleMoodTag(tag: string) {
   align-items: center;
   justify-content: space-between;
   cursor: grab;
+  transition: all 0.15s ease;
 }
 
 .doc-item:active {
   cursor: grabbing;
+}
+
+.doc-item.is-dragging {
+  opacity: 0.4;
+}
+
+.doc-item.drag-over-item {
+  border-color: #10b981;
+  background: #0b2e20;
 }
 
 .doc-item-left {
@@ -2453,6 +2640,11 @@ function toggleMoodTag(tag: string) {
 /* =========================================================================
    Mood Gallery Refactored
    ========================================================================= */
+.mood-gallery-section.gallery-drop-active {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.04);
+}
+
 .gallery-controls-toolbar {
   display: flex;
   align-items: center;
@@ -2495,15 +2687,23 @@ function toggleMoodTag(tag: string) {
   color: #34d399;
   font-size: 11px;
   font-weight: 600;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-add-mood-quick.file-label {
+  cursor: pointer;
 }
 
 .btn-add-mood-quick:hover {
   background: #10b981;
   color: #022c22;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
 .mood-tags-filter-bar {
@@ -2519,6 +2719,31 @@ function toggleMoodTag(tag: string) {
   font-weight: 700;
   color: #64748b;
   text-transform: uppercase;
+}
+
+/* Mood Drop Banner */
+.mood-drop-banner {
+  border: 1.5px dashed #14432c;
+  background: #040e09;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #34d399;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.mood-drop-banner:hover,
+.mood-drop-banner.banner-active {
+  border-color: #10b981;
+  background: #082117;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
 }
 
 .mood-grid {
@@ -2543,10 +2768,11 @@ function toggleMoodTag(tag: string) {
   border: 1px solid #112d20;
   border-radius: 10px;
   overflow: hidden;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
   cursor: grab;
+  position: relative;
 }
 
 .mood-card-item:active {
@@ -2556,6 +2782,18 @@ function toggleMoodTag(tag: string) {
 .mood-card-item:hover {
   transform: translateY(-2px);
   border-color: #10b981;
+}
+
+.mood-card-item.is-dragging {
+  opacity: 0.35;
+  border-style: dashed;
+}
+
+.mood-card-item.drag-over-item {
+  border-color: #34d399;
+  background: #08291e;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
+  transform: scale(1.03);
 }
 
 .mood-img-wrap {
@@ -2571,6 +2809,7 @@ function toggleMoodTag(tag: string) {
   height: 100%;
   object-fit: cover;
   display: block;
+  pointer-events: none;
 }
 
 .mood-img-overlay {
@@ -2601,7 +2840,7 @@ function toggleMoodTag(tag: string) {
   position: absolute;
   top: 6px;
   right: 6px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   color: #94a3b8;
   font-size: 12px;
   width: 20px;
@@ -2643,45 +2882,8 @@ function toggleMoodTag(tag: string) {
   flex-wrap: wrap;
 }
 
-.mood-upload-zone {
-  border: 1.5px dashed #14432c;
-  background: #040e09;
-  border-radius: 8px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: #34d399;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-align: center;
-}
-
-.mood-upload-zone:hover,
-.mood-upload-zone.dropzone-active {
-  border-color: #10b981;
-  background: #071912;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.15);
-}
-
-.upload-hint-sub {
-  font-size: 10px;
-  color: #64748b;
-  font-weight: normal;
-}
-
 .hidden-file-input {
   display: none;
-}
-
-.upload-or-divider {
-  text-align: center;
-  font-size: 10px;
-  color: #64748b;
-  margin: 4px 0;
 }
 
 .btn-inline-add {

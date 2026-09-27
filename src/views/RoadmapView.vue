@@ -8,8 +8,13 @@ const roadmapStore = useRoadmapStore();
 const uiStore = useUiStore();
 
 const newPracticeText = ref("");
-const draggedPhaseIndex = ref<number | null>(null);
-const draggedPracticeIndex = ref<number | null>(null);
+
+// Drag & Drop tracking
+const draggedPhaseId = ref<string | null>(null);
+const dragOverPhaseId = ref<string | null>(null);
+
+const draggedPracticeId = ref<string | null>(null);
+const dragOverPracticeId = ref<string | null>(null);
 
 const isEditingPhaseTitle = ref(false);
 const editPhaseTitle = ref("");
@@ -65,41 +70,85 @@ function handleDeleteActivePhase() {
 }
 
 /* --- Drag & Drop: Roadmap Phases --- */
-function onPhaseDragStart(index: number) {
-  draggedPhaseIndex.value = index;
+function onPhaseDragStart(e: DragEvent, id: string) {
+  draggedPhaseId.value = id;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+  }
 }
 
-function onPhaseDragOver(e: DragEvent) {
+function onPhaseDragOver(e: DragEvent, id: string) {
   e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+  dragOverPhaseId.value = id;
 }
 
-function onPhaseDrop(targetIndex: number) {
-  if (draggedPhaseIndex.value === null || draggedPhaseIndex.value === targetIndex) return;
+function onPhaseDragLeave(id: string) {
+  if (dragOverPhaseId.value === id) dragOverPhaseId.value = null;
+}
+
+function onPhaseDrop(e: DragEvent, targetId: string) {
+  e.preventDefault();
+  dragOverPhaseId.value = null;
+  if (!draggedPhaseId.value || draggedPhaseId.value === targetId) return;
+
   const list = [...roadmapStore.phases];
-  const [removed] = list.splice(draggedPhaseIndex.value, 1);
-  list.splice(targetIndex, 0, removed);
+  const fromIdx = list.findIndex((p) => p.id === draggedPhaseId.value);
+  const toIdx = list.findIndex((p) => p.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  const [removed] = list.splice(fromIdx, 1);
+  list.splice(toIdx, 0, removed);
   roadmapStore.reorderPhases(list);
-  draggedPhaseIndex.value = null;
+  draggedPhaseId.value = null;
   uiStore.showToast("Roadmap phases reordered ✓");
 }
 
+function onPhaseDragEnd() {
+  draggedPhaseId.value = null;
+  dragOverPhaseId.value = null;
+}
+
 /* --- Drag & Drop: Key Practices --- */
-function onPracticeDragStart(index: number) {
-  draggedPracticeIndex.value = index;
+function onPracticeDragStart(e: DragEvent, id: string) {
+  draggedPracticeId.value = id;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+  }
 }
 
-function onPracticeDragOver(e: DragEvent) {
+function onPracticeDragOver(e: DragEvent, id: string) {
   e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+  dragOverPracticeId.value = id;
 }
 
-function onPracticeDrop(targetIndex: number) {
-  if (draggedPracticeIndex.value === null || !roadmapStore.activePhase) return;
+function onPracticeDragLeave(id: string) {
+  if (dragOverPracticeId.value === id) dragOverPracticeId.value = null;
+}
+
+function onPracticeDrop(e: DragEvent, targetId: string) {
+  e.preventDefault();
+  dragOverPracticeId.value = null;
+  if (!draggedPracticeId.value || draggedPracticeId.value === targetId || !roadmapStore.activePhase) return;
+
   const list = [...roadmapStore.activePhase.practices];
-  const [removed] = list.splice(draggedPracticeIndex.value, 1);
-  list.splice(targetIndex, 0, removed);
+  const fromIdx = list.findIndex((p) => p.id === draggedPracticeId.value);
+  const toIdx = list.findIndex((p) => p.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  const [removed] = list.splice(fromIdx, 1);
+  list.splice(toIdx, 0, removed);
   roadmapStore.reorderPractices(roadmapStore.activePhase.id, list);
-  draggedPracticeIndex.value = null;
+  draggedPracticeId.value = null;
   uiStore.showToast("Key practices checklist reordered ✓");
+}
+
+function onPracticeDragEnd() {
+  draggedPracticeId.value = null;
+  dragOverPracticeId.value = null;
 }
 
 function getPhaseDotClass(phase: RoadmapPhase, index: number) {
@@ -185,16 +234,22 @@ const activePhaseProgress = computed(() => {
               v-for="(phase, index) in roadmapStore.phases"
               :key="phase.id"
               class="phase-node-item"
-              :class="{ active: roadmapStore.activePhaseId === phase.id }"
+              :class="{
+                active: roadmapStore.activePhaseId === phase.id,
+                'is-dragging': draggedPhaseId === phase.id,
+                'drag-over-item': dragOverPhaseId === phase.id && draggedPhaseId !== phase.id
+              }"
               draggable="true"
-              @dragstart="onPhaseDragStart(index)"
-              @dragover="onPhaseDragOver"
-              @drop="onPhaseDrop(index)"
+              @dragstart="onPhaseDragStart($event, phase.id)"
+              @dragover="onPhaseDragOver($event, phase.id)"
+              @dragleave="onPhaseDragLeave(phase.id)"
+              @drop="onPhaseDrop($event, phase.id)"
+              @dragend="onPhaseDragEnd"
               @click="roadmapStore.activePhaseId = phase.id"
             >
               <!-- Timeline Axis -->
               <div class="node-axis">
-                <div class="node-dot" :class="getPhaseDotClass(phase, index)" title="Drag dot to reorder phase"></div>
+                <div class="node-dot" :class="getPhaseDotClass(phase, index)" title="Drag to reorder phase"></div>
                 <div v-if="index < roadmapStore.phases.length - 1" class="node-line"></div>
               </div>
 
@@ -309,13 +364,19 @@ const activePhaseProgress = computed(() => {
 
             <div class="practices-checklist">
               <div
-                v-for="(practice, idx) in roadmapStore.activePhase.practices"
+                v-for="practice in roadmapStore.activePhase.practices"
                 :key="practice.id"
                 class="practice-item"
+                :class="{
+                  'is-dragging': draggedPracticeId === practice.id,
+                  'drag-over-item': dragOverPracticeId === practice.id && draggedPracticeId !== practice.id
+                }"
                 draggable="true"
-                @dragstart="onPracticeDragStart(idx)"
-                @dragover="onPracticeDragOver"
-                @drop="onPracticeDrop(idx)"
+                @dragstart="onPracticeDragStart($event, practice.id)"
+                @dragover="onPracticeDragOver($event, practice.id)"
+                @dragleave="onPracticeDragLeave(practice.id)"
+                @drop="onPracticeDrop($event, practice.id)"
+                @dragend="onPracticeDragEnd"
               >
                 <span class="practice-drag-handle" title="Drag to reorder">⋮</span>
                 <div
@@ -519,7 +580,23 @@ const activePhaseProgress = computed(() => {
 .phase-node-item {
   display: flex;
   min-height: 76px;
-  cursor: pointer;
+  cursor: grab;
+  transition: all 0.15s ease;
+}
+
+.phase-node-item:active {
+  cursor: grabbing;
+}
+
+.phase-node-item.is-dragging {
+  opacity: 0.4;
+}
+
+.phase-node-item.drag-over-item .node-card {
+  border-color: #10b981;
+  background: #0b2e20;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+  transform: translateX(4px);
 }
 
 .node-axis {
@@ -909,9 +986,14 @@ const activePhaseProgress = computed(() => {
   cursor: grabbing;
 }
 
-.practice-item:hover {
-  border-color: #1b4934;
-  background: #0b2219;
+.practice-item.is-dragging {
+  opacity: 0.4;
+}
+
+.practice-item.drag-over-item {
+  border-color: #10b981;
+  background: #0b2e20;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.3);
 }
 
 .practice-drag-handle {
