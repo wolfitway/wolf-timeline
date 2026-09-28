@@ -1,6 +1,6 @@
 [package]
 name = "dev-timeline"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local-first, encrypted dev notes & timeline tool"
 edition = "2021"
 
