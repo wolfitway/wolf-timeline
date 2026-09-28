@@ -2,10 +2,13 @@
 import { useUiStore, type ActiveTab } from "@/stores/useUiStore";
 import { useVaultStore } from "@/stores/useVaultStore";
 import { useShortcutsStore } from "@/stores/useShortcutsStore";
+import { useLicenseStore } from "@/stores/useLicenseStore";
 
 const uiStore = useUiStore();
 const vaultStore = useVaultStore();
 const shortcutsStore = useShortcutsStore();
+const licenseStore = useLicenseStore();
+const isDev = import.meta.env.DEV;
 
 const navItems: { id: ActiveTab; label: string; icon?: string }[] = [
   { id: "timeline", label: "Timeline" },
@@ -83,15 +86,16 @@ function handleSecurityBadgeClick() {
         <kbd class="search-kbd">{{ shortcutsStore.formatShortcut('command_palette') }}</kbd>
       </button>
 
-      <!-- Keygen / License Studio Trigger -->
+      <!-- License / Founder Pass Trigger -->
       <button
         type="button"
-        class="topbar-keygen-btn"
+        class="topbar-license-btn"
+        :class="{ activated: licenseStore.isActivated }"
         @click="uiStore.showLicenseModal = true"
-        title="Hardware Keygen & Node License Studio"
+        :title="licenseStore.isActivated ? 'Sovereign Founder Node (Active)' : 'Claim Founder Alpha Pass'"
       >
-        <span class="keygen-bolt">⚡</span>
-        <span>Keygen</span>
+        <span class="license-icon">{{ licenseStore.isActivated ? '👑' : (isDev ? '⚡' : '🛡️') }}</span>
+        <span>{{ licenseStore.isActivated ? 'Founder VIP' : (isDev ? 'Keygen (Dev)' : 'Founder Pass') }}</span>
       </button>
 
       <!-- Security / Encryption Status Badge -->
@@ -251,10 +255,10 @@ function handleSecurityBadgeClick() {
   border: 1px solid #14432c;
 }
 
-.topbar-keygen-btn {
+.topbar-license-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   background: #092017;
   border: 1px solid #143d2a;
   border-radius: 8px;
@@ -263,17 +267,29 @@ function handleSecurityBadgeClick() {
   font-weight: 600;
   color: #34d399;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
 }
 
-.topbar-keygen-btn:hover {
+.topbar-license-btn:hover {
   background: #10b981;
   color: #022c22;
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
 }
 
-.keygen-bolt {
-  font-size: 11px;
+.topbar-license-btn.activated {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
+  color: #34d399;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+.topbar-license-btn.activated:hover {
+  background: #10b981;
+  color: #022c22;
+}
+
+.license-icon {
+  font-size: 12px;
 }
 
 .security-pill-badge {

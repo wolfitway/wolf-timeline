@@ -6,6 +6,13 @@ import { useLicenseStore } from "@/stores/useLicenseStore";
 const uiStore = useUiStore();
 const licenseStore = useLicenseStore();
 
+const isDev = import.meta.env.DEV;
+
+function continueToApp() {
+  uiStore.showLicenseModal = false;
+  uiStore.showToast("Welcome to Wolf Timeline Alpha! Enjoy building 🐺");
+}
+
 const activeTab = ref<"activation" | "keygen">("activation");
 
 // Activation state
@@ -103,13 +110,17 @@ async function handleDeactivate() {
           <img src="/assets/wolf-logo.png" alt="Wolf Logo" class="modal-wolf-logo" />
           <span class="modal-brand-text">WOLF TIMELINE</span>
         </div>
-        <h2 class="modal-title">🛡️ Sovereign Node & Hardware Keygen</h2>
+        <h2 class="modal-title">
+          {{ licenseStore.isActivated ? '🛡️ Sovereign Founder Node' : '🐺 Wolf Timeline Alpha' }}
+        </h2>
         <p class="modal-subtitle">
-          Hardware-bound cryptographic licensing. 100% offline SHA-256 verification with zero telemetry.
+          {{ licenseStore.isActivated
+            ? 'Your device is authenticated with verified Sovereign Founder VIP privileges.'
+            : 'Zero-telemetry sovereign workspace. 100% free community alpha with optional Founder VIP unlock.' }}
         </p>
 
-        <!-- Mode Switcher Tabs -->
-        <div class="modal-nav-tabs">
+        <!-- Mode Switcher Tabs (Dev Only: hidden in production) -->
+        <div v-if="isDev" class="modal-nav-tabs">
           <button
             type="button"
             class="modal-tab-btn"
@@ -124,14 +135,43 @@ async function handleDeactivate() {
             :class="{ active: activeTab === 'keygen' }"
             @click="activeTab = 'keygen'; handleGenerateKey();"
           >
-            ⚡ Hardware Keygen Studio
+            ⚡ Keygen Studio (Dev Tool)
           </button>
         </div>
       </div>
 
       <div class="license-body">
-        <!-- TAB 1: NODE ACTIVATION -->
+        <!-- TAB 1: NODE ACTIVATION & COMMUNITY ONBOARDING -->
         <template v-if="activeTab === 'activation'">
+          <!-- Tier Overview Cards -->
+          <div class="tier-comparison-box">
+            <div class="tier-card community" :class="{ current: !licenseStore.isActivated }">
+              <div class="tier-card-head">
+                <span class="tier-status-pill">🟢 CURRENT TIER</span>
+                <span class="tier-name">Community Alpha</span>
+              </div>
+              <ul class="tier-features">
+                <li>✓ Full offline timeline &amp; notes</li>
+                <li>✓ Studio focus &amp; deep spec editor</li>
+                <li>✓ Human-Mode roadmap &amp; practices</li>
+                <li>✓ Local AES-256 SQLite encryption</li>
+              </ul>
+            </div>
+
+            <div class="tier-card founder" :class="{ current: licenseStore.isActivated }">
+              <div class="tier-card-head">
+                <span class="tier-status-pill gold">{{ licenseStore.isActivated ? '👑 ACTIVE' : '✨ VIP PASS' }}</span>
+                <span class="tier-name">Founder Sovereign Seat</span>
+              </div>
+              <ul class="tier-features">
+                <li>★ Glowing Founder VIP badge in topbar</li>
+                <li>★ Cryptographic offline serial</li>
+                <li>★ Direct feature roadmap influence on X</li>
+                <li>★ Lifetime seat access for private alpha</li>
+              </ul>
+            </div>
+          </div>
+
           <!-- Device ID Card -->
           <div class="device-card">
             <div class="device-label-row">
@@ -145,7 +185,7 @@ async function handleDeactivate() {
               </button>
             </div>
             <p class="device-hint">
-              Drop this Device ID in replies or DMs on X to receive your cryptographic activation key, or generate one in the Keygen Studio tab!
+              Drop this Device ID in replies or DMs on X to claim your Founder VIP cryptographic activation key.
             </p>
           </div>
 
@@ -159,39 +199,49 @@ async function handleDeactivate() {
               <span class="act-tier">Tier: {{ licenseStore.tier }}</span>
               <span class="act-key">Key: {{ licenseStore.licenseKey }}</span>
             </div>
-            <button type="button" class="btn-deactivate" @click="handleDeactivate">
-              Deactivate Key
-            </button>
+            <div class="act-actions-row">
+              <button type="button" class="btn-continue-alpha" @click="continueToApp">
+                Enter Alpha Workspace →
+              </button>
+              <button type="button" class="btn-deactivate" @click="handleDeactivate">
+                Deactivate Key
+              </button>
+            </div>
           </div>
 
           <!-- Key Input Form if not activated -->
           <form v-else class="key-form" @submit.prevent="handleActivate">
             <div class="form-group">
               <div class="form-label-row">
-                <label class="form-label">Enter Cryptographic Activation Key</label>
-                <button type="button" class="btn-link-action" @click="pasteMasterFounderKey">
-                  Use Master Key
+                <label class="form-label">Have a Founder VIP Key?</label>
+                <button v-if="isDev" type="button" class="btn-link-action" @click="pasteMasterFounderKey">
+                  Use Master Key (Dev)
                 </button>
               </div>
-              <input
-                v-model="keyInput"
-                type="text"
-                class="form-input mono"
-                placeholder="WOLF-KEY-XXXX-XXXX-XXXX"
-                required
-              />
+              <div class="key-input-row">
+                <input
+                  v-model="keyInput"
+                  type="text"
+                  class="form-input mono"
+                  placeholder="WOLF-KEY-XXXX-XXXX-XXXX"
+                />
+                <button type="submit" class="btn-activate" :disabled="!keyInput.trim()">
+                  Activate Key
+                </button>
+              </div>
             </div>
 
             <div v-if="errorMessage" class="license-error">
               {{ errorMessage }}
             </div>
 
-            <div class="form-actions-row">
-              <button type="button" class="btn-auto-unlock" @click="handleAutoActivateCurrentHardware">
-                ⚡ 1-Click Hardware Auto-Unlock
+            <!-- Primary Action: Frictionless Continue Button -->
+            <div class="onboarding-actions">
+              <button type="button" class="btn-continue-alpha" @click="continueToApp">
+                <span>Enter Alpha Workspace (Free Community Node) →</span>
               </button>
-              <button type="submit" class="btn-activate">
-                Activate Node
+              <button v-if="isDev" type="button" class="btn-auto-unlock dev-only" @click="handleAutoActivateCurrentHardware">
+                ⚡ Auto-Unlock (Dev Only)
               </button>
             </div>
           </form>
@@ -543,10 +593,116 @@ async function handleDeactivate() {
   border-color: var(--emerald-bright, #34d399);
 }
 
-.form-actions-row {
+.key-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.key-input-row .form-input {
+  flex: 1;
+}
+
+.tier-comparison-box {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.tier-card {
+  background: #040e0a;
+  border: 1px solid #0f271d;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.tier-card.current {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.08);
+}
+
+.tier-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tier-status-pill {
+  font-size: 9px;
+  font-weight: 800;
+  color: #34d399;
+  letter-spacing: 0.06em;
+}
+
+.tier-status-pill.gold {
+  color: #fbbf24;
+}
+
+.tier-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.tier-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tier-features li {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+.tier-card.founder .tier-features li {
+  color: #cbd5e1;
+}
+
+.act-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.onboarding-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-continue-alpha {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #03140b;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 12px 18px;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+}
+
+.btn-continue-alpha:hover {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 .btn-auto-unlock {
@@ -561,9 +717,14 @@ async function handleDeactivate() {
   transition: all 0.15s ease;
 }
 
-.btn-auto-unlock:hover {
-  background: #0e3324;
-  border-color: #10b981;
+.btn-auto-unlock.dev-only {
+  font-size: 11px;
+  padding: 6px 12px;
+  opacity: 0.7;
+}
+
+.btn-auto-unlock.dev-only:hover {
+  opacity: 1;
 }
 
 .btn-activate {
@@ -576,10 +737,16 @@ async function handleDeactivate() {
   font-weight: 800;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
-.btn-activate:hover {
+.btn-activate:hover:not(:disabled) {
   background: #34d399;
+}
+
+.btn-activate:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .license-error {

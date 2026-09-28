@@ -763,7 +763,7 @@ fn check_license_status() -> Result<LicenseInfo, String> {
         activated: false,
         machine_id,
         key: None,
-        tier: "Unactivated Alpha Node".to_string(),
+        tier: "Community Alpha Node".to_string(),
         activated_at: None,
     })
 }

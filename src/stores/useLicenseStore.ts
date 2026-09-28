@@ -17,7 +17,7 @@ export const useLicenseStore = defineStore("license", () => {
   const isActivated = ref<boolean>(false);
   const deviceId = ref<string>("WOLF-DEV-7F3A-89CB-4D21");
   const licenseKey = ref<string>("");
-  const tier = ref<string>("Unactivated Alpha Node");
+  const tier = ref<string>("Community Alpha Node");
   const activatedAt = ref<string | null>(null);
 
   async function computeFallbackDeviceId(): Promise<string> {
@@ -77,7 +77,7 @@ export const useLicenseStore = defineStore("license", () => {
     }
 
     isActivated.value = false;
-    tier.value = "Unactivated Alpha Node";
+    tier.value = "Community Alpha Node";
     return {
       activated: false,
       machine_id: deviceId.value,
@@ -105,7 +105,7 @@ export const useLicenseStore = defineStore("license", () => {
     }
 
     const isMaster = cleanKey === MASTER_FOUNDER_KEY;
-    tier.value = isMaster ? "Founder Sovereign Access" : "Private Alpha Node Seat";
+    tier.value = isMaster ? "Founder Sovereign Access" : "Founder Alpha Access (Lifetime Seat)";
     isActivated.value = true;
     licenseKey.value = cleanKey;
     activatedAt.value = new Date().toISOString();
@@ -163,7 +163,7 @@ export const useLicenseStore = defineStore("license", () => {
     localStorage.removeItem(LOCAL_LICENSE_KEY);
     isActivated.value = false;
     licenseKey.value = "";
-    tier.value = "Unactivated Alpha Node";
+    tier.value = "Community Alpha Node";
   }
 
   return {
