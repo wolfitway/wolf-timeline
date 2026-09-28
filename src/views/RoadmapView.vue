@@ -112,6 +112,11 @@ function onPhaseDragEnd() {
 
 /* --- Drag & Drop: Key Practices --- */
 function onPracticeDragStart(e: DragEvent, id: string) {
+  const target = e.target as HTMLElement | null;
+  if (target && (target.tagName === "INPUT" || target.closest(".practice-text-input") || target.closest(".practice-check-btn"))) {
+    e.preventDefault();
+    return;
+  }
   draggedPracticeId.value = id;
   if (e.dataTransfer) {
     e.dataTransfer.effectAllowed = "move";
@@ -369,7 +374,8 @@ const activePhaseProgress = computed(() => {
                 class="practice-item"
                 :class="{
                   'is-dragging': draggedPracticeId === practice.id,
-                  'drag-over-item': dragOverPracticeId === practice.id && draggedPracticeId !== practice.id
+                  'drag-over-item': dragOverPracticeId === practice.id && draggedPracticeId !== practice.id,
+                  completed: practice.completed
                 }"
                 draggable="true"
                 @dragstart="onPracticeDragStart($event, practice.id)"
@@ -379,22 +385,38 @@ const activePhaseProgress = computed(() => {
                 @dragend="onPracticeDragEnd"
               >
                 <span class="practice-drag-handle" title="Drag to reorder">⋮</span>
-                <div
-                  class="checkbox-circle"
-                  :class="{ checked: practice.completed }"
-                  @click="roadmapStore.togglePractice(roadmapStore.activePhase!.id, practice.id)"
-                >
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
+
+                <!-- 1. Dedicated Separated Checkmark Button -->
+                <div class="practice-check-zone">
+                  <button
+                    type="button"
+                    class="practice-check-btn"
+                    :class="{ checked: practice.completed }"
+                    :title="practice.completed ? 'Mark as incomplete' : 'Mark as completed'"
+                    aria-label="Toggle practice completed status"
+                    @click.stop="roadmapStore.togglePractice(roadmapStore.activePhase!.id, practice.id)"
+                  >
+                    <svg v-if="practice.completed" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </button>
                 </div>
-                <span
-                  class="practice-text"
-                  :class="{ strike: practice.completed }"
-                  @click="roadmapStore.togglePractice(roadmapStore.activePhase!.id, practice.id)"
-                >
-                  {{ practice.text }}
-                </span>
+
+                <!-- 2. Dedicated Text Input Field (Edits text without triggering checkmark) -->
+                <div class="practice-input-wrap">
+                  <input
+                    type="text"
+                    class="practice-text-input"
+                    :class="{ 'is-completed': practice.completed }"
+                    :value="practice.text"
+                    placeholder="Key practice title..."
+                    spellcheck="false"
+                    @click.stop
+                    @input="roadmapStore.updatePracticeText(roadmapStore.activePhase!.id, practice.id, ($event.target as HTMLInputElement).value)"
+                    @keydown.enter.prevent="($event.target as HTMLInputElement).blur()"
+                  />
+                </div>
+
                 <button
                   type="button"
                   class="btn-delete-practice"
@@ -974,11 +996,11 @@ const activePhaseProgress = computed(() => {
 .practice-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: #081a13;
   border: 1px solid #112e21;
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   cursor: grab;
   transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
@@ -1001,39 +1023,97 @@ const activePhaseProgress = computed(() => {
 
 .practice-drag-handle {
   color: #4b5563;
-  font-size: 12px;
+  font-size: 13px;
+  cursor: grab;
+  user-select: none;
+  padding: 0 2px;
 }
 
-.checkbox-circle {
-  width: 18px;
-  height: 18px;
+/* Distinct, separated checkmark button zone with clear visual boundary */
+.practice-check-zone {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding-right: 8px;
+  border-right: 1px solid rgba(16, 185, 129, 0.18);
+}
+
+.practice-check-btn {
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: 1.5px solid #10b981;
+  border: 1.5px solid #234736;
+  background: #081711;
+  color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: transparent;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
   cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.checkbox-circle.checked {
+.practice-check-btn:hover {
+  border-color: #34d399;
+  background: #0d281c;
+  color: rgba(52, 211, 153, 0.6);
+  transform: scale(1.08);
+}
+
+.practice-check-btn.checked {
   background: #10b981;
+  border-color: #10b981;
   color: #040c08;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
 }
 
-.practice-text {
-  font-size: 13px;
-  color: #e2e8f0;
-  font-weight: 500;
+/* Dedicated Input Field Container & Input */
+.practice-input-wrap {
   flex: 1;
-  cursor: pointer;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 4px;
 }
 
-.practice-text.strike {
-  text-decoration: line-through;
+.practice-text-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 10px;
+  outline: none;
+  line-height: 1.4;
+  cursor: text;
+  transition: all 0.15s ease;
+}
+
+.practice-text-input:hover {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.04);
+  color: #ffffff;
+}
+
+.practice-text-input:focus {
+  border-color: #10b981;
+  background: #07150e;
+  color: #ffffff;
+  box-shadow: 0 0 0 1px #10b981, 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+.practice-text-input.is-completed {
   color: #64748b;
+  text-decoration: line-through;
+}
+
+.practice-text-input.is-completed:focus {
+  color: #ffffff;
+  text-decoration: none;
 }
 
 .btn-delete-practice {
@@ -1042,9 +1122,11 @@ const activePhaseProgress = computed(() => {
   color: #64748b;
   font-size: 11px;
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 4px 6px;
   border-radius: 4px;
   opacity: 0.6;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
 }
 
 .btn-delete-practice:hover {
