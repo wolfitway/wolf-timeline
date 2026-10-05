@@ -4,6 +4,7 @@ import AppTopbar from "@/components/layout/AppTopbar.vue";
 import TimelineView from "@/views/TimelineView.vue";
 import StudioView from "@/views/StudioView.vue";
 import RoadmapView from "@/views/RoadmapView.vue";
+import BookmarksView from "@/views/BookmarksView.vue";
 import VaultView from "@/views/VaultView.vue";
 import SettingsView from "@/views/SettingsView.vue";
 
@@ -64,6 +65,11 @@ function handleGlobalKeyDown(e: KeyboardEvent) {
   if (shortcutsStore.matchesEvent("tab_roadmap", e)) {
     e.preventDefault();
     uiStore.setTab("roadmap");
+    return;
+  }
+  if (shortcutsStore.matchesEvent("tab_bookmarks", e)) {
+    e.preventDefault();
+    uiStore.setTab("bookmarks");
     return;
   }
   if (shortcutsStore.matchesEvent("tab_secrets", e)) {
@@ -158,6 +164,7 @@ onUnmounted(() => {
         <TimelineView v-if="uiStore.activeTab === 'timeline'" />
         <StudioView v-else-if="uiStore.activeTab === 'studio'" />
         <RoadmapView v-else-if="uiStore.activeTab === 'roadmap'" />
+        <BookmarksView v-else-if="uiStore.activeTab === 'bookmarks'" />
         <VaultView v-else-if="uiStore.activeTab === 'secrets'" />
         <SettingsView v-else-if="uiStore.activeTab === 'settings'" />
       </main>

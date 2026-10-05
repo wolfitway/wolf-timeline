@@ -79,6 +79,22 @@ onMounted(() => {
       },
     },
     {
+      phrase: "go to bookmarks",
+      description: "Navigate to Bookmarks",
+      action: () => {
+        uiStore.setTab("bookmarks");
+        kokoroVoice.speak("Bookmarks hub opened.");
+      },
+    },
+    {
+      phrase: "open bookmarks",
+      description: "Navigate to Bookmarks",
+      action: () => {
+        uiStore.setTab("bookmarks");
+        kokoroVoice.speak("Bookmarks hub opened.");
+      },
+    },
+    {
       phrase: "go to settings",
       description: "Navigate to Settings",
       action: () => {
