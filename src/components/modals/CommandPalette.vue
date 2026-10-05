@@ -93,6 +93,19 @@ const results = computed<PaletteItem[]>(() => {
     },
   });
 
+  list.push({
+    id: "act-bookmarks",
+    type: "action",
+    title: "Switch to Bookmarks Hub",
+    subtitle: "Search, filter and auto-classify saved links & research",
+    icon: "📑",
+    badge: "View",
+    action: () => {
+      uiStore.showCommandPalette = false;
+      uiStore.setTab("bookmarks");
+    },
+  });
+
   // Notes
   notesStore.notes.forEach((n) => {
     list.push({

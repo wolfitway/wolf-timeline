@@ -19,7 +19,7 @@ const isSpeakingId = ref<string | null>(null);
 
 // New / Edit modal states
 const showAddModal = ref(false);
-const editingBookmark = ref<WebBookmark | null>(null);
+const editingBookmark = ref<EnrichedBookmark | null>(null);
 const targetProjectForAdd = ref<number>(notesStore.selectedNoteId || notesStore.notes[0]?.id || 1);
 
 // Add / Edit form

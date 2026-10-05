@@ -1,28 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useUiStore } from "@/stores/useUiStore";
-import { kokoroVoice, type VoiceGuideSettings } from "@/services/voiceGuide";
+import { kokoroVoice, KOKORO_VOICES, type VoiceGuideSettings, type KokoroVoiceOption } from "@/services/voiceGuide";
 
 const uiStore = useUiStore();
 
 const settings = ref<VoiceGuideSettings>(kokoroVoice.getSettings());
-const availableVoices = ref<SpeechSynthesisVoice[]>([]);
+const kokoroVoices = ref<KokoroVoiceOption[]>(KOKORO_VOICES);
 const isSpeaking = ref<boolean>(false);
 const testText = ref<string>("Hello sovereign creator! Kokoro Voice Heart is active and ready to guide your focus.");
 
 onMounted(() => {
   settings.value = kokoroVoice.getSettings();
-  loadVoices();
-  if (typeof window !== "undefined" && "speechSynthesis" in window) {
-    window.speechSynthesis.onvoiceschanged = () => {
-      loadVoices();
-    };
-  }
 });
-
-function loadVoices() {
-  availableVoices.value = kokoroVoice.getAvailableVoices();
-}
 
 function updateSettings() {
   kokoroVoice.saveSettings(settings.value);
@@ -141,16 +131,19 @@ function closeModal() {
 
           <!-- Voice Selector -->
           <div class="form-row">
-            <label class="form-label">Companion Voice:</label>
+            <label class="form-label">Kokoro Neural Voice:</label>
             <select
               v-model="settings.voiceName"
               class="form-select"
               :disabled="!settings.enabled"
               @change="updateSettings"
             >
-              <option value="default">Default System Natural Voice</option>
-              <option v-for="v in availableVoices" :key="v.name" :value="v.name">
-                {{ v.name }} ({{ v.lang }})
+              <option
+                v-for="v in kokoroVoices"
+                :key="v.id"
+                :value="v.id"
+              >
+                {{ v.name }} • [{{ v.accent }} {{ v.gender }}] — {{ v.description }}
               </option>
             </select>
           </div>

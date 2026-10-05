@@ -59,6 +59,8 @@ export function parseNetscapeBookmarkHtml(htmlContent: string): ParsedBookmark[]
   return bookmarks;
 }
 
+import { autoClassifyBookmark } from "@/services/bookmarkClassifier";
+
 /**
  * Converts a parsed bookmark into a full sovereign WebBookmark item with tags and domain
  */
@@ -71,15 +73,13 @@ export function convertToWebBookmark(parsed: ParsedBookmark): WebBookmark {
     domain = "web";
   }
 
-  const tags: string[] = ["imported", "bookmark"];
+  const baseTags: string[] = ["imported", "bookmark"];
   if (parsed.folder) {
     const cleanFolder = parsed.folder.toLowerCase().replace(/[^a-z0-9_-]/g, "");
-    if (cleanFolder) tags.push(cleanFolder);
+    if (cleanFolder) baseTags.push(cleanFolder);
   }
-  if (domain && !tags.includes(domain)) {
-    const cleanDomain = domain.split(".")[0];
-    if (cleanDomain && cleanDomain.length > 2) tags.push(cleanDomain);
-  }
+
+  const { suggestedTags } = autoClassifyBookmark(parsed.url, parsed.title, baseTags);
 
   return {
     id: `bm_imp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -88,7 +88,7 @@ export function convertToWebBookmark(parsed: ParsedBookmark): WebBookmark {
     domain: domain || "link",
     date: parsed.addDate || new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
     note: parsed.folder ? `Imported from bookmark folder: ${parsed.folder}` : "Imported sovereign bookmark",
-    tags,
+    tags: suggestedTags,
     fetch_status: "idle",
   };
 }
