@@ -141,6 +141,41 @@ onMounted(async () => {
   window.addEventListener("mousemove", handleUserActivity, { passive: true });
   window.addEventListener("click", handleUserActivity, { passive: true });
 
+  // Initialize theme, font, scale & effects
+  const savedTheme = localStorage.getItem("wolf_theme") || "obsidian";
+  if (savedTheme === "obsidian") {
+    delete document.documentElement.dataset.theme;
+  } else {
+    document.documentElement.dataset.theme = savedTheme;
+  }
+
+  const savedFont = localStorage.getItem("wolf_font") || "jakarta";
+  document.documentElement.dataset.font = savedFont;
+
+  const savedScale = localStorage.getItem("wolf_font_scale");
+  if (savedScale) {
+    document.documentElement.style.fontSize = `${savedScale}px`;
+  }
+
+  const savedGlow = localStorage.getItem("wolf_glow");
+  if (savedGlow === "false") {
+    document.documentElement.classList.add("no-glow");
+  }
+
+  const savedGlass = localStorage.getItem("wolf_glass");
+  if (savedGlass === "false") {
+    document.documentElement.classList.add("no-glass");
+  }
+
+  const savedSpeed = localStorage.getItem("wolf_reorder_speed") || "smooth";
+  let transitionVal = "transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease";
+  if (savedSpeed === "fast") {
+    transitionVal = "transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease, border-color 0.15s ease, opacity 0.15s ease";
+  } else if (savedSpeed === "cinematic") {
+    transitionVal = "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.3s ease";
+  }
+  document.documentElement.style.setProperty("--drag-transition", transitionVal);
+
   await licenseStore.checkLicense();
   await notesStore.loadNotes();
   roadmapStore.loadRoadmap();

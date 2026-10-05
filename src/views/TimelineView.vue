@@ -1437,171 +1437,28 @@ function toggleMoodTag(tag: string) {
           </div>
         </div>
 
-        <!-- 3. Collapsible Docs & Bookmarks Section with Auto-Fetch Snapshot & Expert Reviews -->
-        <div class="collapsible-section">
-          <button
-            type="button"
-            class="collapsible-header"
-            @click="showDocs = !showDocs"
-          >
-            <div class="collapsible-left">
-              <span class="chevron-icon">{{ showDocs ? "⌃" : "⌄" }}</span>
-              <span class="collapsible-title">Docs &amp; Verified Resources</span>
-            </div>
-            <span class="collapsible-count-pill">{{ filteredBookmarks.length }}</span>
-          </button>
-
-          <div v-if="showDocs" class="collapsible-content">
-            <div v-if="filteredBookmarks.length" class="docs-stack">
-              <div
-                v-for="doc in filteredBookmarks"
-                :key="doc.id"
-                class="doc-item"
-                :class="{
-                  'is-dragging': draggedDocId === doc.id,
-                  'drag-over-item': dragOverDocId === doc.id && draggedDocId !== doc.id,
-                  'has-preview': !!doc.preview_image
-                }"
-                draggable="true"
-                @dragstart="onDocDragStart($event, doc.id)"
-                @dragover="onDocDragOver($event, doc.id)"
-                @dragleave="onDocDragLeave(doc.id)"
-                @drop="onDocDrop($event, doc.id)"
-                @dragend="onDocDragEnd"
-              >
-                <!-- Optional Webpage Preview Snapshot -->
-                <div v-if="doc.preview_image" class="doc-preview-banner">
-                  <img :src="doc.preview_image" :alt="doc.title" class="doc-preview-img" loading="lazy" />
-                  <a :href="doc.url" target="_blank" rel="noopener noreferrer" class="preview-hover-overlay">
-                    <span>↗ Visit Resource</span>
-                  </a>
-                </div>
-
-                <div class="doc-item-body">
-                  <div class="doc-item-left">
-                    <div class="doc-title-row">
-                      <span class="card-drag-handle sm" title="Drag to reorder">⋮</span>
-                      <span class="doc-title">{{ doc.title }}</span>
-                      <span class="doc-domain-badge">{{ doc.domain }}</span>
-                    </div>
-
-                    <a :href="doc.url" target="_blank" rel="noopener noreferrer" class="doc-link">
-                      🔗 {{ doc.url }}
-                    </a>
-
-                    <p v-if="doc.description" class="doc-desc-text">{{ doc.description }}</p>
-                    <span v-else-if="doc.note" class="doc-note">{{ doc.note }}</span>
-
-                    <!-- Sovereign Council of Experts Review Badges -->
-                    <div v-if="doc.expert_reviews?.length" class="expert-reviews-row">
-                      <span class="council-label">🐺 Council Verdicts:</span>
-                      <div class="expert-badges-group">
-                        <span
-                          v-for="rev in doc.expert_reviews"
-                          :key="rev.expert"
-                          class="expert-review-badge"
-                          :title="`${rev.expert} (${rev.role}): ${rev.comment}`"
-                        >
-                          <span class="rev-avatar">{{ rev.avatar }}</span>
-                          <span class="rev-name">{{ rev.expert.split(' ')[0] }}:</span>
-                          <span class="rev-score">{{ rev.score }}/10</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div v-if="doc.tags?.length" class="inline-tags-row">
-                      <span
-                        v-for="t in doc.tags"
-                        :key="t"
-                        class="resource-tag-pill clickable"
-                        @click="toggleDetailTag(t)"
-                      >
-                        #{{ t }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div class="doc-item-actions">
-                    <button type="button" class="btn-item-icon" @click="startEditDoc(doc)" title="Edit Doc">✏️</button>
-                    <button type="button" class="btn-item-icon danger" @click="handleDeleteDoc(doc.id)" title="Delete Doc">✕</button>
-                  </div>
-                </div>
+        <!-- 3. Sovereign Bookmarks Hub Quick-Link (Separated into Dedicated Discovery Tab) -->
+        <div class="collapsible-section bookmarks-hub-shortcut-card">
+          <div class="bookmarks-shortcut-inner">
+            <div class="bookmarks-shortcut-left">
+              <div class="shortcut-icon-badge">🔖</div>
+              <div class="shortcut-text-wrap">
+                <h4 class="shortcut-title">Sovereign Bookmarks &amp; Resources Hub</h4>
+                <p class="shortcut-desc">
+                  Web resources, specs, and docs are managed in their dedicated Discovery Center with auto-classification, search, and neural Kokoro readouts.
+                </p>
               </div>
             </div>
-
-            <div v-else class="resource-empty-hint">
-              <span>No documentation links match the active tag filter.</span>
-            </div>
-
-            <!-- Smart Auto-Fetch / Link Resource Box -->
-            <div v-if="!showAddDoc && !editingDocId" class="resource-quick-fetch-bar">
-              <div class="quick-fetch-input-wrap">
-                <span class="globe-icon">🌐</span>
-                <input
-                  v-model="newDocUrl"
-                  type="text"
-                  class="quick-url-input"
-                  placeholder="Paste URL to auto-fetch snapshot & Council review (e.g. github.com, sqlite.org)..."
-                  @keydown.enter="handleAutoFetchResource"
-                />
-                <button
-                  type="button"
-                  class="btn-quick-fetch"
-                  :disabled="isFetchingResource"
-                  @click="handleAutoFetchResource"
-                >
-                  <span v-if="isFetchingResource">⏳ Analyzing...</span>
-                  <span v-else>⚡ Auto-Fetch</span>
-                </button>
-              </div>
+            <div class="bookmarks-shortcut-actions">
+              <span class="bookmarks-count-tag">{{ notesStore.selectedNote?.bookmarks?.length || 0 }} resources</span>
               <button
                 type="button"
-                class="btn-manual-doc-toggle"
-                @click="showAddDoc = true"
+                class="btn-switch-bookmarks-hub"
+                @click="uiStore.setTab('bookmarks')"
               >
-                + Manual Entry
+                <span>Open Bookmarks Tab</span>
+                <span class="btn-arrow">→</span>
               </button>
-              <button
-                type="button"
-                class="btn-import-bookmarks-toggle"
-                @click="uiStore.showBookmarkImporter = true"
-                title="Import browser bookmarks (Chrome, Firefox, Safari, Brave)"
-              >
-                📑 Import Browser Bookmarks
-              </button>
-            </div>
-
-            <!-- Manual Add Doc Form -->
-            <div v-else-if="showAddDoc" class="inline-adder-card">
-              <div class="adder-header">
-                <span class="card-edit-badge">New Resource Link</span>
-                <button type="button" class="btn-item-icon" @click="showAddDoc = false">✕</button>
-              </div>
-              <input v-model="newDocUrl" type="text" class="adder-input" placeholder="https://... URL / spec link" />
-              <input v-model="newDocTitle" type="text" class="adder-input" placeholder="Document title..." />
-              <input v-model="newDocNote" type="text" class="adder-input" placeholder="Takeaway note (optional)..." />
-              <input v-model="newDocTags" type="text" class="adder-input" placeholder="Tags (comma-separated)..." />
-              <div class="adder-actions">
-                <button type="button" class="btn-adder-cancel" @click="showAddDoc = false">Cancel</button>
-                <button type="button" class="btn-adder-save" @click="handleAddDoc">Save Manual</button>
-                <button type="button" class="btn-quick-fetch" @click="handleAutoFetchResource">⚡ Auto-Fetch &amp; Review</button>
-              </div>
-            </div>
-
-            <!-- Edit Doc Form -->
-            <div v-if="editingDocId" class="inline-adder-card edit-mode">
-              <div class="adder-header">
-                <span class="card-edit-badge">Editing Document</span>
-                <button type="button" class="btn-item-icon" @click="editingDocId = null">✕</button>
-              </div>
-              <input v-model="editDocTitle" type="text" class="adder-input" placeholder="Document title..." />
-              <input v-model="editDocUrl" type="text" class="adder-input" placeholder="URL / spec link..." />
-              <input v-model="editDocNote" type="text" class="adder-input" placeholder="Takeaway note..." />
-              <input v-model="editDocTags" type="text" class="adder-input" placeholder="Tags (comma-separated)..." />
-              <div class="adder-actions">
-                <button type="button" class="btn-adder-cancel" @click="editingDocId = null">Cancel</button>
-                <button type="button" class="btn-adder-save" @click="handleSaveEditDoc">Update Doc</button>
-              </div>
             </div>
           </div>
         </div>

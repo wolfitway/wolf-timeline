@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useNotesStore } from "@/stores/useNotesStore";
+import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { kokoroVoice } from "@/services/voiceGuide";
 import { autoClassifyBookmark } from "@/services/bookmarkClassifier";
 import type { WebBookmark } from "@/types";
 
 const notesStore = useNotesStore();
+const roadmapStore = useRoadmapStore();
 const uiStore = useUiStore();
 
 // Search & Filter state
@@ -21,6 +23,11 @@ const isSpeakingId = ref<string | null>(null);
 const showAddModal = ref(false);
 const editingBookmark = ref<EnrichedBookmark | null>(null);
 const targetProjectForAdd = ref<number>(notesStore.selectedNoteId || notesStore.notes[0]?.id || 1);
+
+// Send to Roadmap Picker modal state
+const showRoadmapPickerModal = ref(false);
+const roadmapTargetBookmark = ref<EnrichedBookmark | null>(null);
+const selectedRoadmapPhaseId = ref<string>("");
 
 // Add / Edit form
 const formUrl = ref("");
@@ -248,6 +255,41 @@ function addTagToBookmark(bm: EnrichedBookmark, tag: string) {
     uiStore.showToast(`Tagged #${tag} ✓`);
   }
 }
+
+// Direct Actions: Link to Timeline & Roadmap
+function sendToTimeline(bm: EnrichedBookmark) {
+  const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const desc = `${bm.url}\n${bm.note ? 'Notes: ' + bm.note : ''}`.trim();
+  notesStore.addTimelineEvent(bm.projectId, {
+    id: `ev_bm_${Date.now()}`,
+    title: `🔖 ${bm.title}`,
+    time: timeStr,
+    author: "Bookmark Link",
+    desc,
+    tags: bm.tags || ["resource", "bookmark"],
+  });
+  kokoroVoice.playHeartChime("affirm");
+  uiStore.showToast(`Linked "${bm.title}" as timeline event in "${bm.projectTitle}" ✓`);
+}
+
+function openSendToRoadmap(bm: EnrichedBookmark) {
+  roadmapTargetBookmark.value = bm;
+  if (!selectedRoadmapPhaseId.value && roadmapStore.phases.length > 0) {
+    selectedRoadmapPhaseId.value = roadmapStore.phases[0].id;
+  }
+  showRoadmapPickerModal.value = true;
+}
+
+function handleConfirmRoadmapLink() {
+  if (!roadmapTargetBookmark.value || !selectedRoadmapPhaseId.value) return;
+  const practiceText = `${roadmapTargetBookmark.value.title} (${roadmapTargetBookmark.value.url})`;
+  roadmapStore.addPractice(selectedRoadmapPhaseId.value, practiceText);
+  kokoroVoice.playHeartChime("affirm");
+  const targetPhase = roadmapStore.phases.find((p) => p.id === selectedRoadmapPhaseId.value);
+  uiStore.showToast(`Added practice to Roadmap "${targetPhase?.title || 'Phase'}" ✓`);
+  showRoadmapPickerModal.value = false;
+  roadmapTargetBookmark.value = null;
+}
 </script>
 
 <template>
@@ -462,6 +504,28 @@ function addTagToBookmark(bm: EnrichedBookmark, tag: string) {
                 #{{ t }}
               </span>
             </div>
+
+            <!-- Direct Actions: Link to Timeline & Roadmap -->
+            <div class="card-link-actions-row">
+              <button
+                type="button"
+                class="btn-card-link-action"
+                @click="sendToTimeline(bm)"
+                title="Send and embed this bookmark into the project timeline as an event"
+              >
+                <span class="action-icon">📌</span>
+                <span>Add to Timeline</span>
+              </button>
+              <button
+                type="button"
+                class="btn-card-link-action"
+                @click="openSendToRoadmap(bm)"
+                title="Send and link this bookmark to a Roadmap Phase as a key practice"
+              >
+                <span class="action-icon">🗺️</span>
+                <span>Add to Roadmap</span>
+              </button>
+            </div>
           </div>
 
           <!-- Card Footer with Parent Project Info -->
@@ -497,6 +561,47 @@ function addTagToBookmark(bm: EnrichedBookmark, tag: string) {
             @click="openAddModal"
           >
             + Create First Bookmark
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Send to Roadmap Phase Picker Modal -->
+    <div v-if="showRoadmapPickerModal" class="modal-backdrop" @click.self="showRoadmapPickerModal = false">
+      <div class="modal-dialog sm">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            🗺️ Link Bookmark to Roadmap
+          </h3>
+          <button type="button" class="btn-close" @click="showRoadmapPickerModal = false">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-intro-text">
+            Add <strong>"{{ roadmapTargetBookmark?.title }}"</strong> as a Key Practice in a Roadmap Phase:
+          </p>
+
+          <div class="form-group">
+            <label class="form-label">Target Roadmap Phase:</label>
+            <select v-model="selectedRoadmapPhaseId" class="form-select">
+              <option v-for="phase in roadmapStore.phases" :key="phase.id" :value="phase.id">
+                Phase {{ phase.number }}: {{ phase.title }} ({{ phase.practices.length }} practices)
+              </option>
+            </select>
+          </div>
+
+          <div class="bookmark-preview-snippet">
+            <span class="snippet-label">Practice entry preview:</span>
+            <span class="snippet-value">
+              {{ roadmapTargetBookmark?.title }} ({{ roadmapTargetBookmark?.url }})
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" @click="showRoadmapPickerModal = false">Cancel</button>
+          <button type="button" class="btn-save" @click="handleConfirmRoadmapLink">
+            Confirm &amp; Add Practice
           </button>
         </div>
       </div>
@@ -1227,5 +1332,81 @@ function addTagToBookmark(bm: EnrichedBookmark, tag: string) {
 }
 .btn-save:hover {
   background: #34d399;
+}
+
+/* Card Quick Link Actions */
+.card-link-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border-card, #12281e);
+}
+
+.btn-card-link-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  color: var(--emerald-bright, #34d399);
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+.btn-card-link-action:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--emerald-main, #10b981);
+  transform: translateY(-1px);
+}
+.btn-card-link-action:active {
+  transform: translateY(0);
+}
+
+.btn-card-link-action .action-icon {
+  font-size: 0.85rem;
+}
+
+/* Small dialog variant */
+.modal-dialog.sm {
+  max-width: 480px;
+}
+
+.modal-intro-text {
+  font-size: 0.88rem;
+  color: var(--text-gray, #d1fae5);
+  line-height: 1.45;
+  margin-bottom: 0.25rem;
+}
+
+.bookmark-preview-snippet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-card, #12281e);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.snippet-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #86efac);
+  font-weight: 700;
+}
+
+.snippet-value {
+  font-size: 0.82rem;
+  color: #fff;
+  font-family: var(--font-mono, monospace);
+  word-break: break-all;
 }
 </style>

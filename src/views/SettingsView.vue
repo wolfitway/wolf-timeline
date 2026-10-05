@@ -188,6 +188,22 @@ onMounted(() => {
     fontScale.value = savedScale;
     document.documentElement.style.fontSize = `${savedScale}px`;
   }
+
+  // Load glow & glass
+  const savedGlow = localStorage.getItem("wolf_glow");
+  if (savedGlow !== null) {
+    glowEffects.value = savedGlow !== "false";
+    document.documentElement.classList.toggle("no-glow", !glowEffects.value);
+  }
+
+  const savedGlass = localStorage.getItem("wolf_glass");
+  if (savedGlass !== null) {
+    glassmorphism.value = savedGlass !== "false";
+    document.documentElement.classList.toggle("no-glass", !glassmorphism.value);
+  }
+
+  const savedSpeed = localStorage.getItem("wolf_reorder_speed") || "smooth";
+  applyReorderSpeed(savedSpeed);
 });
 
 function applyTheme(themeId: string) {
@@ -215,13 +231,28 @@ function changeFontScale(size: string) {
 
 function toggleGlow() {
   glowEffects.value = !glowEffects.value;
+  localStorage.setItem("wolf_glow", String(glowEffects.value));
   document.documentElement.classList.toggle("no-glow", !glowEffects.value);
   uiStore.showToast(glowEffects.value ? "Neon glow effects enabled" : "Neon glow effects dimmed");
 }
 
 function toggleGlass() {
   glassmorphism.value = !glassmorphism.value;
+  localStorage.setItem("wolf_glass", String(glassmorphism.value));
+  document.documentElement.classList.toggle("no-glass", !glassmorphism.value);
   uiStore.showToast(glassmorphism.value ? "Backdrop blur enabled" : "Backdrop blur disabled");
+}
+
+function applyReorderSpeed(speed: string) {
+  reorderSpeed.value = speed;
+  localStorage.setItem("wolf_reorder_speed", speed);
+  let transitionVal = "transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease";
+  if (speed === "fast") {
+    transitionVal = "transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease, border-color 0.15s ease, opacity 0.15s ease";
+  } else if (speed === "cinematic") {
+    transitionVal = "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.3s ease";
+  }
+  document.documentElement.style.setProperty("--drag-transition", transitionVal);
 }
 
 // Wolfitway Connection Handlers
@@ -1836,7 +1867,7 @@ function jumpToCategory(catId: SettingsCategory) {
             <div
               class="physics-card"
               :class="{ active: reorderSpeed === 'fast' }"
-              @click="reorderSpeed = 'fast'; uiStore.showToast('Reorder animation set to Ultra Fast 150ms ✓')"
+              @click="applyReorderSpeed('fast'); uiStore.showToast('Reorder animation set to Ultra Fast 150ms ✓')"
             >
               <span class="physics-icon">⚡</span>
               <span class="physics-name">Ultra Fast</span>
@@ -1846,7 +1877,7 @@ function jumpToCategory(catId: SettingsCategory) {
             <div
               class="physics-card"
               :class="{ active: reorderSpeed === 'smooth' }"
-              @click="reorderSpeed = 'smooth'; uiStore.showToast('Reorder animation set to Smooth Silk 220ms ✓')"
+              @click="applyReorderSpeed('smooth'); uiStore.showToast('Reorder animation set to Smooth Silk 220ms ✓')"
             >
               <span class="physics-icon">🌊</span>
               <span class="physics-name">Smooth Silk</span>
@@ -1856,7 +1887,7 @@ function jumpToCategory(catId: SettingsCategory) {
             <div
               class="physics-card"
               :class="{ active: reorderSpeed === 'cinematic' }"
-              @click="reorderSpeed = 'cinematic'; uiStore.showToast('Reorder animation set to Cinematic 350ms ✓')"
+              @click="applyReorderSpeed('cinematic'); uiStore.showToast('Reorder animation set to Cinematic 350ms ✓')"
             >
               <span class="physics-icon">🎬</span>
               <span class="physics-name">Cinematic</span>
