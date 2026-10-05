@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { useBookmarksStore } from "@/stores/useBookmarksStore";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useUiStore } from "@/stores/useUiStore";
@@ -7,22 +8,18 @@ import { kokoroVoice } from "@/services/voiceGuide";
 import { autoClassifyBookmark } from "@/services/bookmarkClassifier";
 import type { WebBookmark } from "@/types";
 
+const bookmarksStore = useBookmarksStore();
 const notesStore = useNotesStore();
 const roadmapStore = useRoadmapStore();
 const uiStore = useUiStore();
 
-// Search & Filter state
-const searchQuery = ref("");
-const selectedTag = ref("all");
-const selectedCategory = ref("all");
-const selectedProjectFilter = ref<number | "all">("all");
-const sortBy = ref<"newest" | "title" | "domain">("newest");
+// Voice speaking status
 const isSpeakingId = ref<string | null>(null);
 
 // New / Edit modal states
 const showAddModal = ref(false);
 const editingBookmark = ref<EnrichedBookmark | null>(null);
-const targetProjectForAdd = ref<number>(notesStore.selectedNoteId || notesStore.notes[0]?.id || 1);
+const targetProjectForAdd = ref<number | undefined>(notesStore.selectedNoteId || notesStore.notes[0]?.id);
 
 // Send to Roadmap Picker modal state
 const showRoadmapPickerModal = ref(false);
@@ -36,86 +33,25 @@ const formNote = ref("");
 const formTags = ref("");
 const autoClassifyStatus = ref<string>("");
 
-// Aggregate all bookmarks across all projects with project parent context
+// Aggregate enriched bookmarks with project context
 interface EnrichedBookmark extends WebBookmark {
-  projectTitle: string;
-  projectId: number;
+  projectTitle?: string;
 }
 
-const allBookmarks = computed<EnrichedBookmark[]>(() => {
-  const result: EnrichedBookmark[] = [];
-  notesStore.notes.forEach((note) => {
-    if (note.bookmarks && Array.isArray(note.bookmarks)) {
-      note.bookmarks.forEach((bm) => {
-        result.push({
-          ...bm,
-          projectTitle: note.title,
-          projectId: note.id,
-        });
-      });
+const enrichedFilteredBookmarks = computed<EnrichedBookmark[]>(() => {
+  return bookmarksStore.filteredBookmarks.map((bm) => {
+    let projectTitle = "Global Bookmark";
+    if (bm.projectId) {
+      const parent = notesStore.notes.find((n) => n.id === bm.projectId);
+      if (parent) {
+        projectTitle = parent.title;
+      }
     }
+    return {
+      ...bm,
+      projectTitle,
+    };
   });
-  return result;
-});
-
-// All unique tags collected across bookmarks
-const availableTags = computed(() => {
-  const tagsSet = new Set<string>();
-  allBookmarks.value.forEach((b) => {
-    b.tags?.forEach((t) => tagsSet.add(t));
-  });
-  return Array.from(tagsSet).sort();
-});
-
-// All unique domains
-const availableDomains = computed(() => {
-  const domainSet = new Set<string>();
-  allBookmarks.value.forEach((b) => {
-    if (b.domain) domainSet.add(b.domain);
-  });
-  return Array.from(domainSet).sort();
-});
-
-// Filtered & sorted bookmarks
-const filteredBookmarks = computed(() => {
-  let list = [...allBookmarks.value];
-
-  // Project filter
-  if (selectedProjectFilter.value !== "all") {
-    list = list.filter((b) => b.projectId === selectedProjectFilter.value);
-  }
-
-  // Tag filter
-  if (selectedTag.value !== "all") {
-    list = list.filter((b) => b.tags?.includes(selectedTag.value));
-  }
-
-  // Search filter
-  if (searchQuery.value.trim()) {
-    const q = searchQuery.value.toLowerCase().trim();
-    list = list.filter((b) => {
-      const matchTitle = b.title.toLowerCase().includes(q);
-      const matchUrl = b.url.toLowerCase().includes(q);
-      const matchDomain = b.domain.toLowerCase().includes(q);
-      const matchNote = (b.note || "").toLowerCase().includes(q);
-      const matchTag = b.tags?.some((t) => t.toLowerCase().includes(q));
-      return matchTitle || matchUrl || matchDomain || matchNote || matchTag;
-    });
-  }
-
-  // Sort
-  if (sortBy.value === "title") {
-    list.sort((a, b) => a.title.localeCompare(b.title));
-  } else if (sortBy.value === "domain") {
-    list.sort((a, b) => a.domain.localeCompare(b.domain));
-  } else {
-    // Newest
-    list.sort((a, b) => {
-      return (b.date || "").localeCompare(a.date || "");
-    });
-  }
-
-  return list;
 });
 
 // Auto-classify single bookmark form in real-time
@@ -132,41 +68,29 @@ function triggerAutoClassifyForm() {
   }, 2500);
 }
 
-// Batch Auto-Classifier for ALL existing bookmarks
+// Batch Auto-Classifier for ALL existing bookmarks in DB
 const isAutoClassifyingBatch = ref(false);
-function runBatchAutoClassifier() {
+async function runBatchAutoClassifier() {
   isAutoClassifyingBatch.value = true;
-  let countUpdated = 0;
-
-  notesStore.notes.forEach((note) => {
-    if (!note.bookmarks) return;
-    note.bookmarks.forEach((bm) => {
-      const { suggestedTags } = autoClassifyBookmark(bm.url, bm.title, bm.tags || []);
-      if (suggestedTags.length > (bm.tags?.length || 0)) {
-        notesStore.updateBookmark(note.id, bm.id, { tags: suggestedTags });
-        countUpdated++;
-      }
-    });
-  });
-
+  const countUpdated = await bookmarksStore.autoClassifyAll();
   isAutoClassifyingBatch.value = false;
   kokoroVoice.playHeartChime("success");
-  kokoroVoice.speak(`Auto-classified ${countUpdated} bookmarks across your research vault.`);
-  uiStore.showToast(`Auto-classified & enriched ${countUpdated} bookmarks ✓`);
+  kokoroVoice.speak(`Auto-classified ${countUpdated} bookmarks across your database vault.`);
+  uiStore.showToast(`Auto-classified & enriched ${countUpdated} bookmarks in DB ✓`);
 }
 
-// Add Bookmark
+// Add / Edit Bookmark
 function openAddModal() {
   formUrl.value = "";
   formTitle.value = "";
   formNote.value = "";
   formTags.value = "";
-  targetProjectForAdd.value = notesStore.selectedNoteId || notesStore.notes[0]?.id || 1;
+  targetProjectForAdd.value = notesStore.selectedNoteId || notesStore.notes[0]?.id;
   editingBookmark.value = null;
   showAddModal.value = true;
 }
 
-function handleSaveBookmark() {
+async function handleSaveBookmark() {
   if (!formUrl.value.trim()) {
     uiStore.showToast("Please enter a valid URL");
     return;
@@ -183,30 +107,28 @@ function handleSaveBookmark() {
     : ["bookmark"];
 
   if (editingBookmark.value) {
-    // Update
-    notesStore.updateBookmark(editingBookmark.value.projectId, editingBookmark.value.id, {
+    // Update in database store
+    await bookmarksStore.updateBookmark(editingBookmark.value.id, {
       url: formUrl.value.trim(),
       title: formTitle.value.trim() || domain,
       domain,
       note: formNote.value.trim(),
       tags,
+      projectId: targetProjectForAdd.value,
     });
-    uiStore.showToast("Bookmark updated ✓");
+    uiStore.showToast("Bookmark updated in database ✓");
   } else {
-    // Add new
-    const newBm: WebBookmark = {
-      id: `bm_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    // Add new to database store
+    await bookmarksStore.addBookmark({
       url: formUrl.value.trim(),
       title: formTitle.value.trim() || domain,
       domain,
-      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
       note: formNote.value.trim(),
       tags,
-      fetch_status: "idle",
-    };
-    notesStore.addBookmark(targetProjectForAdd.value, newBm);
+      projectId: targetProjectForAdd.value,
+    });
     kokoroVoice.playHeartChime("affirm");
-    uiStore.showToast("Bookmark saved to vault ✓");
+    uiStore.showToast("Bookmark saved to sovereign database ✓");
   }
 
   showAddModal.value = false;
@@ -222,10 +144,10 @@ function openEditModal(bm: EnrichedBookmark) {
   showAddModal.value = true;
 }
 
-function handleDeleteBookmark(bm: EnrichedBookmark) {
-  if (confirm(`Remove bookmark "${bm.title}"?`)) {
-    notesStore.deleteBookmark(bm.projectId, bm.id);
-    uiStore.showToast("Bookmark deleted ✓");
+async function handleDeleteBookmark(bm: EnrichedBookmark) {
+  if (confirm(`Remove bookmark "${bm.title}" from database?`)) {
+    await bookmarksStore.deleteBookmark(bm.id);
+    uiStore.showToast("Bookmark deleted from database ✓");
   }
 }
 
@@ -246,21 +168,19 @@ function speakBookmark(bm: EnrichedBookmark) {
 }
 
 // Auto-tag quick click
-function addTagToBookmark(bm: EnrichedBookmark, tag: string) {
-  const currentTags = bm.tags || [];
-  if (!currentTags.includes(tag)) {
-    notesStore.updateBookmark(bm.projectId, bm.id, {
-      tags: [...currentTags, tag],
-    });
-    uiStore.showToast(`Tagged #${tag} ✓`);
-  }
+async function addTagToBookmark(bm: EnrichedBookmark, tag: string) {
+  await bookmarksStore.addTagToBookmark(bm.id, tag);
+  uiStore.showToast(`Tagged #${tag} ✓`);
 }
 
 // Direct Actions: Link to Timeline & Roadmap
 function sendToTimeline(bm: EnrichedBookmark) {
+  const targetId = bm.projectId || notesStore.selectedNoteId || notesStore.notes[0]?.id;
+  if (!targetId) return;
+
   const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const desc = `${bm.url}\n${bm.note ? 'Notes: ' + bm.note : ''}`.trim();
-  notesStore.addTimelineEvent(bm.projectId, {
+  notesStore.addTimelineEvent(targetId, {
     id: `ev_bm_${Date.now()}`,
     title: `🔖 ${bm.title}`,
     time: timeStr,
@@ -269,7 +189,7 @@ function sendToTimeline(bm: EnrichedBookmark) {
     tags: bm.tags || ["resource", "bookmark"],
   });
   kokoroVoice.playHeartChime("affirm");
-  uiStore.showToast(`Linked "${bm.title}" as timeline event in "${bm.projectTitle}" ✓`);
+  uiStore.showToast(`Linked "${bm.title}" as timeline event ✓`);
 }
 
 function openSendToRoadmap(bm: EnrichedBookmark) {
@@ -290,6 +210,12 @@ function handleConfirmRoadmapLink() {
   showRoadmapPickerModal.value = false;
   roadmapTargetBookmark.value = null;
 }
+
+onMounted(() => {
+  if (!bookmarksStore.isLoaded) {
+    bookmarksStore.loadBookmarks();
+  }
+});
 </script>
 
 <template>
@@ -305,7 +231,7 @@ function handleConfirmRoadmapLink() {
           <div>
             <h1 class="bookmarks-main-title">Sovereign Bookmarks Hub</h1>
             <p class="bookmarks-sub">
-              Dedicated high-speed discovery center • {{ allBookmarks.length }} indexed resources across {{ notesStore.notes.length }} projects
+              Dedicated high-speed discovery center • {{ bookmarksStore.bookmarks.length }} indexed resources across database vault
             </p>
           </div>
         </div>
@@ -349,17 +275,17 @@ function handleConfirmRoadmapLink() {
       <div class="search-input-wrap">
         <span class="search-icon">🔍</span>
         <input
-          v-model="searchQuery"
+          v-model="bookmarksStore.searchQuery"
           type="text"
           class="search-input"
           placeholder="Fast search bookmarks by title, domain, URL, or #tag..."
           autofocus
         />
         <button
-          v-if="searchQuery"
+          v-if="bookmarksStore.searchQuery"
           type="button"
           class="clear-search-btn"
-          @click="searchQuery = ''"
+          @click="bookmarksStore.searchQuery = ''"
         >
           ✕
         </button>
@@ -369,20 +295,20 @@ function handleConfirmRoadmapLink() {
         <!-- Project Filter -->
         <div class="filter-item">
           <label class="filter-label">Vault Project:</label>
-          <select v-model="selectedProjectFilter" class="filter-select">
-            <option value="all">All Projects ({{ allBookmarks.length }})</option>
+          <select v-model="bookmarksStore.selectedProjectId" class="filter-select">
+            <option value="all">All Projects ({{ bookmarksStore.bookmarks.length }})</option>
             <option v-for="n in notesStore.notes" :key="n.id" :value="n.id">
-              {{ n.title }} ({{ n.bookmarks?.length || 0 }})
+              {{ n.title }}
             </option>
           </select>
         </div>
 
         <!-- Tag Filter -->
         <div class="filter-item">
-          <label class="filter-label">Tag Filter:</label>
-          <select v-model="selectedTag" class="filter-select">
-            <option value="all">All Tags ({{ availableTags.length }})</option>
-            <option v-for="t in availableTags" :key="t" :value="t">
+          <label class="filter-label">Bookmark Tags:</label>
+          <select v-model="bookmarksStore.selectedTag" class="filter-select">
+            <option value="all">All Tags ({{ bookmarksStore.bookmarkTags.length }})</option>
+            <option v-for="t in bookmarksStore.bookmarkTags" :key="t" :value="t">
               #{{ t }}
             </option>
           </select>
@@ -391,7 +317,7 @@ function handleConfirmRoadmapLink() {
         <!-- Sort Filter -->
         <div class="filter-item">
           <label class="filter-label">Sort By:</label>
-          <select v-model="sortBy" class="filter-select">
+          <select v-model="bookmarksStore.sortBy" class="filter-select">
             <option value="newest">Recently Added</option>
             <option value="title">Title (A-Z)</option>
             <option value="domain">Domain (A-Z)</option>
@@ -400,23 +326,23 @@ function handleConfirmRoadmapLink() {
       </div>
 
       <!-- Quick Tag Chips Row -->
-      <div v-if="availableTags.length > 0" class="tag-chips-scroll">
-        <span class="tag-chips-label">Quick Tags:</span>
+      <div v-if="bookmarksStore.bookmarkTags.length > 0" class="tag-chips-scroll">
+        <span class="tag-chips-label">Bookmark Tags:</span>
         <button
           type="button"
           class="chip-tag"
-          :class="{ active: selectedTag === 'all' }"
-          @click="selectedTag = 'all'"
+          :class="{ active: bookmarksStore.selectedTag === 'all' }"
+          @click="bookmarksStore.selectedTag = 'all'"
         >
           All
         </button>
         <button
-          v-for="tag in availableTags.slice(0, 14)"
+          v-for="tag in bookmarksStore.bookmarkTags.slice(0, 16)"
           :key="tag"
           type="button"
           class="chip-tag"
-          :class="{ active: selectedTag === tag }"
-          @click="selectedTag = selectedTag === tag ? 'all' : tag"
+          :class="{ active: bookmarksStore.selectedTag === tag }"
+          @click="bookmarksStore.selectedTag = bookmarksStore.selectedTag === tag ? 'all' : tag"
         >
           #{{ tag }}
         </button>
@@ -425,9 +351,9 @@ function handleConfirmRoadmapLink() {
 
     <!-- Main Bookmark Grid -->
     <div class="bookmarks-content-area">
-      <div v-if="filteredBookmarks.length > 0" class="bookmarks-grid">
+      <div v-if="enrichedFilteredBookmarks.length > 0" class="bookmarks-grid">
         <div
-          v-for="bm in filteredBookmarks"
+          v-for="bm in enrichedFilteredBookmarks"
           :key="bm.id"
           class="bookmark-card"
         >
@@ -498,8 +424,8 @@ function handleConfirmRoadmapLink() {
                 v-for="t in bm.tags"
                 :key="t"
                 class="card-tag-pill"
-                :class="{ highlight: selectedTag === t }"
-                @click="selectedTag = t"
+                :class="{ highlight: bookmarksStore.selectedTag === t }"
+                @click="bookmarksStore.selectedTag = t"
               >
                 #{{ t }}
               </span>
@@ -543,14 +469,14 @@ function handleConfirmRoadmapLink() {
         <div class="empty-icon-wrap">📑</div>
         <h3 class="empty-title">No bookmarks found</h3>
         <p class="empty-desc">
-          {{ searchQuery ? `No bookmarks match "${searchQuery}".` : 'Start organizing your sovereign research by adding or importing bookmarks.' }}
+          {{ bookmarksStore.searchQuery ? `No bookmarks match "${bookmarksStore.searchQuery}".` : 'Start organizing your sovereign research by adding or importing bookmarks into the database.' }}
         </p>
         <div class="empty-actions">
           <button
-            v-if="searchQuery || selectedTag !== 'all'"
+            v-if="bookmarksStore.searchQuery || bookmarksStore.selectedTag !== 'all' || bookmarksStore.selectedProjectId !== 'all'"
             type="button"
             class="btn-reset-filters"
-            @click="searchQuery = ''; selectedTag = 'all'; selectedProjectFilter = 'all'"
+            @click="bookmarksStore.searchQuery = ''; bookmarksStore.selectedTag = 'all'; bookmarksStore.selectedProjectId = 'all'"
           >
             Clear Active Filters
           </button>

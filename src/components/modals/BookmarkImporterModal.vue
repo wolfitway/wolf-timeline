@@ -2,11 +2,13 @@
 import { ref, computed } from "vue";
 import { useUiStore } from "@/stores/useUiStore";
 import { useNotesStore } from "@/stores/useNotesStore";
+import { useBookmarksStore } from "@/stores/useBookmarksStore";
 import { parseNetscapeBookmarkHtml, convertToWebBookmark, type ParsedBookmark } from "@/services/bookmarkParser";
 import { kokoroVoice } from "@/services/voiceGuide";
 
 const uiStore = useUiStore();
 const notesStore = useNotesStore();
+const bookmarksStore = useBookmarksStore();
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const rawFileName = ref<string>("");
@@ -99,9 +101,13 @@ async function commitImport() {
       notesStore.selectNote(targetNoteId);
     }
 
+    // Persist to sovereign bookmarks database store
+    const bookmarksStore = useBookmarksStore();
+    await bookmarksStore.importBatchBookmarks(converted, targetNoteId);
+
     kokoroVoice.playHeartChime("success");
     kokoroVoice.speak(`Successfully imported ${converted.length} bookmarks into your secure vault.`);
-    uiStore.showToast(`Imported ${converted.length} bookmarks safely into project vault ✓`);
+    uiStore.showToast(`Imported ${converted.length} bookmarks safely into database vault ✓`);
     closeModal();
   } catch (err) {
     console.error("Import error:", err);

@@ -64,6 +64,9 @@ export interface WebBookmark {
   title: string;
   domain: string;
   date: string;
+  created_at?: string;
+  updated_at?: string;
+  projectId?: number;
   note?: string;
   favicon?: string;
   tags?: string[];

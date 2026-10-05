@@ -867,7 +867,6 @@ const selectedNoteAllTags = computed(() => {
   notesStore.selectedNote.tags?.forEach((t) => set.add(t));
   notesStore.selectedNote.events?.forEach((e) => e.tags?.forEach((t) => set.add(t)));
   notesStore.selectedNote.ai_explorations?.forEach((a) => a.tags?.forEach((t) => set.add(t)));
-  notesStore.selectedNote.bookmarks?.forEach((b) => b.tags?.forEach((t) => set.add(t)));
   notesStore.selectedNote.mood_gallery?.forEach((m) => m.tags?.forEach((t) => set.add(t)));
   return Array.from(set);
 });

@@ -242,13 +242,11 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return true;
   }
 
-  /**
-   * DELETE: Remove a bookmark from DB and state
-   */
   async function deleteBookmark(id: string): Promise<boolean> {
+    const exists = bookmarks.value.some((b) => b.id === id);
     bookmarks.value = bookmarks.value.filter((b) => b.id !== id);
     syncToLocalStorage();
-    const success = await dbDeleteBookmark(id);
+    await dbDeleteBookmark(id);
 
     // Sync to notesStore
     const notesStore = useNotesStore();
@@ -259,7 +257,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
       }
     });
 
-    return success;
+    return exists;
   }
 
   /**

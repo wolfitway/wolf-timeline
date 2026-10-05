@@ -97,13 +97,14 @@ export async function dbGetAllBookmarks(): Promise<WebBookmark[]> {
       req.onerror = () => reject(req.error);
     });
   } catch (e) {
-    console.warn("IndexedDB getAllBookmarks failed, reading local fallback:", e);
-    const raw = localStorage.getItem(STORAGE_FALLBACK_KEY);
-    if (raw) {
-      try {
-        return JSON.parse(raw);
-      } catch {
-        return [];
+    if (typeof localStorage !== "undefined") {
+      const raw = localStorage.getItem(STORAGE_FALLBACK_KEY);
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return [];
+        }
       }
     }
     return [];

@@ -25,6 +25,7 @@ import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useVaultStore } from "@/stores/useVaultStore";
 import { useLicenseStore } from "@/stores/useLicenseStore";
 import { useShortcutsStore } from "@/stores/useShortcutsStore";
+import { useBookmarksStore } from "@/stores/useBookmarksStore";
 
 const uiStore = useUiStore();
 const notesStore = useNotesStore();
@@ -32,6 +33,7 @@ const roadmapStore = useRoadmapStore();
 const vaultStore = useVaultStore();
 const licenseStore = useLicenseStore();
 const shortcutsStore = useShortcutsStore();
+const bookmarksStore = useBookmarksStore();
 
 function handleGlobalKeyDown(e: KeyboardEvent) {
   // Check if target is an editable input or textarea
@@ -178,6 +180,7 @@ onMounted(async () => {
 
   await licenseStore.checkLicense();
   await notesStore.loadNotes();
+  await bookmarksStore.loadBookmarks();
   roadmapStore.loadRoadmap();
 });
 

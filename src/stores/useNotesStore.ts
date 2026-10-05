@@ -466,7 +466,6 @@ export const useNotesStore = defineStore("notes", () => {
       n.events?.forEach((e) => e.tags?.forEach((t) => tagSet.add(t)));
       n.ai_explorations?.forEach((a) => a.tags?.forEach((t) => tagSet.add(t)));
       n.mood_gallery?.forEach((m) => m.tags?.forEach((t) => tagSet.add(t)));
-      n.bookmarks?.forEach((b) => b.tags?.forEach((t) => tagSet.add(t)));
     });
     return Array.from(tagSet);
   });
@@ -508,6 +507,7 @@ export const useNotesStore = defineStore("notes", () => {
     deleteBookmark,
     reorderBookmarks,
     resetToDefaults,
+    saveToLocal,
   };
 });
 
