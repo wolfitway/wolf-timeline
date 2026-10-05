@@ -1,6 +1,6 @@
 [package]
 name = "wolf-timeline"
-version = "1.1.0"
+version = "1.1.1"
 description = "Local-first, encrypted sovereign dev notes & timeline tool"
 edition = "2021"
 

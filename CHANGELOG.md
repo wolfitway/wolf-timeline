@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.1] - 2026-10-06
+
+### ⚡ Smart Secret & Credential Scanner Engine
+- **Expanded AI & Developer Key Detection**: Added native detection for DeepSeek API (`sk-[hex]{32}`), Google Gemini AI Studio (`AQ...`), Fal.ai (`uuid:secret`), and Paddle Merchant Sandbox/Production API keys.
+- **cURL Basic Authentication Parsing**: Added extractor for `curl -u "user:password"` commands that parses basic credentials, passwords containing spaces, and associates the target host/endpoint automatically.
+- **Multi-line Account Block Parsing**: Added resilient multi-line pattern matchers capable of extracting credentials formatted as consecutive lines of `service`, `username/email`, and high-entropy passwords (e.g. game dev portals, hosting platforms).
+- **Inline Credential Scraper**: Added recognition for inline formats like `hetzner pass: <secret>`, `asura host:<secret>`, and dual-field lines (`erovinieta pass <secret> email <user>`).
+- **Financial & Hardware Identifiers**: Added detection for International Bank Account Numbers (IBAN) and ISO 3779 Vehicle Identification Numbers (VIN).
+- **Unit Test Coverage**: Added 4 new test suites in `tests/scanner.test.ts` (25/25 total passing unit tests).
+
+---
+
 ## [1.1.0] - 2026-10-06
 
 ### 🎨 Themes & Design Tokens
