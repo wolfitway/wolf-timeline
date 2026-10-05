@@ -1,0 +1,27 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wolf Timeline
+GenericName=Sovereign Dev Notes & Timeline
+Comment=Local-first, encrypted sovereign dev notes, roadmap, bookmarks, and timeline tool
+Exec=/home/dan/Downloads/wolfnoteapp/src-tauri/target/release/wolf-timeline
+Path=/home/dan/Downloads/wolfnoteapp
+Icon=/home/dan/Downloads/wolfnoteapp/src-tauri/icons/icon.png
+Terminal=false
+Categories=Office;Utility;Development;TextEditor;ProjectManagement;
+Keywords=notes;timeline;roadmap;encryption;sovereign;developer;markdown;bookmarks;
+StartupWMClass=wolf-timeline
+StartupNotify=true
+Actions=NewNote;OpenBookmarks;OpenRoadmap;
+
+[Desktop Action NewNote]
+Name=New Document
+Exec=/home/dan/Downloads/wolfnoteapp/src-tauri/target/release/wolf-timeline
+
+[Desktop Action OpenBookmarks]
+Name=Bookmarks Hub
+Exec=/home/dan/Downloads/wolfnoteapp/src-tauri/target/release/wolf-timeline
+
+[Desktop Action OpenRoadmap]
+Name=Roadmap Center
+Exec=/home/dan/Downloads/wolfnoteapp/src-tauri/target/release/wolf-timeline
