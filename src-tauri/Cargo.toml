@@ -1,7 +1,7 @@
 [package]
-name = "dev-timeline"
-version = "0.2.0"
-description = "Local-first, encrypted dev notes & timeline tool"
+name = "wolf-timeline"
+version = "1.0.0-alpha.1"
+description = "Local-first, encrypted sovereign dev notes & timeline tool"
 edition = "2021"
 
 [build-dependencies]

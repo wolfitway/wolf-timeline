@@ -31,7 +31,7 @@ export type SettingsCategory =
   | "experts"
   | "performance";
 
-const activeCategory = ref<SettingsCategory>("connections");
+const activeCategory = ref<SettingsCategory>("shortcuts");
 const searchQuery = ref("");
 
 // Shortcuts State
@@ -1236,7 +1236,7 @@ function jumpToCategory(catId: SettingsCategory) {
                 :class="{ connected: connections[prod.id]?.connected }"
                 @click="toggleConnection(prod.id)"
               >
-                {{ connections[prod.id]?.connected ? "Disconnect" : "Connect Mock" }}
+                {{ connections[prod.id]?.connected ? "Disconnect" : "Connect" }}
               </button>
             </div>
           </div>
