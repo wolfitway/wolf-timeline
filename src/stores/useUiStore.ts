@@ -12,6 +12,8 @@ export const useUiStore = defineStore("ui", () => {
   const showFocusEditor = ref<boolean>(false);
   const showSecretScanner = ref<boolean>(false);
   const showSecretEditor = ref<boolean>(false);
+  const showBookmarkImporter = ref<boolean>(false);
+  const showVoiceGuideModal = ref<boolean>(false);
   const showLicenseModal = ref<boolean>(false);
   const showAiExplorationModal = ref<boolean>(false);
   const activeAiExplorationId = ref<string | null>(null);
@@ -102,6 +104,8 @@ export const useUiStore = defineStore("ui", () => {
     showFocusEditor,
     showSecretScanner,
     showSecretEditor,
+    showBookmarkImporter,
+    showVoiceGuideModal,
     showLicenseModal,
     showAiExplorationModal,
     activeAiExplorationId,

@@ -1561,6 +1561,14 @@ function toggleMoodTag(tag: string) {
               >
                 + Manual Entry
               </button>
+              <button
+                type="button"
+                class="btn-import-bookmarks-toggle"
+                @click="uiStore.showBookmarkImporter = true"
+                title="Import browser bookmarks (Chrome, Firefox, Safari, Brave)"
+              >
+                📑 Import Browser Bookmarks
+              </button>
             </div>
 
             <!-- Manual Add Doc Form -->
@@ -3337,6 +3345,25 @@ function toggleMoodTag(tag: string) {
 .btn-manual-doc-toggle:hover {
   background: #0f2b1f;
   color: #fff;
+}
+
+.btn-import-bookmarks-toggle {
+  background: #0b1f17;
+  border: 1px solid var(--emerald-main, #10b981);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: #34d399;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btn-import-bookmarks-toggle:hover {
+  background: #10b981;
+  color: #040c08;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
 }
 
 .doc-item-left {

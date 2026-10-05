@@ -15,6 +15,8 @@ import LicenseActivationModal from "@/components/modals/LicenseActivationModal.v
 import FocusEditorModal from "@/components/modals/FocusEditorModal.vue";
 import ImageLightboxModal from "@/components/modals/ImageLightboxModal.vue";
 import AiExplorationModal from "@/components/modals/AiExplorationModal.vue";
+import BookmarkImporterModal from "@/components/modals/BookmarkImporterModal.vue";
+import VoiceGuideModal from "@/components/modals/VoiceGuideModal.vue";
 
 import { useUiStore } from "@/stores/useUiStore";
 import { useNotesStore } from "@/stores/useNotesStore";
@@ -170,6 +172,8 @@ onUnmounted(() => {
     <FocusEditorModal />
     <ImageLightboxModal />
     <AiExplorationModal />
+    <BookmarkImporterModal />
+    <VoiceGuideModal />
 
     <!-- Toast Notification -->
     <div v-if="uiStore.toastMessage" class="global-toast">

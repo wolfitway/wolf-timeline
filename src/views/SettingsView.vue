@@ -7,6 +7,8 @@ import { useVaultStore } from "@/stores/useVaultStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useLicenseStore } from "@/stores/useLicenseStore";
 import { useShortcutsStore, type KeyCombo } from "@/stores/useShortcutsStore";
+import { kokoroVoice } from "@/services/voiceGuide";
+import { voiceControl } from "@/services/voiceControl";
 
 const notesStore = useNotesStore();
 const roadmapStore = useRoadmapStore();
@@ -24,6 +26,7 @@ export type SettingsCategory =
   | "export"
   | "themes"
   | "fonts"
+  | "voice"
   | "license"
   | "experts"
   | "performance";
@@ -544,6 +547,7 @@ const categories = computed(() => [
   { id: "export" as SettingsCategory, label: "Data Export & Backup", icon: "📦", count: 4 },
   { id: "themes" as SettingsCategory, label: "Appearance & Themes", icon: "🎨", count: themesList.length },
   { id: "fonts" as SettingsCategory, label: "Typography & Fonts", icon: "🔤", count: fontsList.length },
+  { id: "voice" as SettingsCategory, label: "Kokoro Voice & Audio", icon: "💖", count: "ACTIVE" },
   { id: "license" as SettingsCategory, label: "Hardware & Licensing", icon: "🔐", count: licenseStore.isActivated ? "ACTIVE" : "FREE" },
   { id: "experts" as SettingsCategory, label: "Council of Experts", icon: "🐺", count: SOVEREIGN_EXPERTS.length },
   { id: "performance" as SettingsCategory, label: "Reordering & Physics", icon: "🚀", count: "SMOOTH" },
@@ -1431,6 +1435,19 @@ function jumpToCategory(catId: SettingsCategory) {
           </div>
 
           <div class="export-feature-card">
+            <div class="export-icon-box">📑</div>
+            <div class="export-card-body">
+              <h4 class="export-item-title">Import Browser Bookmarks (Chrome / Firefox / Safari)</h4>
+              <p class="export-item-desc">Import bookmarks from any browser export (.html). Extracted into verified offline web research resources with tag clustering and zero cloud tracking.</p>
+              <div class="export-actions">
+                <button type="button" class="btn-primary-export" @click="uiStore.showBookmarkImporter = true">
+                  <span>📂</span> Launch Bookmark Importer
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-feature-card">
             <div class="export-icon-box">🔄</div>
             <div class="export-card-body">
               <h4 class="export-item-title">Restore / Import Vault</h4>
@@ -1552,8 +1569,36 @@ function jumpToCategory(catId: SettingsCategory) {
 
         <!-- Font Scale Slider -->
         <div class="settings-subgroup">
-          <h4 class="subgroup-title">Base UI Scaling</h4>
+          <div class="subgroup-header-row">
+            <h4 class="subgroup-title">Display &amp; Font Scaling (Power Users)</h4>
+            <span class="active-scale-pill">{{ fontScale }}px Active</span>
+          </div>
+          <div class="font-scale-slider-wrap">
+            <input
+              type="range"
+              min="11"
+              max="20"
+              step="1"
+              :value="fontScale"
+              class="scale-range-slider"
+              @input="(e) => changeFontScale((e.target as HTMLInputElement).value)"
+            />
+            <div class="scale-ticks-row">
+              <span class="scale-tick">11px (Micro)</span>
+              <span class="scale-tick">14px (Standard)</span>
+              <span class="scale-tick">16px (Dense Power)</span>
+              <span class="scale-tick">20px (Ultra Large)</span>
+            </div>
+          </div>
           <div class="font-scale-selector">
+            <button
+              type="button"
+              class="scale-btn"
+              :class="{ active: fontScale === '12' }"
+              @click="changeFontScale('12')"
+            >
+              Dense (12px)
+            </button>
             <button
               type="button"
               class="scale-btn"
@@ -1578,6 +1623,105 @@ function jumpToCategory(catId: SettingsCategory) {
             >
               Roomy (15px)
             </button>
+            <button
+              type="button"
+              class="scale-btn"
+              :class="{ active: fontScale === '16' }"
+              @click="changeFontScale('16')"
+            >
+              Large (16px)
+            </button>
+            <button
+              type="button"
+              class="scale-btn"
+              :class="{ active: fontScale === '18' }"
+              @click="changeFontScale('18')"
+            >
+              Executive (18px)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Kokoro Voice Heart & Voice Control -->
+      <div v-else-if="activeCategory === 'voice'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title">💖 Kokoro Voice Heart &amp; Voice Control Engine</h3>
+            <p class="pane-desc">Audio companion guidance, procedural heart chimes, and hands-free voice command system.</p>
+          </div>
+          <button type="button" class="btn-primary-export" @click="uiStore.showVoiceGuideModal = true">
+            <span>⚙️</span> Open Voice Companion Studio
+          </button>
+        </div>
+
+        <div class="voice-settings-cards-grid">
+          <!-- Kokoro Status Card -->
+          <div class="voice-feature-card">
+            <div class="voice-card-top">
+              <div class="voice-avatar-mini">💖</div>
+              <div>
+                <h4 class="voice-card-title">Kokoro Voice Heart Presence</h4>
+                <p class="voice-card-sub">Warm spoken confirmations, focus encouragement, and milestone celebrations</p>
+              </div>
+            </div>
+            <div class="voice-card-actions">
+              <button
+                type="button"
+                class="btn-secondary-action"
+                @click="() => { kokoroVoice.playHeartChime('affirm'); kokoroVoice.speak('Kokoro Voice Heart online.'); }"
+              >
+                ▶ Test Voice Audio
+              </button>
+              <button
+                type="button"
+                class="btn-primary-export"
+                @click="uiStore.showVoiceGuideModal = true"
+              >
+                Configure Voice &amp; Pitch
+              </button>
+            </div>
+          </div>
+
+          <!-- Hands-Free Voice Commands Card -->
+          <div class="voice-feature-card">
+            <div class="voice-card-top">
+              <div class="voice-avatar-mini mic">🎙️</div>
+              <div>
+                <h4 class="voice-card-title">Supported Hands-Free Voice Commands</h4>
+                <p class="voice-card-sub">Speak naturally while writing or ideating to command your workspace</p>
+              </div>
+            </div>
+            <div class="voice-commands-list">
+              <div class="voice-cmd-row">
+                <span class="cmd-phrase">"go to timeline" / "open timeline"</span>
+                <span class="cmd-action">&rarr; Switch to Timeline Chronology</span>
+              </div>
+              <div class="voice-cmd-row">
+                <span class="cmd-phrase">"go to studio" / "open studio"</span>
+                <span class="cmd-action">&rarr; Switch to Studio Deep-Focus Writer</span>
+              </div>
+              <div class="voice-cmd-row">
+                <span class="cmd-phrase">"go to roadmap" / "open roadmap"</span>
+                <span class="cmd-action">&rarr; Switch to Roadmap Phases</span>
+              </div>
+              <div class="voice-cmd-row">
+                <span class="cmd-phrase">"open vault" / "lock vault"</span>
+                <span class="cmd-action">&rarr; View Credentials / Emergency Lock</span>
+              </div>
+              <div class="voice-cmd-row">
+                <span class="cmd-phrase">"quick capture"</span>
+                <span class="cmd-action">&rarr; Open Instant Quick Capture Modal</span>
+              </div>
+              <div class="voice-cmd-row">
+                <span class="cmd-phrase">"import bookmarks"</span>
+                <span class="cmd-action">&rarr; Launch Browser Bookmarks Importer</span>
+              </div>
+              <div class="voice-cmd-row">
+                <span class="cmd-phrase">"new note"</span>
+                <span class="cmd-action">&rarr; Create New Note &amp; Jump to Studio</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -2477,10 +2621,54 @@ function jumpToCategory(catId: SettingsCategory) {
   color: #6b7280;
 }
 
+.subgroup-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.active-scale-pill {
+  background: var(--emerald-pill-bg, #092017);
+  border: 1px solid var(--emerald-pill-border, #143d2a);
+  color: var(--emerald-bright, #34d399);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+}
+
+.font-scale-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #06110c;
+  border: 1px solid #10261b;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.scale-range-slider {
+  width: 100%;
+  accent-color: var(--emerald-main, #10b981);
+  cursor: pointer;
+}
+
+.scale-ticks-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--text-dim, #64748b);
+  font-family: var(--font-mono);
+}
+
 /* Font Scale Buttons */
 .font-scale-selector {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .scale-btn {
@@ -2504,6 +2692,91 @@ function jumpToCategory(catId: SettingsCategory) {
   background: #0d281c;
   border-color: var(--emerald-main, #10b981);
   color: #fff;
+}
+
+/* Voice Settings */
+.voice-settings-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.voice-feature-card {
+  background: #08120e;
+  border: 1px solid #14281f;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.voice-card-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.voice-avatar-mini {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #190d14;
+  border: 1px solid #3d1c2b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.voice-avatar-mini.mic {
+  background: #081a12;
+  border-color: #123d29;
+}
+
+.voice-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.voice-card-sub {
+  font-size: 12px;
+  color: var(--text-secondary, #94a3b8);
+  margin: 3px 0 0;
+}
+
+.voice-card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.voice-commands-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #050d09;
+  border: 1px solid #0d2116;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.voice-cmd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.cmd-phrase {
+  font-family: var(--font-mono);
+  color: var(--emerald-bright, #34d399);
+  font-weight: 600;
+}
+
+.cmd-action {
+  color: #94a3b8;
 }
 
 /* License overview */

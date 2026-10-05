@@ -83,3 +83,8 @@ export async function tauriDeactivateLicense(): Promise<boolean> {
   const res = await invokeTauri<void>("deactivate_license");
   return res !== null;
 }
+
+export async function tauriSystemTts(text: string, rate?: number, pitch?: number): Promise<boolean> {
+  const res = await invokeTauri<boolean>("system_tts", { text, rate, pitch });
+  return !!res;
+}

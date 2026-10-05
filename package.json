@@ -1,6 +1,6 @@
 {
   "name": "wolf-timeline",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.5.0",
+    "kokoro-js": "^1.2.1",
     "pinia": "^2.1.0",
     "vue": "^3.4.0"
   },

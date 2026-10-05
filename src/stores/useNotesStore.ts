@@ -397,6 +397,14 @@ export const useNotesStore = defineStore("notes", () => {
     saveToLocal();
   }
 
+  function importBookmarks(noteId: number, bms: WebBookmark[]) {
+    const note = notes.value.find((n) => n.id === noteId);
+    if (!note) return;
+    if (!note.bookmarks) note.bookmarks = [];
+    note.bookmarks.unshift(...bms);
+    saveToLocal();
+  }
+
   function updateBookmark(noteId: number, bmId: string, updates: Partial<WebBookmark>) {
     const note = notes.value.find((n) => n.id === noteId);
     if (!note || !note.bookmarks) return;
@@ -495,6 +503,7 @@ export const useNotesStore = defineStore("notes", () => {
     moveMoodImage,
     reorderMoodImages,
     addBookmark,
+    importBookmarks,
     updateBookmark,
     deleteBookmark,
     reorderBookmarks,

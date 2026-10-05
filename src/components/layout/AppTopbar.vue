@@ -1,13 +1,18 @@
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
 import { useUiStore, type ActiveTab } from "@/stores/useUiStore";
 import { useVaultStore } from "@/stores/useVaultStore";
 import { useShortcutsStore } from "@/stores/useShortcutsStore";
 import { useLicenseStore } from "@/stores/useLicenseStore";
+import { useNotesStore } from "@/stores/useNotesStore";
+import { kokoroVoice } from "@/services/voiceGuide";
+import { voiceControl, type VoiceControlStatus } from "@/services/voiceControl";
 
 const uiStore = useUiStore();
 const vaultStore = useVaultStore();
 const shortcutsStore = useShortcutsStore();
 const licenseStore = useLicenseStore();
+const notesStore = useNotesStore();
 const isDev = import.meta.env.DEV;
 
 const navItems: { id: ActiveTab; label: string; icon?: string }[] = [
@@ -17,6 +22,162 @@ const navItems: { id: ActiveTab; label: string; icon?: string }[] = [
   { id: "secrets", label: "Secret Vault", icon: "🔐" },
   { id: "settings", label: "Settings" },
 ];
+
+// Voice control status
+const voiceStatus = ref<VoiceControlStatus>(voiceControl.getStatus());
+
+onMounted(() => {
+  // Register hands-free voice commands
+  voiceControl.registerCommands([
+    {
+      phrase: "go to timeline",
+      description: "Navigate to Timeline",
+      action: () => {
+        uiStore.setTab("timeline");
+        kokoroVoice.speak("Switched to timeline.");
+      },
+    },
+    {
+      phrase: "open timeline",
+      description: "Navigate to Timeline",
+      action: () => {
+        uiStore.setTab("timeline");
+        kokoroVoice.speak("Switched to timeline.");
+      },
+    },
+    {
+      phrase: "go to studio",
+      description: "Navigate to Studio",
+      action: () => {
+        uiStore.setTab("studio");
+        kokoroVoice.speak("Studio opened for focus writing.");
+      },
+    },
+    {
+      phrase: "open studio",
+      description: "Navigate to Studio",
+      action: () => {
+        uiStore.setTab("studio");
+        kokoroVoice.speak("Studio opened.");
+      },
+    },
+    {
+      phrase: "go to roadmap",
+      description: "Navigate to Roadmap",
+      action: () => {
+        uiStore.setTab("roadmap");
+        kokoroVoice.speak("Roadmap view displayed.");
+      },
+    },
+    {
+      phrase: "open roadmap",
+      description: "Navigate to Roadmap",
+      action: () => {
+        uiStore.setTab("roadmap");
+        kokoroVoice.speak("Roadmap opened.");
+      },
+    },
+    {
+      phrase: "go to settings",
+      description: "Navigate to Settings",
+      action: () => {
+        uiStore.setTab("settings");
+        kokoroVoice.speak("Settings center opened.");
+      },
+    },
+    {
+      phrase: "open settings",
+      description: "Navigate to Settings",
+      action: () => {
+        uiStore.setTab("settings");
+        kokoroVoice.speak("Settings center opened.");
+      },
+    },
+    {
+      phrase: "open vault",
+      description: "Navigate to Vault",
+      action: () => {
+        uiStore.setTab("secrets");
+        kokoroVoice.speak("Hardware vault accessed.");
+      },
+    },
+    {
+      phrase: "lock vault",
+      description: "Emergency Vault Lock",
+      action: () => {
+        vaultStore.lockVault();
+        kokoroVoice.playHeartChime("notice");
+        kokoroVoice.speak("Vault locked immediately.");
+        uiStore.showToast("🔒 Secret Vault locked via Voice Command");
+      },
+    },
+    {
+      phrase: "quick capture",
+      description: "Open Quick Capture Modal",
+      action: () => {
+        uiStore.showQuickCapture = true;
+        kokoroVoice.speak("Quick capture ready.");
+      },
+    },
+    {
+      phrase: "import bookmarks",
+      description: "Open Bookmarks Importer",
+      action: () => {
+        uiStore.showBookmarkImporter = true;
+        kokoroVoice.speak("Opening browser bookmark importer.");
+      },
+    },
+    {
+      phrase: "new note",
+      description: "Create New Project Document",
+      action: () => {
+        notesStore.addNote({
+          title: "Voice Captured Note",
+          body: "# Voice Captured Document\n\nInitiated via hands-free voice command.",
+          tags: ["voice", "capture"],
+          kind: "idea",
+          status: "ideation",
+        }).then(() => {
+          uiStore.setTab("studio");
+          kokoroVoice.playHeartChime("affirm");
+          kokoroVoice.speak("Created new document and moved to Studio.");
+          uiStore.showToast("Created new document via Voice ✓");
+        });
+      },
+    },
+    {
+      phrase: "search",
+      description: "Open Command Palette",
+      action: () => {
+        uiStore.showCommandPalette = true;
+        kokoroVoice.speak("Search palette open.");
+      },
+    },
+  ]);
+
+  voiceControl.onStatusChange((status) => {
+    voiceStatus.value = status;
+  });
+});
+
+function toggleVoiceControl() {
+  if (!voiceStatus.value.isSupported) {
+    kokoroVoice.playHeartChime("notice");
+    kokoroVoice.speak("Voice guidance and audio chimes are active. Hands-free speech recognition requires a Chromium or Edge environment.");
+    uiStore.showToast("Kokoro voice audio active ♥ (Note: Speech input requires Chromium/Chrome on Linux)");
+    return;
+  }
+
+  const active = voiceControl.toggleListening();
+  if (active) {
+    kokoroVoice.playHeartChime("listen");
+    kokoroVoice.speak("Voice control active. Listening for commands.");
+    uiStore.showToast("🎙️ Voice Control listening... (say 'go to studio', 'lock vault', etc.)");
+  } else {
+    kokoroVoice.playHeartChime("affirm");
+    uiStore.showToast("Voice control stopped");
+  }
+}
 
 function handleSecurityBadgeClick() {
   if (uiStore.activeTab === "secrets") {
@@ -84,6 +245,41 @@ function handleSecurityBadgeClick() {
         </svg>
         <span>Search</span>
         <kbd class="search-kbd">{{ shortcutsStore.formatShortcut('command_palette') }}</kbd>
+      </button>
+
+      <!-- Import Bookmarks Trigger -->
+      <button
+        type="button"
+        class="topbar-action-icon-btn"
+        @click="uiStore.showBookmarkImporter = true"
+        title="Import Bookmarks from Chrome, Firefox, Safari, Brave (Safe & Offline)"
+      >
+        <span class="btn-icon">📑</span>
+        <span class="btn-label-desktop">Import Bookmarks</span>
+      </button>
+
+      <!-- Kokoro Voice Heart Companion Trigger -->
+      <button
+        type="button"
+        class="topbar-kokoro-btn"
+        @click="uiStore.showVoiceGuideModal = true"
+        title="Kokoro Voice Heart — Audio Companion & Guidance"
+      >
+        <span class="kokoro-icon-pulse">💖</span>
+        <span class="btn-label-desktop">Kokoro Voice</span>
+      </button>
+
+      <!-- Hands-Free Voice Control Toggle -->
+      <button
+        type="button"
+        class="topbar-voice-control-btn"
+        :class="{ listening: voiceStatus.isListening }"
+        @click="toggleVoiceControl"
+        :title="voiceStatus.isListening ? 'Voice Control Listening... Click to Pause' : 'Enable Hands-Free Voice Control'"
+      >
+        <span class="mic-icon">{{ voiceStatus.isListening ? '🎙️' : '🎤' }}</span>
+        <span>{{ voiceStatus.isListening ? 'Listening...' : 'Voice Control' }}</span>
+        <span v-if="voiceStatus.isListening" class="listening-wave-dot"></span>
       </button>
 
       <!-- License / Tier Status Trigger -->
@@ -258,6 +454,110 @@ function handleSecurityBadgeClick() {
   padding: 1px 5px;
   border-radius: 4px;
   border: 1px solid #14432c;
+}
+
+.topbar-action-icon-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #061610;
+  border: 1px solid #113424;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.topbar-action-icon-btn:hover {
+  background: #092017;
+  border-color: var(--emerald-main, #10b981);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.topbar-kokoro-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #140b10;
+  border: 1px solid #3b1424;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fda4af;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.topbar-kokoro-btn:hover {
+  background: #2a0e1c;
+  border-color: #f43f5e;
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.3);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.kokoro-icon-pulse {
+  font-size: 13px;
+  animation: heartPulse 2s infinite ease-in-out;
+}
+
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.topbar-voice-control-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #061610;
+  border: 1px solid #113424;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+}
+
+.topbar-voice-control-btn:hover {
+  background: #092017;
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #fff;
+}
+
+.topbar-voice-control-btn.listening {
+  background: #092017;
+  border-color: var(--emerald-bright, #34d399);
+  color: #34d399;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+}
+
+.listening-wave-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34d399;
+  animation: listenPulse 1s infinite alternate ease-in-out;
+}
+
+@keyframes listenPulse {
+  from {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.4);
+    opacity: 1;
+    box-shadow: 0 0 8px #34d399;
+  }
 }
 
 .topbar-license-btn {

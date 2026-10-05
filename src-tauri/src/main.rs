@@ -1009,6 +1009,42 @@ fn deactivate_license() -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn system_tts(text: String, rate: Option<f32>, pitch: Option<f32>) -> Result<bool, String> {
+    let clean_text = text.replace('"', "").replace('\'', "").replace('\n', " ");
+    
+    // Calculate rate parameter for spd-say (-100 to +100)
+    let spd_rate = match rate {
+        Some(r) => ((r - 1.0) * 100.0).clamp(-100.0, 100.0) as i32,
+        None => 0,
+    };
+    
+    // Calculate pitch parameter (-100 to +100)
+    let spd_pitch = match pitch {
+        Some(p) => ((p - 1.0) * 100.0).clamp(-100.0, 100.0) as i32,
+        None => 15, // slightly warm/higher pitch for Kokoro
+    };
+
+    // Spawn spd-say process in background
+    let child = std::process::Command::new("spd-say")
+        .arg("-r")
+        .arg(spd_rate.to_string())
+        .arg("-p")
+        .arg(spd_pitch.to_string())
+        .arg("-t")
+        .arg("female2")
+        .arg(&clean_text)
+        .spawn();
+
+    match child {
+        Ok(_) => Ok(true),
+        Err(e) => {
+            eprintln!("[system_tts] spd-say not available: {}", e);
+            Ok(false)
+        }
+    }
+}
+
 fn main() {
     let key = load_or_create_key();
     let conn = Connection::open(db_path()).expect("failed to open sqlite db");
@@ -1037,7 +1073,8 @@ fn main() {
             save_vault_secret,
             delete_vault_secret,
             get_vault_meta,
-            set_vault_meta
+            set_vault_meta,
+            system_tts
         ])
         .run(tauri::generate_context!())
         .expect("error while running dev-timeline");

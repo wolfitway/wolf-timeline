@@ -26,6 +26,124 @@
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
 }
 
+/* Theme Presets */
+[data-theme="cyan"] {
+  --bg-canvas: #030a0e;
+  --bg-surface: #06151f;
+  --bg-card: #081a26;
+  --bg-card-selected: #0a2233;
+  --bg-input: #030e17;
+
+  --border-subtle: #0d2838;
+  --border-card: #123447;
+  --border-focus: #06b6d4;
+  --border-active: #06b6d4;
+
+  --emerald-main: #06b6d4;
+  --emerald-bright: #22d3ee;
+  --emerald-deep: #0891b2;
+  --emerald-glow: rgba(6, 182, 212, 0.25);
+  --emerald-pill-bg: #082f38;
+  --emerald-pill-border: #0e4e5e;
+}
+
+[data-theme="amber"] {
+  --bg-canvas: #0d0a04;
+  --bg-surface: #171207;
+  --bg-card: #1f1809;
+  --bg-card-selected: #29200c;
+  --bg-input: #120e05;
+
+  --border-subtle: #2b220d;
+  --border-card: #3b2e12;
+  --border-focus: #f59e0b;
+  --border-active: #f59e0b;
+
+  --emerald-main: #f59e0b;
+  --emerald-bright: #fbbf24;
+  --emerald-deep: #d97706;
+  --emerald-glow: rgba(245, 158, 11, 0.25);
+  --emerald-pill-bg: #382708;
+  --emerald-pill-border: #573d0d;
+}
+
+[data-theme="sapphire"] {
+  --bg-canvas: #050612;
+  --bg-surface: #0b0d24;
+  --bg-card: #0f1230;
+  --bg-card-selected: #161a42;
+  --bg-input: #07091a;
+
+  --border-subtle: #191c47;
+  --border-card: #232863;
+  --border-focus: #6366f1;
+  --border-active: #6366f1;
+
+  --emerald-main: #6366f1;
+  --emerald-bright: #818cf8;
+  --emerald-deep: #4f46e5;
+  --emerald-glow: rgba(99, 102, 241, 0.25);
+  --emerald-pill-bg: #1c1f4a;
+  --emerald-pill-border: #2e337d;
+}
+
+[data-theme="crimson"] {
+  --bg-canvas: #0e0404;
+  --bg-surface: #1a0808;
+  --bg-card: #240b0b;
+  --bg-card-selected: #330f0f;
+  --bg-input: #120505;
+
+  --border-subtle: #381212;
+  --border-card: #4d1818;
+  --border-focus: #ef4444;
+  --border-active: #ef4444;
+
+  --emerald-main: #ef4444;
+  --emerald-bright: #f87171;
+  --emerald-deep: #dc2626;
+  --emerald-glow: rgba(239, 68, 68, 0.25);
+  --emerald-pill-bg: #3d0e0e;
+  --emerald-pill-border: #631717;
+}
+
+[data-theme="matrix"] {
+  --bg-canvas: #020803;
+  --bg-surface: #041206;
+  --bg-card: #061a09;
+  --bg-card-selected: #09260d;
+  --bg-input: #020d04;
+
+  --border-subtle: #0c2b12;
+  --border-card: #123d19;
+  --border-focus: #22c55e;
+  --border-active: #22c55e;
+
+  --emerald-main: #22c55e;
+  --emerald-bright: #4ade80;
+  --emerald-deep: #16a34a;
+  --emerald-glow: rgba(34, 197, 94, 0.3);
+  --emerald-pill-bg: #052e16;
+  --emerald-pill-border: #0b4f26;
+}
+
+/* Font Families */
+[data-font="inter"] {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+[data-font="outfit"] {
+  --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+[data-font="jakarta"] {
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+[data-font="mono"] {
+  --font-sans: "JetBrains Mono", monospace;
+}
+[data-font="fira"] {
+  --font-sans: "Fira Code", "JetBrains Mono", monospace;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -43,8 +161,8 @@ body {
 
 /* Custom Obsidian Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -52,12 +170,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #102a1e;
+  background: var(--border-card);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #1b4431;
+  background: var(--emerald-deep);
 }
 
 /* Global focus styles */
@@ -69,4 +187,3 @@ body {
 button {
   font-family: inherit;
 }
-
