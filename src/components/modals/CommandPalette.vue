@@ -260,8 +260,8 @@ function handleKeyDown(e: KeyboardEvent) {
 .palette-container {
   width: 620px;
   max-width: 92vw;
-  background: #08110d;
-  border: 1px solid #162c21;
+  background: var(--bg-card, #08110d);
+  border: 1px solid var(--border-card, #162c21);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.12);
   display: flex;
@@ -274,7 +274,7 @@ function handleKeyDown(e: KeyboardEvent) {
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  border-bottom: 1px solid #14281f;
+  border-bottom: 1px solid var(--border-subtle, #14281f);
 }
 
 .palette-icon {
@@ -286,19 +286,19 @@ function handleKeyDown(e: KeyboardEvent) {
   background: transparent;
   border: none;
   font-size: 14.5px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   outline: none;
 }
 
 .palette-input::placeholder {
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
 }
 
 .palette-esc-badge {
   font-family: var(--font-mono, monospace);
   font-size: 11px;
-  background: #11221a;
-  color: #9ca3af;
+  background: var(--bg-inner, #11221a);
+  color: var(--text-secondary, #9ca3af);
   padding: 2px 7px;
   border-radius: 4px;
   cursor: pointer;
@@ -324,7 +324,7 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 .palette-item.active {
-  background: rgba(16, 185, 129, 0.14);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.14));
 }
 
 .item-icon {
@@ -342,7 +342,7 @@ function handleKeyDown(e: KeyboardEvent) {
 .item-title {
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -350,7 +350,7 @@ function handleKeyDown(e: KeyboardEvent) {
 
 .item-subtitle {
   font-size: 11.5px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -359,18 +359,18 @@ function handleKeyDown(e: KeyboardEvent) {
 .item-badge {
   font-size: 10px;
   font-weight: 700;
-  background: #10241b;
+  background: var(--bg-inner, #10241b);
   color: var(--emerald-bright, #34d399);
   padding: 2px 8px;
   border-radius: 6px;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.25));
 }
 
 .palette-empty {
   padding: 30px;
   text-align: center;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
 }
 
 .palette-footer {
@@ -378,10 +378,10 @@ function handleKeyDown(e: KeyboardEvent) {
   align-items: center;
   justify-content: space-between;
   padding: 10px 18px;
-  background: #050b08;
-  border-top: 1px solid #14281f;
+  background: var(--bg-surface, #050b08);
+  border-top: 1px solid var(--border-subtle, #14281f);
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
 }
 
 .shortcut-hints {
@@ -390,7 +390,7 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 .shortcut-hints kbd {
-  background: #11221a;
+  background: var(--bg-inner, #11221a);
   color: var(--emerald-bright, #34d399);
   padding: 1px 4px;
   border-radius: 3px;
@@ -399,6 +399,7 @@ function handleKeyDown(e: KeyboardEvent) {
 
 .palette-branding {
   font-weight: 700;
-  color: #4b6357;
+  color: var(--emerald-bright, #4b6357);
+  opacity: 0.8;
 }
 </style>

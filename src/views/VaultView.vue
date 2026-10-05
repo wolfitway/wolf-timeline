@@ -244,7 +244,7 @@ function copyToClipboard(val?: string) {
 .vault-view {
   flex: 1;
   height: calc(100vh - 60px);
-  background: #040c08;
+  background: var(--bg-body, #040c08);
   overflow: hidden;
   display: flex;
 }
@@ -261,11 +261,11 @@ function copyToClipboard(val?: string) {
 .vault-locked-card {
   width: 480px;
   max-width: 92vw;
-  background: #09120e;
-  border: 1px solid #162c21;
+  background: var(--bg-card, #09120e);
+  border: 1px solid var(--border-card, #162c21);
   border-radius: 18px;
   padding: 34px 38px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px var(--border-glow, rgba(16, 185, 129, 0.1));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -276,8 +276,8 @@ function copyToClipboard(val?: string) {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.3));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,13 +308,13 @@ function copyToClipboard(val?: string) {
 .vault-headline {
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin-bottom: 6px;
 }
 
 .vault-sub {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-muted, #9ca3af);
   line-height: 1.5;
   margin-bottom: 18px;
 }
@@ -328,18 +328,18 @@ function copyToClipboard(val?: string) {
 
 .pass-input {
   width: 100%;
-  background: #050b08;
-  border: 1px solid #142820;
+  background: var(--bg-surface, #050b08);
+  border: 1px solid var(--border-card, #142820);
   border-radius: 8px;
   padding: 11px 14px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 13.5px;
   outline: none;
   text-align: center;
 }
 
 .pass-input:focus {
-  border-color: var(--emerald-bright, #34d399);
+  border-color: var(--border-selected, #34d399);
 }
 
 .vault-error {
@@ -352,15 +352,15 @@ function copyToClipboard(val?: string) {
 
 .btn-unlock-vault {
   width: 100%;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #03100a;
+  background: linear-gradient(135deg, var(--emerald-main, #10b981) 0%, var(--emerald-deep, #059669) 100%);
+  color: var(--bg-body, #03100a);
   border: none;
   border-radius: 8px;
   padding: 11px 18px;
   font-size: 13.5px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.25));
   transition: all 0.15s ease;
 }
 
@@ -371,7 +371,7 @@ function copyToClipboard(val?: string) {
 .vault-guarantee {
   margin-top: 18px;
   font-size: 10.5px;
-  color: #6b7280;
+  color: var(--text-muted, #6b7280);
 }
 
 /* Unlocked Active Locker */
@@ -386,8 +386,8 @@ function copyToClipboard(val?: string) {
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
-  background: #08110d;
-  border-bottom: 1px solid #11221a;
+  background: var(--bg-card, #08110d);
+  border-bottom: 1px solid var(--border-subtle, #11221a);
   gap: 12px;
 }
 
@@ -395,8 +395,8 @@ function copyToClipboard(val?: string) {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #050b08;
-  border: 1px solid #142820;
+  background: var(--bg-surface, #050b08);
+  border: 1px solid var(--border-card, #142820);
   border-radius: 8px;
   padding: 6px 12px;
   width: 240px;
@@ -407,7 +407,7 @@ function copyToClipboard(val?: string) {
   background: transparent;
   border: none;
   font-size: 12px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   outline: none;
 }
 
@@ -418,19 +418,19 @@ function copyToClipboard(val?: string) {
 
 .cat-tab {
   background: transparent;
-  border: 1px solid #142820;
+  border: 1px solid var(--border-card, #142820);
   border-radius: 6px;
   padding: 5px 10px;
   font-size: 11.5px;
   font-weight: 600;
-  color: #9ca3af;
+  color: var(--text-gray, #9ca3af);
   cursor: pointer;
 }
 
 .cat-tab.active {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #fff;
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.15));
+  border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
+  color: var(--text-primary, #fff);
 }
 
 .vault-header-actions {
@@ -440,8 +440,8 @@ function copyToClipboard(val?: string) {
 }
 
 .btn-scan-trigger {
-  background: #10241b;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--emerald-pill-bg, #10241b);
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.3));
   border-radius: 6px;
   padding: 6px 12px;
   color: var(--emerald-bright, #34d399);
@@ -451,8 +451,8 @@ function copyToClipboard(val?: string) {
 }
 
 .btn-add-secret {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #03100a;
+  background: linear-gradient(135deg, var(--emerald-main, #10b981) 0%, var(--emerald-deep, #059669) 100%);
+  color: var(--bg-body, #03100a);
   border: none;
   border-radius: 6px;
   padding: 6px 14px;
@@ -463,10 +463,10 @@ function copyToClipboard(val?: string) {
 
 .btn-lock-now {
   background: transparent;
-  border: 1px solid #142820;
+  border: 1px solid var(--border-card, #142820);
   border-radius: 6px;
   padding: 6px 10px;
-  color: #9ca3af;
+  color: var(--text-gray, #9ca3af);
   font-size: 11.5px;
   cursor: pointer;
 }
@@ -482,13 +482,18 @@ function copyToClipboard(val?: string) {
 }
 
 .secret-card {
-  background: #08120e;
-  border: 1px solid #14281f;
+  background: var(--bg-card, #08120e);
+  border: 1px solid var(--border-card, #14281f);
   border-radius: 12px;
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: all 0.18s ease;
+}
+.secret-card:hover {
+  border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 12px var(--border-glow, rgba(16, 185, 129, 0.1));
 }
 
 .secret-card-top {
@@ -499,21 +504,22 @@ function copyToClipboard(val?: string) {
 .secret-category-badge {
   font-size: 9.5px;
   font-weight: 800;
-  background: #11221a;
+  background: var(--bg-surface, #11221a);
   color: var(--emerald-bright, #34d399);
   padding: 2px 6px;
   border-radius: 4px;
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.2));
 }
 
 .secret-date {
   font-size: 10.5px;
-  color: #6b7280;
+  color: var(--text-muted, #6b7280);
 }
 
 .secret-service-name {
   font-size: 14px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin: 0;
 }
 
@@ -526,13 +532,13 @@ function copyToClipboard(val?: string) {
 
 .field-label {
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--text-gray, #9ca3af);
   width: 65px;
 }
 
 .field-value {
   flex: 1;
-  color: #e5e7eb;
+  color: var(--text-primary, #e5e7eb);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -545,7 +551,7 @@ function copyToClipboard(val?: string) {
 
 .field-value.small {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted, #9ca3af);
 }
 
 .field-actions {
@@ -555,21 +561,22 @@ function copyToClipboard(val?: string) {
 
 .btn-eye-mini,
 .btn-copy-mini {
-  background: #050b08;
-  border: 1px solid #142820;
+  background: var(--bg-surface, #050b08);
+  border: 1px solid var(--border-card, #142820);
   border-radius: 4px;
   padding: 2px 6px;
   cursor: pointer;
   font-size: 10px;
+  color: var(--text-gray, #e2e8f0);
 }
 
 .secret-notes-preview {
-  background: #050b08;
-  border: 1px solid #142820;
+  background: var(--bg-surface, #050b08);
+  border: 1px solid var(--border-card, #142820);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-gray, #9ca3af);
   line-height: 1.4;
 }
 
@@ -582,7 +589,7 @@ function copyToClipboard(val?: string) {
 .btn-secret-del {
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--text-muted, #6b7280);
   font-size: 11px;
   cursor: pointer;
 }
@@ -609,13 +616,13 @@ function copyToClipboard(val?: string) {
 .secrets-empty-state h3 {
   font-size: 16px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin: 0;
 }
 
 .secrets-empty-state p {
   font-size: 12.5px;
-  color: #9ca3af;
+  color: var(--text-muted, #9ca3af);
   max-width: 400px;
   margin: 0;
 }

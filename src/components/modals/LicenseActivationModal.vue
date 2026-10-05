@@ -403,8 +403,8 @@ async function handleDeactivate() {
   max-width: 95vw;
   max-height: 90vh;
   overflow-y: auto;
-  background: #06140f;
-  border: 1px solid #10b98144;
+  background: var(--bg-card, #06140f);
+  border: 1px solid var(--border-card, #10b98144);
   border-radius: 18px;
   padding: 26px 30px;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.9), 0 0 40px rgba(16, 185, 129, 0.12);
@@ -441,13 +441,13 @@ async function handleDeactivate() {
 .modal-title {
   font-size: 17px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin-bottom: 4px;
 }
 
 .modal-subtitle {
   font-size: 11.5px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   line-height: 1.4;
 }
 
@@ -455,8 +455,8 @@ async function handleDeactivate() {
 .modal-nav-tabs {
   display: flex;
   align-items: center;
-  background: #040e0a;
-  border: 1px solid #0f271d;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-subtle, #0f271d);
   border-radius: 8px;
   padding: 3px;
   margin-top: 14px;
@@ -467,7 +467,7 @@ async function handleDeactivate() {
   flex: 1;
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   font-size: 12px;
   font-weight: 600;
   padding: 6px 12px;
@@ -477,7 +477,7 @@ async function handleDeactivate() {
 }
 
 .modal-tab-btn.active {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #03140b;
   font-weight: 700;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
@@ -490,8 +490,8 @@ async function handleDeactivate() {
 }
 
 .device-card {
-  background: #040e0a;
-  border: 1px solid #0f271d;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-card, #0f271d);
   border-radius: 10px;
   padding: 12px 14px;
   display: flex;
@@ -508,17 +508,17 @@ async function handleDeactivate() {
 .device-label {
   font-size: 11px;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
 }
 
 .device-badge {
   font-size: 9.5px;
   font-weight: 800;
-  background: #092017;
+  background: var(--emerald-pill-bg, #092017);
   color: var(--emerald-bright, #34d399);
   padding: 2px 7px;
   border-radius: 4px;
-  border: 1px solid #143d2a;
+  border: 1px solid var(--emerald-pill-border, #143d2a);
 }
 
 .device-val-row {
@@ -532,13 +532,13 @@ async function handleDeactivate() {
   font-family: var(--font-mono, monospace);
   font-size: 13.5px;
   font-weight: 700;
-  color: #a7f3d0;
+  color: var(--emerald-bright, #a7f3d0);
   letter-spacing: 0.05em;
 }
 
 .btn-copy-device {
-  background: #092017;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--bg-card-hover, #092017);
+  border: 1px solid var(--border-focus, rgba(16, 185, 129, 0.3));
   border-radius: 6px;
   padding: 4px 10px;
   color: var(--emerald-bright, #34d399);
@@ -549,20 +549,20 @@ async function handleDeactivate() {
 }
 
 .btn-copy-device:hover {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #03140b;
 }
 
 .device-hint {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   line-height: 1.4;
   margin: 0;
 }
 
 .activated-card {
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.08));
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.3));
   border-radius: 10px;
   padding: 14px 16px;
   display: flex;
@@ -580,14 +580,14 @@ async function handleDeactivate() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--emerald-main, #10b981);
+  box-shadow: 0 0 8px var(--emerald-main, #10b981);
 }
 
 .act-title {
   font-size: 12.5px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .act-details {
@@ -595,7 +595,7 @@ async function handleDeactivate() {
   flex-direction: column;
   gap: 2px;
   font-size: 11.5px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
 }
 
 .btn-deactivate {
@@ -636,24 +636,24 @@ async function handleDeactivate() {
 .form-label {
   font-size: 11.5px;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
 }
 
 .btn-link-action {
   background: transparent;
   border: none;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   font-size: 11px;
   cursor: pointer;
   text-decoration: underline;
 }
 
 .form-input.mono {
-  background: #040e0a;
-  border: 1px solid #0f271d;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-card, #0f271d);
   border-radius: 8px;
   padding: 10px 12px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-family: var(--font-mono, monospace);
   font-size: 13px;
   outline: none;
@@ -689,8 +689,8 @@ async function handleDeactivate() {
 }
 
 .tier-card {
-  background: #040e0a;
-  border: 1px solid #0f271d;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-card, #0f271d);
   border-radius: 12px;
   padding: 14px;
   display: flex;
@@ -701,8 +701,8 @@ async function handleDeactivate() {
 }
 
 .tier-card.current {
-  border-color: rgba(16, 185, 129, 0.4);
-  background: rgba(16, 185, 129, 0.05);
+  border-color: var(--emerald-main, rgba(16, 185, 129, 0.4));
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.05));
   box-shadow: 0 0 16px rgba(16, 185, 129, 0.08);
 }
 
@@ -734,7 +734,7 @@ async function handleDeactivate() {
 .tier-current-tag {
   font-size: 8.5px;
   font-weight: 800;
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #03140b;
   padding: 2px 6px;
   border-radius: 4px;
@@ -748,7 +748,7 @@ async function handleDeactivate() {
 }
 
 .tier-status-pill.green {
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
 }
 
 .tier-status-pill.cyan {
@@ -762,19 +762,19 @@ async function handleDeactivate() {
 .tier-name {
   font-size: 13.5px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
 }
 
 .tier-price {
   font-size: 16px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
 }
 
 .tier-price span {
   font-size: 10px;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
 }
 
 .tier-features {
@@ -789,12 +789,12 @@ async function handleDeactivate() {
 
 .tier-features li {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   line-height: 1.35;
 }
 
 .tier-features li.disabled-feature {
-  color: #4b5563;
+  color: var(--text-dim, #4b5563);
   text-decoration: line-through;
   opacity: 0.7;
 }
@@ -812,13 +812,13 @@ async function handleDeactivate() {
 }
 
 .free-tier-btn {
-  background: #092017;
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--bg-card-hover, #092017);
+  color: var(--emerald-bright, #34d399);
+  border: 1px solid var(--border-card, rgba(16, 185, 129, 0.3));
 }
 
 .free-tier-btn:hover, .free-tier-btn.active {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #03140b;
 }
 
@@ -869,7 +869,7 @@ async function handleDeactivate() {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--emerald-main, #10b981);
   color: #03140b;
   font-size: 13px;
   font-weight: 800;
@@ -882,15 +882,15 @@ async function handleDeactivate() {
 }
 
 .btn-continue-alpha:hover {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  background: var(--emerald-bright, #34d399);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 .btn-auto-unlock {
-  background: #092017;
-  border: 1px solid #143d2a;
-  color: #34d399;
+  background: var(--bg-card-hover, #092017);
+  border: 1px solid var(--border-card, #143d2a);
+  color: var(--emerald-bright, #34d399);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 12px;
@@ -910,7 +910,7 @@ async function handleDeactivate() {
 }
 
 .btn-activate {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #03100a;
   border: none;
   border-radius: 8px;
@@ -923,7 +923,7 @@ async function handleDeactivate() {
 }
 
 .btn-activate:hover:not(:disabled) {
-  background: #34d399;
+  background: var(--emerald-bright, #34d399);
 }
 
 .btn-activate:disabled {
@@ -955,15 +955,15 @@ async function handleDeactivate() {
 .keygen-title {
   font-size: 13px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
 }
 
 .keygen-badge {
   font-size: 10px;
   font-weight: 700;
-  color: #34d399;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--emerald-bright, #34d399);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.12));
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.25));
   padding: 2px 7px;
   border-radius: 6px;
 }
@@ -977,7 +977,7 @@ async function handleDeactivate() {
 .keygen-label {
   font-size: 11px;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
 }
 
 .keygen-input-row {
@@ -989,11 +989,11 @@ async function handleDeactivate() {
 .keygen-input,
 .keygen-select {
   flex: 1;
-  background: #040e0a;
-  border: 1px solid #0f271d;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-card, #0f271d);
   border-radius: 6px;
   padding: 8px 10px;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   font-size: 12px;
   outline: none;
 }
@@ -1001,13 +1001,13 @@ async function handleDeactivate() {
 .keygen-input.mono {
   font-family: var(--font-mono, monospace);
   font-size: 12.5px;
-  color: #a7f3d0;
+  color: var(--emerald-bright, #a7f3d0);
 }
 
 .btn-keygen-reset {
-  background: #092017;
-  border: 1px solid #143d2a;
-  color: #34d399;
+  background: var(--bg-card-hover, #092017);
+  border: 1px solid var(--border-card, #143d2a);
+  color: var(--emerald-bright, #34d399);
   font-size: 11px;
   font-weight: 600;
   padding: 8px 12px;
@@ -1017,7 +1017,7 @@ async function handleDeactivate() {
 }
 
 .btn-run-keygen {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #03140b;
   border: none;
   border-radius: 8px;
@@ -1030,12 +1030,12 @@ async function handleDeactivate() {
 }
 
 .btn-run-keygen:hover {
-  background: #34d399;
+  background: var(--emerald-bright, #34d399);
 }
 
 .keygen-output-card {
-  background: #040e0a;
-  border: 1px solid #10b98155;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-card, #10b98155);
   border-radius: 10px;
   padding: 12px;
   display: flex;
@@ -1053,7 +1053,7 @@ async function handleDeactivate() {
 .output-label {
   font-size: 10px;
   font-weight: 800;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   letter-spacing: 0.05em;
 }
 
@@ -1061,7 +1061,7 @@ async function handleDeactivate() {
   font-family: var(--font-mono, monospace);
   font-size: 14px;
   font-weight: 800;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   letter-spacing: 0.05em;
 }
 
@@ -1074,9 +1074,9 @@ async function handleDeactivate() {
 
 .btn-output-action {
   flex: 1;
-  background: #092017;
-  border: 1px solid #143d2a;
-  color: #a7f3d0;
+  background: var(--bg-card-hover, #092017);
+  border: 1px solid var(--border-card, #143d2a);
+  color: var(--emerald-bright, #a7f3d0);
   font-size: 11px;
   font-weight: 600;
   padding: 6px 10px;
@@ -1087,10 +1087,10 @@ async function handleDeactivate() {
 }
 
 .btn-output-action.highlight {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #03140b;
   font-weight: 700;
-  border-color: #10b981;
+  border-color: var(--emerald-main, #10b981);
 }
 
 .btn-output-action:hover {
@@ -1103,12 +1103,12 @@ async function handleDeactivate() {
   right: 18px;
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   font-size: 16px;
   cursor: pointer;
 }
 
 .btn-corner-close:hover {
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
 }
 </style>

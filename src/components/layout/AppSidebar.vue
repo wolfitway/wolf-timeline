@@ -131,8 +131,8 @@ const licenseStore = useLicenseStore();
 .app-sidebar {
   width: 260px;
   min-width: 260px;
-  background: #060b09;
-  border-right: 1px solid #11221a;
+  background: var(--bg-body, #060b09);
+  border-right: 1px solid var(--border-subtle, #11221a);
   display: flex;
   flex-direction: column;
   user-select: none;
@@ -144,7 +144,7 @@ const licenseStore = useLicenseStore();
   align-items: center;
   gap: 12px;
   padding: 20px 18px;
-  border-bottom: 1px solid #11221a;
+  border-bottom: 1px solid var(--border-subtle, #11221a);
 }
 
 .brand-logo-wrap {
@@ -160,7 +160,7 @@ const licenseStore = useLicenseStore();
   width: 32px;
   height: 32px;
   object-fit: contain;
-  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+  filter: drop-shadow(0 0 8px var(--border-glow, rgba(16, 185, 129, 0.4)));
 }
 
 .brand-info {
@@ -173,7 +173,7 @@ const licenseStore = useLicenseStore();
   font-weight: 800;
   font-size: 13.5px;
   letter-spacing: 0.08em;
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .brand-sub {
@@ -196,7 +196,8 @@ const licenseStore = useLicenseStore();
   font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 0.1em;
-  color: #4b6357;
+  color: var(--text-muted, #4b6357);
+  opacity: 0.85;
   padding: 12px 10px 4px 10px;
 }
 
@@ -208,7 +209,7 @@ const licenseStore = useLicenseStore();
   background: transparent;
   border: 1px solid transparent;
   border-radius: 10px;
-  color: #9ca3af;
+  color: var(--text-gray, #9ca3af);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -218,15 +219,15 @@ const licenseStore = useLicenseStore();
 }
 
 .nav-tab-btn:hover {
-  background: rgba(16, 185, 129, 0.06);
-  color: #e5e7eb;
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.06));
+  color: var(--text-primary, #e5e7eb);
 }
 
 .nav-tab-btn.active {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #fff;
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.08);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.12));
+  border-color: var(--border-selected, rgba(16, 185, 129, 0.3));
+  color: var(--text-primary, #fff);
+  box-shadow: 0 0 15px var(--border-glow, rgba(16, 185, 129, 0.08));
 }
 
 .tab-icon-wrap {
@@ -246,11 +247,11 @@ const licenseStore = useLicenseStore();
 .tab-badge {
   font-size: 11px;
   font-weight: 700;
-  background: #10241b;
+  background: var(--bg-surface, #10241b);
   color: var(--emerald-bright, #34d399);
   padding: 2px 8px;
   border-radius: 12px;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.2));
 }
 
 .tab-badge-lock {
@@ -262,13 +263,13 @@ const licenseStore = useLicenseStore();
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--emerald-main, #10b981);
+  box-shadow: 0 0 8px var(--emerald-bright, #10b981);
 }
 
 .sidebar-footer {
   padding: 14px;
-  border-top: 1px solid #11221a;
+  border-top: 1px solid var(--border-subtle, #11221a);
 }
 
 .license-status-card {
@@ -276,16 +277,16 @@ const licenseStore = useLicenseStore();
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background: #09130e;
-  border: 1px solid #162c21;
+  background: var(--bg-card, #09130e);
+  border: 1px solid var(--border-card, #162c21);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .license-status-card:hover {
-  border-color: rgba(16, 185, 129, 0.4);
-  background: #0c1a13;
+  border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
+  background: var(--bg-card-hover, #0c1a13);
 }
 
 .license-dot {
@@ -297,8 +298,8 @@ const licenseStore = useLicenseStore();
 }
 
 .license-dot.active {
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--emerald-main, #10b981);
+  box-shadow: 0 0 8px var(--emerald-bright, #10b981);
 }
 
 .license-text-col {
@@ -311,7 +312,7 @@ const licenseStore = useLicenseStore();
 .license-tier {
   font-size: 11px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -320,7 +321,7 @@ const licenseStore = useLicenseStore();
 .license-id {
   font-family: var(--font-mono, monospace);
   font-size: 9.5px;
-  color: #6b7280;
+  color: var(--text-muted, #6b7280);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

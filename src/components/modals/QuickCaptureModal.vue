@@ -220,8 +220,8 @@ function handleKeyDown(e: KeyboardEvent) {
 .modal-card {
   width: 100%;
   max-width: 460px;
-  background: #06140f;
-  border: 1px solid #0f2b1d;
+  background: var(--bg-card, #06140f);
+  border: 1px solid var(--border-card, #0f2b1d);
   border-radius: 18px;
   padding: 32px 36px 28px 36px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(16, 185, 129, 0.08);
@@ -251,14 +251,14 @@ function handleKeyDown(e: KeyboardEvent) {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
 }
 
 .modal-title {
   font-family: var(--font-display, "Outfit", sans-serif);
   font-size: 24px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   margin: 0;
 }
 
@@ -277,22 +277,22 @@ function handleKeyDown(e: KeyboardEvent) {
 .form-label {
   font-size: 11.5px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
 }
 
 .form-input {
-  background: #040e0a;
-  border: 1px solid #0e271c;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-card, #0e271c);
   border-radius: 10px;
   padding: 11px 14px;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   font-size: 13px;
   outline: none;
   transition: all 0.15s ease;
 }
 
 .form-input:focus {
-  border-color: #10b981;
+  border-color: var(--emerald-bright, #10b981);
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
 }
 
@@ -305,7 +305,7 @@ function handleKeyDown(e: KeyboardEvent) {
 .input-icon {
   position: absolute;
   left: 12px;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   pointer-events: none;
 }
 
@@ -322,51 +322,51 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 .category-pill {
-  background: #05120c;
-  border: 1px solid #0e271c;
+  background: var(--bg-inner, #05120c);
+  border: 1px solid var(--border-card, #0e271c);
   border-radius: 20px;
   padding: 6px 14px;
   font-size: 12px;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .category-pill:hover {
-  background: #092017;
-  color: #ffffff;
-  border-color: #143d2a;
+  background: var(--bg-card-hover, #092017);
+  color: var(--text-primary, #ffffff);
+  border-color: var(--border-focus, #143d2a);
 }
 
 .category-pill.active {
-  background: #082117;
-  border-color: #10b981;
-  color: #34d399;
+  background: var(--emerald-pill-bg, #082117);
+  border-color: var(--emerald-main, #10b981);
+  color: var(--emerald-bright, #34d399);
   font-weight: 600;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
 }
 
 .form-textarea {
-  background: #040e0a;
-  border: 1px solid #0e271c;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-card, #0e271c);
   border-radius: 10px;
   padding: 10px 14px;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   font-size: 12.5px;
   outline: none;
   resize: vertical;
 }
 
 .form-textarea:focus {
-  border-color: #10b981;
+  border-color: var(--emerald-bright, #10b981);
 }
 
 .btn-save-vault {
   width: 100%;
   height: 46px;
   margin-top: 6px;
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   border: none;
   border-radius: 10px;
   color: #03120a;
@@ -382,7 +382,7 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 .btn-save-vault:hover {
-  background: #34d399;
+  background: var(--emerald-bright, #34d399);
   transform: translateY(-1px);
   box-shadow: 0 0 25px rgba(16, 185, 129, 0.55);
 }
@@ -398,7 +398,7 @@ function handleKeyDown(e: KeyboardEvent) {
 .btn-link-details {
   background: transparent;
   border: none;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -410,7 +410,7 @@ function handleKeyDown(e: KeyboardEvent) {
 
 .save-shortcut-hint {
   font-size: 11px;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
 }
 
 @keyframes fadeIn {

@@ -463,7 +463,7 @@ const activePhaseProgress = computed(() => {
   flex-direction: column;
   flex: 1;
   height: calc(100vh - 60px);
-  background: #040c08;
+  background: var(--bg-body, #040c08);
   overflow: hidden;
   padding: 16px 24px 20px 24px;
 }
@@ -475,7 +475,7 @@ const activePhaseProgress = computed(() => {
   justify-content: space-between;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+  border-bottom: 1px solid var(--border-subtle, rgba(16, 185, 129, 0.08));
 }
 
 .header-left {
@@ -485,14 +485,14 @@ const activePhaseProgress = computed(() => {
 }
 
 .user-icon {
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
 }
 
 .roadmap-main-heading {
   font-family: var(--font-display, "Outfit", sans-serif);
   font-size: 22px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   letter-spacing: -0.02em;
 }
 
@@ -510,14 +510,14 @@ const activePhaseProgress = computed(() => {
 .brand-title-small {
   font-size: 13px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   line-height: 1.2;
 }
 
 .brand-sub-track {
   font-size: 9px;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
   letter-spacing: 0.1em;
 }
 
@@ -540,8 +540,8 @@ const activePhaseProgress = computed(() => {
 }
 
 .roadmap-track-card {
-  background: #06140f;
-  border: 1px solid #0f271d;
+  background: var(--bg-card, #06140f);
+  border: 1px solid var(--border-card, #0f271d);
   border-radius: 16px;
   height: 100%;
   display: flex;
@@ -564,20 +564,20 @@ const activePhaseProgress = computed(() => {
 }
 
 .chart-icon {
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
 }
 
 .track-title {
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
 }
 
 .btn-add-phase-quick {
-  background: #092017;
-  border: 1px solid #143d2a;
-  color: #34d399;
+  background: var(--emerald-pill-bg, #092017);
+  border: 1px solid var(--emerald-pill-border, #143d2a);
+  color: var(--emerald-bright, #34d399);
   font-size: 11px;
   font-weight: 600;
   padding: 3px 9px;
@@ -587,8 +587,8 @@ const activePhaseProgress = computed(() => {
 }
 
 .btn-add-phase-quick:hover {
-  background: #10b981;
-  color: #03140b;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-body, #03140b);
 }
 
 .phases-connected-list {
@@ -616,9 +616,9 @@ const activePhaseProgress = computed(() => {
 }
 
 .phase-node-item.drag-over-item .node-card {
-  border-color: #10b981;
-  background: #0b2e20;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  border-color: var(--border-selected, #10b981);
+  background: var(--bg-card-selected, #0b2e20);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.35));
   transform: translateX(6px) scale(1.01);
 }
 
@@ -640,12 +640,12 @@ const activePhaseProgress = computed(() => {
 }
 
 .dot-green-filled {
-  background: #10b981;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+  background: var(--emerald-main, #10b981);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.8));
 }
 
 .dot-amber-hollow {
-  background: #06140f;
+  background: var(--bg-card, #06140f);
   border: 2px solid #f59e0b;
 }
 
@@ -655,13 +655,13 @@ const activePhaseProgress = computed(() => {
 }
 
 .dot-gray-hollow {
-  background: #06140f;
+  background: var(--bg-card, #06140f);
   border: 2px solid #6b7280;
 }
 
 .node-line {
   width: 2px;
-  background: #143828;
+  background: var(--border-card, #143828);
   position: absolute;
   top: 18px;
   bottom: 0;
@@ -672,8 +672,8 @@ const activePhaseProgress = computed(() => {
 
 .node-card {
   flex: 1;
-  background: #081a13;
-  border: 1px solid #112e21;
+  background: var(--bg-surface, #081a13);
+  border: 1px solid var(--border-card, #112e21);
   border-radius: 12px;
   padding: 12px 14px;
   margin-bottom: 12px;
@@ -682,14 +682,14 @@ const activePhaseProgress = computed(() => {
 }
 
 .phase-node-item:hover .node-card {
-  border-color: #1b4934;
-  background: #0b2219;
+  border-color: var(--border-selected, #1b4934);
+  background: var(--bg-card-hover, #0b2219);
 }
 
 .phase-node-item.active .node-card {
-  border: 1.5px solid #10b981;
-  background: #0c261c;
-  box-shadow: 0 0 18px rgba(16, 185, 129, 0.12);
+  border: 1.5px solid var(--border-selected, #10b981);
+  background: var(--bg-card-selected, #0c261c);
+  box-shadow: 0 0 18px var(--border-glow, rgba(16, 185, 129, 0.12));
 }
 
 .node-top-row {
@@ -702,7 +702,7 @@ const activePhaseProgress = computed(() => {
 .node-title {
   font-size: 13.5px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
 }
 
 .node-status-pill {
@@ -716,9 +716,9 @@ const activePhaseProgress = computed(() => {
 }
 
 .status-pill-green {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.15));
+  color: var(--emerald-bright, #34d399);
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.3));
 }
 
 .status-pill-amber {
@@ -745,7 +745,7 @@ const activePhaseProgress = computed(() => {
 
 .node-subtitle {
   font-size: 11.5px;
-  color: #94a3b8;
+  color: var(--text-gray, #94a3b8);
   margin: 0;
   line-height: 1.4;
   display: -webkit-box;
@@ -760,14 +760,14 @@ const activePhaseProgress = computed(() => {
   gap: 8px;
   margin-top: auto;
   padding-top: 14px;
-  border-top: 1px solid #0f271d;
+  border-top: 1px solid var(--border-card, #0f271d);
 }
 
 .footer-tag {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
 }
 
 /* Right Column: Phase Detail Card */
@@ -777,8 +777,8 @@ const activePhaseProgress = computed(() => {
 }
 
 .phase-detail-card {
-  background: #06140f;
-  border: 1px solid #0f271d;
+  background: var(--bg-card, #06140f);
+  border: 1px solid var(--border-card, #0f271d);
   border-radius: 16px;
   padding: 28px 32px;
   display: flex;
@@ -796,8 +796,9 @@ const activePhaseProgress = computed(() => {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: #081f16;
-  border: 1px solid #143d2a;
+  background: var(--emerald-pill-bg, #081f16);
+  border: 1px solid var(--emerald-pill-border, #143d2a);
+  color: var(--emerald-bright, #34d399);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -821,7 +822,7 @@ const activePhaseProgress = computed(() => {
   font-family: var(--font-display, "Outfit", sans-serif);
   font-size: 22px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   letter-spacing: -0.01em;
   margin: 0;
 }
@@ -846,19 +847,19 @@ const activePhaseProgress = computed(() => {
 
 .phase-inline-input {
   flex: 1;
-  background: #040e0a;
-  border: 1.5px solid #10b981;
+  background: var(--bg-surface, #040e0a);
+  border: 1.5px solid var(--border-selected, #10b981);
   border-radius: 6px;
   padding: 6px 10px;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   font-size: 16px;
   font-weight: 700;
   outline: none;
 }
 
 .btn-save-sm {
-  background: #10b981;
-  color: #040c08;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-body, #040c08);
   border: none;
   border-radius: 6px;
   padding: 6px 12px;
@@ -869,8 +870,8 @@ const activePhaseProgress = computed(() => {
 
 .btn-cancel-sm {
   background: transparent;
-  border: 1px solid #112d20;
-  color: #94a3b8;
+  border: 1px solid var(--border-card, #112d20);
+  color: var(--text-muted, #94a3b8);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 12px;
@@ -889,21 +890,21 @@ const activePhaseProgress = computed(() => {
   gap: 6px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
 }
 
 .phase-badge-inline.clickable {
   cursor: pointer;
-  background: #092017;
+  background: var(--emerald-pill-bg, #092017);
   padding: 2px 8px;
   border-radius: 12px;
-  border: 1px solid #143d2a;
+  border: 1px solid var(--emerald-pill-border, #143d2a);
   transition: all 0.15s ease;
 }
 
 .phase-badge-inline.clickable:hover {
-  background: #0f3323;
-  border-color: #10b981;
+  background: var(--bg-card-hover, #0f3323);
+  border-color: var(--border-selected, #10b981);
 }
 
 .btn-delete-phase {
@@ -922,13 +923,13 @@ const activePhaseProgress = computed(() => {
 }
 
 .dot-green {
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
   font-size: 10px;
 }
 
 .phase-full-description {
   font-size: 13.5px;
-  color: #cbd5e1;
+  color: var(--text-gray, #cbd5e1);
   line-height: 1.6;
   margin: 0;
 }
@@ -937,8 +938,8 @@ const activePhaseProgress = computed(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  background: #081a13;
-  border: 1px solid #112e21;
+  background: var(--bg-surface, #081a13);
+  border: 1px solid var(--border-card, #112e21);
   border-radius: 12px;
   padding: 16px;
 }
@@ -952,14 +953,14 @@ const activePhaseProgress = computed(() => {
 .grid-label {
   font-size: 10.5px;
   font-weight: 800;
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
   letter-spacing: 0.08em;
 }
 
 .grid-value {
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
 }
 
 /* Key Practices */
@@ -978,13 +979,13 @@ const activePhaseProgress = computed(() => {
 .practices-label {
   font-size: 11.5px;
   font-weight: 800;
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
   letter-spacing: 0.06em;
 }
 
 .practices-reorder-hint {
   font-size: 10px;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
 }
 
 .practices-checklist {
@@ -997,8 +998,8 @@ const activePhaseProgress = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #081a13;
-  border: 1px solid #112e21;
+  background: var(--bg-surface, #081a13);
+  border: 1px solid var(--border-card, #112e21);
   border-radius: 10px;
   padding: 8px 12px;
   cursor: grab;
@@ -1015,14 +1016,14 @@ const activePhaseProgress = computed(() => {
 }
 
 .practice-item.drag-over-item {
-  border-color: #10b981;
-  background: #0b2e20;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  border-color: var(--border-selected, #10b981);
+  background: var(--bg-card-selected, #0b2e20);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.35));
   transform: translateY(-2px) scale(1.01);
 }
 
 .practice-drag-handle {
-  color: #4b5563;
+  color: var(--text-muted, #4b5563);
   font-size: 13px;
   cursor: grab;
   user-select: none;
@@ -1035,15 +1036,15 @@ const activePhaseProgress = computed(() => {
   align-items: center;
   flex-shrink: 0;
   padding-right: 8px;
-  border-right: 1px solid rgba(16, 185, 129, 0.18);
+  border-right: 1px solid var(--border-card, rgba(16, 185, 129, 0.18));
 }
 
 .practice-check-btn {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 1.5px solid #234736;
-  background: #081711;
+  border: 1.5px solid var(--border-card, #234736);
+  background: var(--bg-card, #081711);
   color: transparent;
   display: flex;
   align-items: center;
@@ -1055,17 +1056,17 @@ const activePhaseProgress = computed(() => {
 }
 
 .practice-check-btn:hover {
-  border-color: #34d399;
-  background: #0d281c;
-  color: rgba(52, 211, 153, 0.6);
+  border-color: var(--emerald-bright, #34d399);
+  background: var(--emerald-pill-bg, #0d281c);
+  color: var(--emerald-bright, rgba(52, 211, 153, 0.6));
   transform: scale(1.08);
 }
 
 .practice-check-btn.checked {
-  background: #10b981;
-  border-color: #10b981;
-  color: #040c08;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+  background: var(--emerald-main, #10b981);
+  border-color: var(--emerald-main, #10b981);
+  color: var(--bg-body, #040c08);
+  box-shadow: 0 0 8px var(--border-glow, rgba(16, 185, 129, 0.35));
 }
 
 /* Dedicated Input Field Container & Input */
@@ -1082,7 +1083,7 @@ const activePhaseProgress = computed(() => {
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
   font-family: inherit;
   font-size: 13px;
   font-weight: 500;
@@ -1094,32 +1095,32 @@ const activePhaseProgress = computed(() => {
 }
 
 .practice-text-input:hover {
-  border-color: rgba(16, 185, 129, 0.25);
-  background: rgba(16, 185, 129, 0.04);
-  color: #ffffff;
+  border-color: var(--emerald-pill-border, rgba(16, 185, 129, 0.25));
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.04));
+  color: var(--text-primary, #ffffff);
 }
 
 .practice-text-input:focus {
-  border-color: #10b981;
-  background: #07150e;
-  color: #ffffff;
-  box-shadow: 0 0 0 1px #10b981, 0 0 10px rgba(16, 185, 129, 0.2);
+  border-color: var(--border-selected, #10b981);
+  background: var(--bg-surface, #07150e);
+  color: var(--text-primary, #ffffff);
+  box-shadow: 0 0 0 1px var(--border-selected, #10b981), 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.2));
 }
 
 .practice-text-input.is-completed {
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   text-decoration: line-through;
 }
 
 .practice-text-input.is-completed:focus {
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   text-decoration: none;
 }
 
 .btn-delete-practice {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   font-size: 11px;
   cursor: pointer;
   padding: 4px 6px;
@@ -1141,23 +1142,23 @@ const activePhaseProgress = computed(() => {
 
 .practice-input {
   width: 100%;
-  background: #081a13;
-  border: 1px dashed #143d2a;
+  background: var(--bg-surface, #081a13);
+  border: 1px dashed var(--border-card, #143d2a);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 12.5px;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   outline: none;
   box-sizing: border-box;
 }
 
 .practice-input:focus {
-  border-color: #10b981;
+  border-color: var(--border-selected, #10b981);
   border-style: solid;
 }
 
 .practice-input::placeholder {
-  color: #64748b;
+  color: var(--text-muted, #64748b);
 }
 
 /* Progress Track */
@@ -1177,29 +1178,29 @@ const activePhaseProgress = computed(() => {
 .progress-label {
   font-size: 11px;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--text-gray, #94a3b8);
 }
 
 .progress-pct {
   font-size: 11.5px;
   font-weight: 800;
-  color: #10b981;
+  color: var(--emerald-bright, #10b981);
 }
 
 .progress-track {
   position: relative;
   width: 100%;
   height: 6px;
-  background: #0f2d20;
+  background: var(--bg-surface, #0f2d20);
   border-radius: 3px;
   overflow: visible;
 }
 
 .progress-fill {
   height: 100%;
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   border-radius: 3px;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.6));
   transition: width 0.3s ease;
 }
 
@@ -1210,9 +1211,9 @@ const activePhaseProgress = computed(() => {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #34d399;
-  border: 2px solid #06140f;
-  box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
+  background: var(--emerald-bright, #34d399);
+  border: 2px solid var(--bg-card, #06140f);
+  box-shadow: 0 0 8px var(--border-glow, rgba(52, 211, 153, 0.8));
   transition: left 0.3s ease;
 }
 </style>

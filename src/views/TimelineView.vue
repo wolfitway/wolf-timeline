@@ -1819,10 +1819,10 @@ function toggleMoodTag(tag: string) {
   width: 100%;
   height: 42px;
   min-height: 42px;
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   border: none;
   border-radius: 8px;
-  color: #03120a;
+  color: var(--bg-canvas, #03120a);
   font-size: 13.5px;
   font-weight: 700;
   display: flex;
@@ -1831,13 +1831,13 @@ function toggleMoodTag(tag: string) {
   gap: 8px;
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.3));
 }
 
 .btn-quick-capture-hero:hover {
-  background: #34d399;
+  background: var(--emerald-bright, #34d399);
   transform: translateY(-1px);
-  box-shadow: 0 0 22px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 22px var(--border-glow, rgba(16, 185, 129, 0.5));
 }
 
 .plus-symbol {
@@ -1850,14 +1850,14 @@ function toggleMoodTag(tag: string) {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #05120c;
-  border: 1px solid #0f271d;
+  background: var(--bg-inner, #05120c);
+  border: 1px solid var(--border-subtle, #0f271d);
   border-radius: 8px;
   padding: 8px 12px;
 }
 
 .search-icon-left {
-  color: #64748b;
+  color: var(--text-dim, #64748b);
 }
 
 .feed-search-input {
@@ -1865,18 +1865,18 @@ function toggleMoodTag(tag: string) {
   background: transparent;
   border: none;
   font-size: 12px;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   outline: none;
 }
 
 .feed-search-input::placeholder {
-  color: #64748b;
+  color: var(--text-dim, #64748b);
 }
 
 .btn-clear-search {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   cursor: pointer;
   font-size: 11px;
 }
@@ -1895,9 +1895,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .tag-filter-chip {
-  background: #061710;
-  border: 1px solid #0f2d20;
-  color: #94a3b8;
+  background: var(--bg-card, #061710);
+  border: 1px solid var(--border-card, #0f2d20);
+  color: var(--text-secondary, #94a3b8);
   font-size: 11px;
   font-weight: 600;
   padding: 3px 9px;
@@ -1908,14 +1908,14 @@ function toggleMoodTag(tag: string) {
 }
 
 .tag-filter-chip:hover {
-  border-color: #10b981;
-  color: #a7f3d0;
+  border-color: var(--emerald-main, #10b981);
+  color: var(--emerald-bright, #a7f3d0);
 }
 
 .tag-filter-chip.active {
-  background: #10b981;
-  color: #03140b;
-  border-color: #10b981;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #03140b);
+  border-color: var(--emerald-main, #10b981);
   font-weight: 700;
 }
 
@@ -1935,8 +1935,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .project-card {
-  background: #071510;
-  border: 1px solid #0f271d;
+  background: var(--bg-card, #071510);
+  border: 1px solid var(--border-card, #0f271d);
   border-radius: 12px;
   padding: 14px 16px;
   cursor: grab;
@@ -1951,14 +1951,14 @@ function toggleMoodTag(tag: string) {
 }
 
 .project-card:hover {
-  background: #091a13;
-  border-color: #143829;
+  background: var(--bg-card-hover, #091a13);
+  border-color: var(--border-card, #143829);
 }
 
 .project-card.selected {
-  background: #061912;
-  border: 1.5px solid #10b981;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.08);
+  background: var(--bg-card-selected, #061912);
+  border: 1.5px solid var(--emerald-main, #10b981);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.08));
 }
 
 .project-card.is-dragging {
@@ -1968,9 +1968,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .project-card.drag-over-item {
-  border-color: #10b981;
-  background: #0b2e20;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  border-color: var(--emerald-main, #10b981);
+  background: var(--emerald-pill-bg, #0b2e20);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.35));
   transform: translateY(-2px) scale(1.015);
 }
 
@@ -1984,12 +1984,12 @@ function toggleMoodTag(tag: string) {
 .card-title {
   font-size: 14px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-white, #ffffff);
   line-height: 1.3;
 }
 
 .card-drag-handle {
-  color: #4b5563;
+  color: var(--text-dim, #4b5563);
   font-size: 14px;
 }
 
@@ -2000,7 +2000,7 @@ function toggleMoodTag(tag: string) {
 
 .card-body-preview {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   line-height: 1.45;
   margin-bottom: 12px;
   display: -webkit-box;
@@ -2020,13 +2020,13 @@ function toggleMoodTag(tag: string) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #092017;
-  border: 1px solid #143d2a;
+  background: var(--emerald-pill-bg, #092017);
+  border: 1px solid var(--emerald-pill-border, #143d2a);
   border-radius: 16px;
   padding: 2px 9px;
   font-size: 11px;
   font-weight: 600;
-  color: #a7f3d0;
+  color: var(--emerald-bright, #a7f3d0);
 }
 
 .status-dot {
@@ -2047,24 +2047,24 @@ function toggleMoodTag(tag: string) {
 }
 
 .card-tag-pill {
-  background: #071912;
-  border: 1px solid #112d20;
+  background: var(--bg-surface, #071912);
+  border: 1px solid var(--border-subtle, #112d20);
   border-radius: 14px;
   padding: 2px 8px;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .card-tag-pill:hover {
-  color: #34d399;
-  border-color: #10b981;
+  color: var(--emerald-bright, #34d399);
+  border-color: var(--emerald-main, #10b981);
 }
 
 .card-time-ago {
   font-size: 11px;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   margin-left: auto;
   white-space: nowrap;
 }
@@ -2072,7 +2072,7 @@ function toggleMoodTag(tag: string) {
 .cards-empty-state {
   padding: 30px;
   text-align: center;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   font-size: 12px;
   display: flex;
   flex-direction: column;
@@ -2081,9 +2081,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-reset-filters {
-  background: #092017;
-  border: 1px solid #10b98144;
-  color: #34d399;
+  background: var(--emerald-pill-bg, #092017);
+  border: 1px solid var(--emerald-pill-border, #10b98144);
+  color: var(--emerald-bright, #34d399);
   font-size: 11px;
   padding: 4px 10px;
   border-radius: 6px;
@@ -2101,8 +2101,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .detail-card-panel {
-  background: #06140f;
-  border: 1px solid #0f271d;
+  background: var(--bg-card, #06140f);
+  border: 1px solid var(--border-card, #0f271d);
   border-radius: 16px;
   height: 100%;
   overflow-y: auto;
@@ -2135,7 +2135,7 @@ function toggleMoodTag(tag: string) {
   font-family: var(--font-display, "Outfit", sans-serif);
   font-size: 23px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-white, #ffffff);
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -2162,19 +2162,19 @@ function toggleMoodTag(tag: string) {
 
 .title-inline-input {
   flex: 1;
-  background: #040e0a;
-  border: 1.5px solid #10b981;
+  background: var(--bg-inner, #040e0a);
+  border: 1.5px solid var(--emerald-main, #10b981);
   border-radius: 6px;
   padding: 6px 10px;
-  color: #ffffff;
+  color: var(--text-white, #ffffff);
   font-size: 18px;
   font-weight: 700;
   outline: none;
 }
 
 .btn-title-save {
-  background: #10b981;
-  color: #040c08;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #040c08);
   border: none;
   border-radius: 6px;
   padding: 6px 12px;
@@ -2185,8 +2185,8 @@ function toggleMoodTag(tag: string) {
 
 .btn-title-cancel {
   background: transparent;
-  border: 1px solid #112d20;
-  color: #94a3b8;
+  border: 1px solid var(--border-card, #112d20);
+  color: var(--text-secondary, #94a3b8);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 12px;
@@ -2201,10 +2201,10 @@ function toggleMoodTag(tag: string) {
 
 .btn-icon-action {
   background: transparent;
-  border: 1px solid #112d20;
+  border: 1px solid var(--border-card, #112d20);
   border-radius: 6px;
   padding: 5px 8px;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -2228,13 +2228,13 @@ function toggleMoodTag(tag: string) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #092017;
-  border: 1px solid #143d2a;
+  background: var(--emerald-pill-bg, #092017);
+  border: 1px solid var(--emerald-pill-border, #143d2a);
   border-radius: 20px;
   padding: 3px 12px;
   font-size: 11.5px;
   font-weight: 600;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
 }
 
 .meta-status-pill.clickable {
@@ -2243,30 +2243,30 @@ function toggleMoodTag(tag: string) {
 }
 
 .meta-status-pill.clickable:hover {
-  border-color: #10b981;
-  background: #0b291e;
+  border-color: var(--emerald-main, #10b981);
+  background: var(--bg-card-hover, #0b291e);
 }
 
 .meta-updated-pill {
   display: inline-flex;
   align-items: center;
-  background: #071912;
-  border: 1px solid #112d20;
+  background: var(--bg-surface, #071912);
+  border: 1px solid var(--border-subtle, #112d20);
   border-radius: 20px;
   padding: 3px 12px;
   font-size: 11.5px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
 }
 
 .meta-stage-pill {
   display: inline-flex;
   align-items: center;
-  background: #061710;
-  border: 1px solid #0f2d20;
+  background: var(--bg-card, #061710);
+  border: 1px solid var(--border-card, #0f2d20);
   border-radius: 20px;
   padding: 3px 12px;
   font-size: 11.5px;
-  color: #6ee7b7;
+  color: var(--emerald-bright, #6ee7b7);
   text-transform: capitalize;
 }
 
@@ -2281,7 +2281,7 @@ function toggleMoodTag(tag: string) {
 .detail-tag-label {
   font-size: 11px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   text-transform: uppercase;
 }
 
@@ -2300,14 +2300,14 @@ function toggleMoodTag(tag: string) {
 .section-title {
   font-size: 14.5px;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
   margin: 0;
   letter-spacing: -0.01em;
 }
 
 .section-reorder-hint {
   font-size: 10.5px;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
 }
 
 .btn-expand-focus {
@@ -2315,10 +2315,10 @@ function toggleMoodTag(tag: string) {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: #08160f;
-  border: 1px solid #143525;
+  background: var(--bg-inner, #08160f);
+  border: 1px solid var(--border-card, #143525);
   border-radius: 6px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -2327,7 +2327,7 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-expand-focus:hover {
-  background: #0d2619;
+  background: var(--emerald-pill-bg, #0d2619);
   border-color: var(--emerald-main, #10b981);
   color: var(--emerald-bright, #34d399);
 }
@@ -2340,8 +2340,8 @@ function toggleMoodTag(tag: string) {
 
 .notes-mode-pills {
   display: flex;
-  background: #040a06;
-  border: 1px solid #12241b;
+  background: var(--bg-inner, #040a06);
+  border: 1px solid var(--border-subtle, #12241b);
   border-radius: 6px;
   padding: 2px;
 }
@@ -2353,26 +2353,26 @@ function toggleMoodTag(tag: string) {
   border-radius: 4px;
   font-size: 10.5px;
   font-weight: 700;
-  color: #88929b;
+  color: var(--text-secondary, #88929b);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .btn-mode-pill.active {
-  background: #0f241a;
+  background: var(--emerald-pill-bg, #0f241a);
   color: var(--emerald-bright, #34d399);
-  border: 1px solid #1c452e;
+  border: 1px solid var(--emerald-pill-border, #1c452e);
 }
 
 /* Timeline Live Preview Box */
 .timeline-live-preview-box {
-  background: #060e0a;
-  border: 1px solid #14281f;
+  background: var(--bg-inner, #060e0a);
+  border: 1px solid var(--border-card, #14281f);
   border-radius: 8px;
   padding: 16px 20px;
   max-height: 380px;
   overflow-y: auto;
-  color: #e5e7eb;
+  color: var(--text-primary, #e5e7eb);
   font-size: 13.5px;
   line-height: 1.7;
 }
@@ -2381,8 +2381,8 @@ function toggleMoodTag(tag: string) {
 .timeline-live-preview-box :deep(.md-h1) {
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
-  border-bottom: 1px solid #14281f;
+  color: var(--text-white, #fff);
+  border-bottom: 1px solid var(--border-card, #14281f);
   padding-bottom: 6px;
   margin: 12px 0 8px 0;
 }
@@ -2397,13 +2397,13 @@ function toggleMoodTag(tag: string) {
 .timeline-live-preview-box :deep(.md-h3) {
   font-size: 13.5px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-white, #fff);
   margin: 10px 0 4px 0;
 }
 
 .timeline-live-preview-box :deep(.md-code-inline) {
-  background: #0a1710;
-  border: 1px solid #153825;
+  background: var(--emerald-pill-bg, #0a1710);
+  border: 1px solid var(--emerald-pill-border, #153825);
   color: var(--emerald-bright, #34d399);
   padding: 2px 6px;
   border-radius: 4px;
@@ -2412,8 +2412,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .timeline-live-preview-box :deep(.md-codeblock-wrapper) {
-  background: #040906;
-  border: 1px solid #12241b;
+  background: var(--bg-inner, #040906);
+  border: 1px solid var(--border-subtle, #12241b);
   border-radius: 6px;
   margin: 12px 0;
   overflow: hidden;
@@ -2423,9 +2423,9 @@ function toggleMoodTag(tag: string) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #091710;
+  background: var(--bg-card, #091710);
   padding: 5px 12px;
-  border-bottom: 1px solid #102117;
+  border-bottom: 1px solid var(--border-subtle, #102117);
 }
 
 .timeline-live-preview-box :deep(.codeblock-lang) {
@@ -2436,9 +2436,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .timeline-live-preview-box :deep(.btn-code-copy) {
-  background: #0d2217;
-  border: 1px solid #183e29;
-  color: #9ca3af;
+  background: var(--bg-card-hover, #0d2217);
+  border: 1px solid var(--border-card, #183e29);
+  color: var(--text-secondary, #9ca3af);
   font-size: 10px;
   padding: 2px 7px;
   border-radius: 3px;
@@ -2450,7 +2450,7 @@ function toggleMoodTag(tag: string) {
   padding: 10px 14px;
   font-family: var(--font-mono, monospace);
   font-size: 12px;
-  color: #d1d5db;
+  color: var(--text-gray, #d1d5db);
   overflow-x: auto;
 }
 
@@ -2470,7 +2470,7 @@ function toggleMoodTag(tag: string) {
 
 .timeline-live-preview-box :deep(.md-task-item.checked .task-label) {
   text-decoration: line-through;
-  color: #6b7280;
+  color: var(--text-muted, #6b7280);
 }
 
 .timeline-live-preview-box :deep(.md-callout) {
@@ -2483,8 +2483,8 @@ function toggleMoodTag(tag: string) {
   border-left: 3px solid #3b82f6;
 }
 .timeline-live-preview-box :deep(.md-callout-tip) {
-  background: rgba(16, 185, 129, 0.08);
-  border-left: 3px solid #10b981;
+  background: var(--border-glow, rgba(16, 185, 129, 0.08));
+  border-left: 3px solid var(--emerald-main, #10b981);
 }
 .timeline-live-preview-box :deep(.md-callout-warning) {
   background: rgba(245, 158, 11, 0.08);
@@ -2501,14 +2501,14 @@ function toggleMoodTag(tag: string) {
   font-size: 12px;
 }
 .timeline-live-preview-box :deep(.md-table th) {
-  background: #091710;
+  background: var(--bg-card, #091710);
   color: var(--emerald-bright, #34d399);
   padding: 6px 10px;
-  border: 1px solid #142e20;
+  border: 1px solid var(--border-card, #142e20);
 }
 .timeline-live-preview-box :deep(.md-table td) {
   padding: 6px 10px;
-  border: 1px solid #12241a;
+  border: 1px solid var(--border-subtle, #12241a);
 }
 
 /* Timeline Inline Editor Wrap */
@@ -2521,11 +2521,11 @@ function toggleMoodTag(tag: string) {
 .timeline-inline-textarea {
   width: 100%;
   min-height: 180px;
-  background: #030805;
+  background: var(--bg-inner, #030805);
   border: 1px solid var(--emerald-main, #10b981);
   border-radius: 8px;
   padding: 14px;
-  color: #e5e7eb;
+  color: var(--text-primary, #e5e7eb);
   font-family: var(--font-mono, monospace);
   font-size: 13px;
   line-height: 1.6;
@@ -2542,11 +2542,11 @@ function toggleMoodTag(tag: string) {
 
 .foot-hint {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-muted, #6b7280);
 }
 
 .btn-done-preview {
-  background: #0e2417;
+  background: var(--emerald-pill-bg, #0e2417);
   border: 1px solid var(--emerald-main, #10b981);
   color: var(--emerald-bright, #34d399);
   font-size: 11.5px;
@@ -2558,7 +2558,7 @@ function toggleMoodTag(tag: string) {
 
 .btn-done-preview:hover {
   background: var(--emerald-main, #10b981);
-  color: #030a06;
+  color: var(--bg-canvas, #030a06);
 }
 
 /* Timeline Vertical Tree */
@@ -2588,9 +2588,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .timeline-node-row.drag-over-item {
-  background: #092017;
-  outline: 1.5px dashed #10b981;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+  background: var(--emerald-pill-bg, #092017);
+  outline: 1.5px dashed var(--emerald-main, #10b981);
+  box-shadow: 0 0 14px var(--border-glow, rgba(16, 185, 129, 0.25));
   transform: translateX(4px);
 }
 
@@ -2609,13 +2609,13 @@ function toggleMoodTag(tag: string) {
   margin-top: 4px;
   z-index: 2;
   box-sizing: border-box;
-  background: #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+  background: var(--emerald-main, #10b981);
+  box-shadow: 0 0 8px var(--emerald-bright, rgba(16, 185, 129, 0.7));
 }
 
 .timeline-connector-line {
   width: 1.5px;
-  background: #153828;
+  background: var(--border-card, #153828);
   position: absolute;
   top: 13px;
   bottom: 0;
@@ -2648,12 +2648,12 @@ function toggleMoodTag(tag: string) {
 .timeline-event-title {
   font-size: 13px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-white, #ffffff);
 }
 
 .timeline-event-author {
   font-size: 10.5px;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
 }
 
 .timeline-item-actions {
@@ -2664,22 +2664,22 @@ function toggleMoodTag(tag: string) {
 
 .timeline-event-time {
   font-size: 11px;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
 }
 
 .btn-item-icon {
   background: transparent;
   border: none;
   font-size: 11px;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   cursor: pointer;
   padding: 1px 4px;
   border-radius: 4px;
 }
 
 .btn-item-icon:hover {
-  color: #ffffff;
-  background: rgba(16, 185, 129, 0.1);
+  color: var(--text-white, #ffffff);
+  background: var(--border-glow, rgba(16, 185, 129, 0.1));
 }
 
 .btn-item-icon.danger:hover {
@@ -2688,7 +2688,7 @@ function toggleMoodTag(tag: string) {
 
 .timeline-event-desc {
   font-size: 11.5px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   margin: 0;
   line-height: 1.4;
 }
@@ -2703,9 +2703,9 @@ function toggleMoodTag(tag: string) {
 
 .resource-tag-pill {
   font-size: 9.5px;
-  background: #081a13;
-  color: #34d399;
-  border: 1px solid #113424;
+  background: var(--bg-card, #081a13);
+  color: var(--emerald-bright, #34d399);
+  border: 1px solid var(--border-card, #113424);
   border-radius: 10px;
   padding: 1px 6px;
   line-height: 1.3;
@@ -2717,14 +2717,14 @@ function toggleMoodTag(tag: string) {
 }
 
 .resource-tag-pill.clickable:hover {
-  background: #10b981;
-  color: #040c08;
-  border-color: #10b981;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #040c08);
+  border-color: var(--emerald-main, #10b981);
 }
 
 .resource-empty-hint {
   padding: 12px 0;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   font-size: 11.5px;
   font-style: italic;
 }
@@ -2756,7 +2756,7 @@ function toggleMoodTag(tag: string) {
 
 /* Collapsible Sections */
 .collapsible-section {
-  border-top: 1px solid #0e271c;
+  border-top: 1px solid var(--border-subtle, #0e271c);
   padding: 14px 0;
 }
 
@@ -2774,7 +2774,7 @@ function toggleMoodTag(tag: string) {
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  color: #ffffff;
+  color: var(--text-white, #ffffff);
   padding: 2px 0;
 }
 
@@ -2786,18 +2786,18 @@ function toggleMoodTag(tag: string) {
 
 .chevron-icon {
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   font-weight: bold;
 }
 
 .collapsible-title {
   font-size: 13px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-white, #ffffff);
 }
 
 .collapsible-count-pill {
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   font-size: 12px;
   font-weight: 600;
   margin-right: 12px;
@@ -2818,8 +2818,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .ai-exploration-banner {
-  background: #071912;
-  border: 1px solid #112d20;
+  background: var(--bg-card, #071912);
+  border: 1px solid var(--border-card, #112d20);
   border-radius: 8px;
   padding: 10px 14px;
   display: flex;
@@ -2839,9 +2839,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .ai-exploration-banner.drag-over-item {
-  border-color: #10b981;
-  background: #0b2e20;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  border-color: var(--emerald-main, #10b981);
+  background: var(--emerald-pill-bg, #0b2e20);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.35));
   transform: translateY(-2px) scale(1.01);
 }
 
@@ -2853,7 +2853,7 @@ function toggleMoodTag(tag: string) {
 }
 
 .ai-drag-dots {
-  color: #4b5563;
+  color: var(--text-dim, #4b5563);
   font-size: 12px;
   margin-top: 2px;
 }
@@ -2875,12 +2875,12 @@ function toggleMoodTag(tag: string) {
 .ai-banner-title {
   font-size: 12.5px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-white, #ffffff);
 }
 
 .btn-open-studio-header {
-  background: #0d281c;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: var(--emerald-pill-bg, #0d281c);
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.4));
   color: var(--emerald-bright, #34d399);
   padding: 4px 10px;
   border-radius: 6px;
@@ -2891,8 +2891,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-open-studio-header:hover {
-  background: #143d2b;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+  background: var(--bg-card-hover, #143d2b);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.25));
 }
 
 .header-right-badges {
@@ -2924,27 +2924,27 @@ function toggleMoodTag(tag: string) {
 
 .mini-takeaway-item {
   font-size: 10.5px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
 }
 
 .ai-banner-model-pill {
   font-size: 10px;
   font-weight: 600;
-  color: #34d399;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: var(--emerald-bright, #34d399);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.2));
   padding: 1px 6px;
   border-radius: 8px;
 }
 
 .ai-banner-meta {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
 }
 
 .ai-inline-rationale {
   font-size: 11px;
-  color: #cbd5e1;
+  color: var(--text-primary, #cbd5e1);
   margin: 2px 0 0 0;
   line-height: 1.4;
 }
@@ -2952,7 +2952,7 @@ function toggleMoodTag(tag: string) {
 .btn-toggle-transcript {
   background: transparent;
   border: none;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   font-size: 10.5px;
   cursor: pointer;
   align-self: flex-start;
@@ -2965,8 +2965,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .ai-transcript-box {
-  background: #030a07;
-  border: 1px solid #0d2319;
+  background: var(--bg-inner, #030a07);
+  border: 1px solid var(--border-subtle, #0d2319);
   border-radius: 6px;
   padding: 8px 10px;
   margin-top: 4px;
@@ -2977,7 +2977,7 @@ function toggleMoodTag(tag: string) {
 .ai-transcript-text {
   font-family: var(--font-mono, monospace);
   font-size: 11px;
-  color: #a7f3d0;
+  color: var(--emerald-bright, #a7f3d0);
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
@@ -2991,9 +2991,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .badge-link-pill {
-  background: #092017;
-  border: 1px solid #143d2a;
-  color: #34d399;
+  background: var(--emerald-pill-bg, #092017);
+  border: 1px solid var(--emerald-pill-border, #143d2a);
+  color: var(--emerald-bright, #34d399);
   border-radius: 12px;
   padding: 2px 10px;
   font-size: 10px;
@@ -3010,8 +3010,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .doc-item {
-  background: #071912;
-  border: 1px solid #112d20;
+  background: var(--bg-card, #071912);
+  border: 1px solid var(--border-card, #112d20);
   border-radius: 10px;
   overflow: hidden;
   display: flex;
@@ -3030,9 +3030,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .doc-item.drag-over-item {
-  border-color: #10b981;
-  background: #0b2e20;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  border-color: var(--emerald-main, #10b981);
+  background: var(--emerald-pill-bg, #0b2e20);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.35));
   transform: translateY(-2px) scale(1.01);
 }
 
@@ -3041,8 +3041,8 @@ function toggleMoodTag(tag: string) {
   position: relative;
   width: 100%;
   height: 120px;
-  background: #040a07;
-  border-bottom: 1px solid #0f241a;
+  background: var(--bg-inner, #040a07);
+  border-bottom: 1px solid var(--border-card, #0f241a);
   overflow: hidden;
 }
 
@@ -3060,7 +3060,7 @@ function toggleMoodTag(tag: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--text-white, #fff);
   font-size: 11px;
   font-weight: 700;
   text-decoration: none;
@@ -3081,7 +3081,7 @@ function toggleMoodTag(tag: string) {
 
 .doc-desc-text {
   font-size: 11.5px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   margin: 3px 0;
   line-height: 1.4;
 }
@@ -3111,8 +3111,8 @@ function toggleMoodTag(tag: string) {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #040e09;
-  border: 1px solid #133323;
+  background: var(--bg-inner, #040e09);
+  border: 1px solid var(--border-card, #133323);
   border-radius: 10px;
   padding: 2px 7px;
   font-size: 10px;
@@ -3123,12 +3123,12 @@ function toggleMoodTag(tag: string) {
 }
 
 .rev-name {
-  color: #d1d5db;
+  color: var(--text-primary, #d1d5db);
   font-weight: 600;
 }
 
 .rev-score {
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
   font-weight: 700;
 }
 
@@ -3144,8 +3144,8 @@ function toggleMoodTag(tag: string) {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #06150e;
-  border: 1px solid #143324;
+  background: var(--bg-inner, #06150e);
+  border: 1px solid var(--border-card, #143324);
   border-radius: 8px;
   padding: 4px 6px 4px 10px;
 }
@@ -3161,20 +3161,20 @@ function toggleMoodTag(tag: string) {
   border: none;
   outline: none;
   font-size: 11.5px;
-  color: #fff;
+  color: var(--text-white, #fff);
   font-family: inherit;
 }
 
 .quick-url-input::placeholder {
-  color: #64748b;
+  color: var(--text-dim, #64748b);
 }
 
 .btn-quick-fetch {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   border: none;
   border-radius: 6px;
   padding: 6px 14px;
-  color: #03140b;
+  color: var(--bg-canvas, #03140b);
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
@@ -3183,16 +3183,16 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-quick-fetch:hover {
-  background: #34d399;
-  box-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
+  background: var(--emerald-bright, #34d399);
+  box-shadow: 0 0 12px var(--border-glow, rgba(52, 211, 153, 0.4));
 }
 
 .btn-manual-doc-toggle {
-  background: #091a13;
-  border: 1px solid #143828;
+  background: var(--bg-card, #091a13);
+  border: 1px solid var(--border-card, #143828);
   border-radius: 8px;
   padding: 8px 12px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -3200,16 +3200,16 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-manual-doc-toggle:hover {
-  background: #0f2b1f;
-  color: #fff;
+  background: var(--bg-card-hover, #0f2b1f);
+  color: var(--text-white, #fff);
 }
 
 .btn-import-bookmarks-toggle {
-  background: #0b1f17;
+  background: var(--emerald-pill-bg, #0b1f17);
   border: 1px solid var(--emerald-main, #10b981);
   border-radius: 8px;
   padding: 8px 14px;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -3218,9 +3218,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-import-bookmarks-toggle:hover {
-  background: #10b981;
-  color: #040c08;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #040c08);
+  box-shadow: 0 0 14px var(--border-glow, rgba(16, 185, 129, 0.4));
 }
 
 .doc-item-left {
@@ -3239,21 +3239,21 @@ function toggleMoodTag(tag: string) {
 .doc-title {
   font-size: 12.5px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-white, #ffffff);
 }
 
 .doc-domain-badge {
   font-size: 9.5px;
-  color: #64748b;
-  background: #040d09;
+  color: var(--text-dim, #64748b);
+  background: var(--bg-inner, #040d09);
   padding: 1px 6px;
   border-radius: 6px;
-  border: 1px solid #0f291c;
+  border: 1px solid var(--border-subtle, #0f291c);
 }
 
 .doc-link {
   font-size: 11px;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   text-decoration: none;
 }
 
@@ -3263,7 +3263,7 @@ function toggleMoodTag(tag: string) {
 
 .doc-note {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
 }
 
 .doc-item-actions {
@@ -3276,8 +3276,8 @@ function toggleMoodTag(tag: string) {
    Mood Gallery Refactored
    ========================================================================= */
 .mood-gallery-section.gallery-drop-active {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.04);
+  border-color: var(--emerald-main, #10b981);
+  background: var(--border-glow, rgba(16, 185, 129, 0.04));
 }
 
 .gallery-controls-toolbar {
@@ -3290,8 +3290,8 @@ function toggleMoodTag(tag: string) {
 .grid-layout-buttons {
   display: flex;
   align-items: center;
-  background: #040e0a;
-  border: 1px solid #0f271d;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-subtle, #0f271d);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -3299,7 +3299,7 @@ function toggleMoodTag(tag: string) {
 .btn-grid-layout {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   font-size: 10px;
   font-weight: 600;
   padding: 3px 7px;
@@ -3308,19 +3308,19 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-grid-layout:hover {
-  color: #a7f3d0;
+  color: var(--emerald-bright, #a7f3d0);
 }
 
 .btn-grid-layout.active {
-  background: #10b981;
-  color: #03140b;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #03140b);
   font-weight: 700;
 }
 
 .btn-add-mood-quick {
-  background: #092017;
-  border: 1px solid #143d2a;
-  color: #34d399;
+  background: var(--emerald-pill-bg, #092017);
+  border: 1px solid var(--emerald-pill-border, #143d2a);
+  color: var(--emerald-bright, #34d399);
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
@@ -3338,15 +3338,15 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-add-mood-quick:hover:not(:disabled) {
-  background: #10b981;
-  color: #022c22;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #022c22);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.3));
 }
 
 .btn-add-mood-quick.export-btn {
-  background: #0d281e;
-  border-color: #10b981;
-  color: #a7f3d0;
+  background: var(--emerald-pill-bg, #0d281e);
+  border-color: var(--emerald-main, #10b981);
+  color: var(--emerald-bright, #a7f3d0);
 }
 
 .btn-add-mood-quick.danger-ghost {
@@ -3371,12 +3371,12 @@ function toggleMoodTag(tag: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #04130d;
-  border: 1px solid #0e3020;
+  background: var(--bg-card, #04130d);
+  border: 1px solid var(--border-card, #0e3020);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
 }
 
 .storage-strip-left {
@@ -3389,16 +3389,16 @@ function toggleMoodTag(tag: string) {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 6px #10b981;
+  background: var(--emerald-main, #10b981);
+  box-shadow: 0 0 6px var(--emerald-main, #10b981);
 }
 
 .storage-security-pill {
   font-size: 10px;
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--emerald-bright, #10b981);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.25));
   padding: 2px 8px;
   border-radius: 12px;
 }
@@ -3414,21 +3414,21 @@ function toggleMoodTag(tag: string) {
 .mood-tag-label {
   font-size: 10.5px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
   text-transform: uppercase;
 }
 
 /* Mood Drop Banner */
 .mood-drop-banner {
-  border: 1.5px dashed #14432c;
-  background: #040e09;
+  border: 1.5px dashed var(--border-card, #14432c);
+  background: var(--bg-inner, #040e09);
   border-radius: 8px;
   padding: 12px 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   cursor: pointer;
   transition: all 0.18s ease;
   text-align: left;
@@ -3436,7 +3436,7 @@ function toggleMoodTag(tag: string) {
 
 .mood-drop-banner svg {
   flex-shrink: 0;
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
 }
 
 .banner-text-wrap {
@@ -3448,19 +3448,19 @@ function toggleMoodTag(tag: string) {
 .banner-title {
   font-size: 12px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
 }
 
 .banner-subtitle {
   font-size: 10.5px;
-  color: #6ee7b7;
+  color: var(--emerald-bright, #6ee7b7);
 }
 
 .mood-drop-banner:hover,
 .mood-drop-banner.banner-active {
-  border-color: #10b981;
-  background: #082117;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+  border-color: var(--emerald-main, #10b981);
+  background: var(--bg-card-hover, #082117);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.25));
 }
 
 .mood-grid {
@@ -3481,8 +3481,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .mood-card-item {
-  background: #050e0a;
-  border: 1px solid #112d20;
+  background: var(--bg-card, #050e0a);
+  border: 1px solid var(--border-card, #112d20);
   border-radius: 10px;
   overflow: hidden;
   transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
@@ -3493,7 +3493,7 @@ function toggleMoodTag(tag: string) {
 
 .mood-card-item:hover {
   transform: translateY(-2px);
-  border-color: #10b981;
+  border-color: var(--emerald-main, #10b981);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
@@ -3508,9 +3508,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .mood-card-item.drag-over-item {
-  border-color: #34d399;
-  background: #08291e;
-  box-shadow: 0 0 18px rgba(16, 185, 129, 0.5);
+  border-color: var(--emerald-bright, #34d399);
+  background: var(--bg-card-hover, #08291e);
+  box-shadow: 0 0 18px var(--border-glow, rgba(16, 185, 129, 0.5));
   transform: scale(1.03) translateY(-2px);
 }
 
@@ -3519,8 +3519,8 @@ function toggleMoodTag(tag: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(3, 10, 7, 0.95);
-  border-bottom: 1px solid #0d281e;
+  background: var(--bg-inner, rgba(3, 10, 7, 0.95));
+  border-bottom: 1px solid var(--border-subtle, #0d281e);
   padding: 4px 6px;
   font-size: 10.5px;
 }
@@ -3533,9 +3533,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-reorder-icon {
-  background: #061810;
-  border: 1px solid #103322;
-  color: #a7f3d0;
+  background: var(--bg-card, #061810);
+  border: 1px solid var(--border-card, #103322);
+  color: var(--emerald-bright, #a7f3d0);
   font-size: 9.5px;
   font-weight: 700;
   padding: 2px 5px;
@@ -3546,9 +3546,9 @@ function toggleMoodTag(tag: string) {
 }
 
 .btn-reorder-icon:hover:not(:disabled) {
-  background: #10b981;
-  color: #021a10;
-  border-color: #10b981;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #021a10);
+  border-color: var(--emerald-main, #10b981);
 }
 
 .btn-reorder-icon:disabled {
@@ -3564,8 +3564,8 @@ function toggleMoodTag(tag: string) {
 .mood-order-badge {
   font-size: 9.5px;
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
+  color: var(--emerald-bright, #10b981);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.1));
   padding: 1px 5px;
   border-radius: 4px;
 }
@@ -3575,7 +3575,7 @@ function toggleMoodTag(tag: string) {
   width: 100%;
   height: 120px;
   cursor: pointer;
-  background: #020805;
+  background: var(--bg-inner, #020805);
 }
 
 .mood-thumb {
@@ -3598,8 +3598,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .zoom-badge {
-  background: rgba(16, 185, 129, 0.9);
-  color: #03140b;
+  background: var(--emerald-main, rgba(16, 185, 129, 0.9));
+  color: var(--bg-canvas, #03140b);
   font-size: 10.5px;
   font-weight: 700;
   padding: 3px 8px;
@@ -3615,7 +3615,7 @@ function toggleMoodTag(tag: string) {
   top: 6px;
   right: 6px;
   background: rgba(0, 0, 0, 0.7);
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   font-size: 11px;
   padding: 2px 5px;
   border-radius: 4px;
@@ -3647,7 +3647,7 @@ function toggleMoodTag(tag: string) {
 .mood-caption-label {
   font-size: 11.5px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3656,7 +3656,7 @@ function toggleMoodTag(tag: string) {
 .mood-size-badge {
   font-size: 9.5px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-dim, #64748b);
 }
 
 .mood-btn-group {
@@ -3681,7 +3681,7 @@ function toggleMoodTag(tag: string) {
   align-self: flex-start;
   background: transparent;
   border: none;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
@@ -3694,8 +3694,8 @@ function toggleMoodTag(tag: string) {
 
 /* Inline Adder & Edit Cards */
 .inline-adder-card {
-  background: #071912;
-  border: 1px solid #143d2a;
+  background: var(--bg-card, #071912);
+  border: 1px solid var(--border-card, #143d2a);
   border-radius: 8px;
   padding: 12px;
   display: flex;
@@ -3704,8 +3704,8 @@ function toggleMoodTag(tag: string) {
 }
 
 .inline-adder-card.edit-mode {
-  border-color: #10b981;
-  background: #082117;
+  border-color: var(--emerald-main, #10b981);
+  background: var(--bg-card-hover, #082117);
 }
 
 .adder-header {
@@ -3718,7 +3718,7 @@ function toggleMoodTag(tag: string) {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
 }
 
 .adder-inputs {
@@ -3736,11 +3736,11 @@ function toggleMoodTag(tag: string) {
 .adder-input,
 .adder-textarea,
 select.adder-input {
-  background: #040e0a;
-  border: 1px solid #112d20;
+  background: var(--bg-inner, #040e0a);
+  border: 1px solid var(--border-subtle, #112d20);
   border-radius: 6px;
   padding: 7px 10px;
-  color: #ffffff;
+  color: var(--text-white, #ffffff);
   font-size: 12px;
   outline: none;
 }
@@ -3748,7 +3748,7 @@ select.adder-input {
 .adder-input:focus,
 .adder-textarea:focus,
 select.adder-input:focus {
-  border-color: #10b981;
+  border-color: var(--emerald-main, #10b981);
 }
 
 .adder-textarea {
@@ -3765,17 +3765,17 @@ select.adder-input:focus {
 
 .btn-adder-cancel {
   background: transparent;
-  border: 1px solid #112d20;
+  border: 1px solid var(--border-subtle, #112d20);
   border-radius: 6px;
   padding: 4px 10px;
-  color: #94a3b8;
+  color: var(--text-secondary, #94a3b8);
   font-size: 11px;
   cursor: pointer;
 }
 
 .btn-adder-save {
-  background: #10b981;
-  color: #040c08;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #040c08);
   border: none;
   border-radius: 6px;
   padding: 4px 12px;
@@ -3799,11 +3799,11 @@ select.adder-input:focus {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: #081a13;
-  border: 1px solid #133827;
+  background: var(--bg-card, #081a13);
+  border: 1px solid var(--border-card, #133827);
   border-radius: 8px;
   padding: 8px 16px;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
@@ -3811,9 +3811,9 @@ select.adder-input:focus {
 }
 
 .btn-panel-action:hover {
-  background: #0c261c;
-  border-color: #10b981;
-  color: #ffffff;
+  background: var(--bg-card-hover, #0c261c);
+  border-color: var(--emerald-main, #10b981);
+  color: var(--text-white, #ffffff);
 }
 
 .action-icon {

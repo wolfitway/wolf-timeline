@@ -397,7 +397,7 @@ function toggleNativeFullscreen() {
 .focus-overlay {
   position: fixed;
   inset: 0;
-  background: #040c08;
+  background: var(--bg-body, #040c08);
   z-index: 10000;
   display: flex;
   flex-direction: column;
@@ -428,8 +428,8 @@ function toggleNativeFullscreen() {
 .focus-topbar {
   height: 52px;
   min-height: 52px;
-  background: #06100b;
-  border-bottom: 1px solid #102419;
+  background: var(--bg-surface, #06100b);
+  border-bottom: 1px solid var(--border-subtle, #102419);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -463,8 +463,8 @@ function toggleNativeFullscreen() {
 
 .focus-view-toggle {
   display: flex;
-  background: #030805;
-  border: 1px solid #14281f;
+  background: var(--bg-inner, #030805);
+  border: 1px solid var(--border-card, #14281f);
   border-radius: 6px;
   padding: 2px;
 }
@@ -476,15 +476,15 @@ function toggleNativeFullscreen() {
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .toggle-btn.active {
-  background: #0e2417;
-  color: #fff;
-  border: 1px solid #1b472e;
+  background: var(--emerald-pill-bg, #0e2417);
+  color: var(--text-primary, #fff);
+  border: 1px solid var(--emerald-pill-border, #1b472e);
 }
 
 /* Mini Formatting Ribbon */
@@ -492,8 +492,8 @@ function toggleNativeFullscreen() {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #040906;
-  border: 1px solid #102117;
+  background: var(--bg-inner, #040906);
+  border: 1px solid var(--border-subtle, #102117);
   border-radius: 6px;
   padding: 2px 6px;
 }
@@ -501,7 +501,7 @@ function toggleNativeFullscreen() {
 .btn-ribbon {
   background: transparent;
   border: none;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   font-size: 11px;
   font-weight: 700;
   padding: 3px 6px;
@@ -510,8 +510,8 @@ function toggleNativeFullscreen() {
 }
 
 .btn-ribbon:hover {
-  background: #0d2017;
-  color: #fff;
+  background: var(--bg-card-hover, #0d2017);
+  color: var(--text-primary, #fff);
 }
 
 .btn-ribbon.note { color: #93c5fd; }
@@ -527,8 +527,8 @@ function toggleNativeFullscreen() {
 
 .control-pill-group {
   display: flex;
-  background: #030805;
-  border: 1px solid #14281f;
+  background: var(--bg-inner, #030805);
+  border: 1px solid var(--border-card, #14281f);
   border-radius: 6px;
   padding: 2px;
 }
@@ -540,19 +540,19 @@ function toggleNativeFullscreen() {
   border-radius: 4px;
   font-size: 10.5px;
   font-weight: 700;
-  color: #88929b;
+  color: var(--text-dim, #88929b);
   cursor: pointer;
 }
 
 .pill-btn.active {
-  background: #0f2619;
+  background: var(--emerald-pill-bg, #0f2619);
   color: var(--emerald-bright, #34d399);
 }
 
 .btn-icon-fullscreen {
-  background: #0a1711;
-  border: 1px solid #153223;
-  color: #9ca3af;
+  background: var(--bg-inner, #0a1711);
+  border: 1px solid var(--border-card, #153223);
+  color: var(--text-secondary, #9ca3af);
   font-size: 13px;
   padding: 4px 8px;
   border-radius: 6px;
@@ -560,7 +560,7 @@ function toggleNativeFullscreen() {
 }
 
 .btn-icon-fullscreen:hover {
-  color: #fff;
+  color: var(--text-primary, #fff);
   border-color: var(--emerald-main, #10b981);
 }
 
@@ -568,26 +568,26 @@ function toggleNativeFullscreen() {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #08160f;
-  border: 1px solid #153825;
+  background: var(--bg-card, #08160f);
+  border: 1px solid var(--border-card, #153825);
   border-radius: 6px;
   padding: 5px 12px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .btn-save-inline:hover {
-  background: #0e2619;
-  color: #fff;
+  background: var(--bg-card-hover, #0e2619);
+  color: var(--text-primary, #fff);
   border-color: var(--emerald-main, #10b981);
 }
 
 .kbd-pill {
   font-family: var(--font-mono, monospace);
   font-size: 9.5px;
-  background: #0f2b1d;
+  background: var(--bg-inner, #0f2b1d);
   padding: 1px 4px;
   border-radius: 3px;
   color: var(--emerald-bright, #34d399);
@@ -596,7 +596,7 @@ function toggleNativeFullscreen() {
 .btn-done {
   background: var(--emerald-main, #10b981);
   color: #03100a;
-  border: 1px solid #34d399;
+  border: 1px solid var(--emerald-bright, #34d399);
   border-radius: 6px;
   padding: 5px 14px;
   font-size: 11.5px;
@@ -606,7 +606,7 @@ function toggleNativeFullscreen() {
 }
 
 .btn-done:hover {
-  background: #34d399;
+  background: var(--emerald-bright, #34d399);
   box-shadow: 0 0 14px rgba(52, 211, 153, 0.4);
 }
 
@@ -649,11 +649,11 @@ function toggleNativeFullscreen() {
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid #14281f;
+  border-bottom: 1px solid var(--border-subtle, #14281f);
   padding: 8px 0;
   font-size: 26px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary, #fff);
   outline: none;
   letter-spacing: -0.02em;
   transition: border-color 0.15s ease;
@@ -670,9 +670,9 @@ function toggleNativeFullscreen() {
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  border: 1px solid #11241a;
+  border: 1px solid var(--border-card, #11241a);
   border-radius: 8px;
-  background: #030805;
+  background: var(--bg-inner, #030805);
 }
 
 .focus-panes-grid.split {
@@ -690,7 +690,7 @@ function toggleNativeFullscreen() {
   flex-direction: column;
   min-height: 0;
   height: 100%;
-  border-right: 1px solid #102117;
+  border-right: 1px solid var(--border-subtle, #102117);
   overflow: hidden;
 }
 
@@ -702,7 +702,7 @@ function toggleNativeFullscreen() {
   background: transparent;
   border: none;
   padding: 24px;
-  color: #e5e7eb;
+  color: var(--text-primary, #e5e7eb);
   font-family: var(--font-mono, "JetBrains Mono", monospace);
   font-size: 14px;
   line-height: 1.8;
@@ -719,7 +719,7 @@ function toggleNativeFullscreen() {
   flex-direction: column;
   min-height: 0;
   height: 100%;
-  background: #040a06;
+  background: var(--bg-card, #040a06);
   overflow: hidden;
 }
 
@@ -728,7 +728,7 @@ function toggleNativeFullscreen() {
   padding: 24px 32px 60px 32px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  color: #e5e7eb;
+  color: var(--text-primary, #e5e7eb);
   line-height: 1.8;
   font-size: 14px;
   box-sizing: border-box;
@@ -738,8 +738,8 @@ function toggleNativeFullscreen() {
 .preview-content :deep(.md-h1) {
   font-size: 24px;
   font-weight: 800;
-  color: #fff;
-  border-bottom: 1px solid #12241b;
+  color: var(--text-primary, #fff);
+  border-bottom: 1px solid var(--border-subtle, #12241b);
   padding-bottom: 8px;
   margin: 16px 0 10px 0;
 }
@@ -754,13 +754,13 @@ function toggleNativeFullscreen() {
 .preview-content :deep(.md-h3) {
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin: 14px 0 6px 0;
 }
 
 .preview-content :deep(.md-code-inline) {
-  background: #091710;
-  border: 1px solid #143525;
+  background: var(--bg-inner, #091710);
+  border: 1px solid var(--border-card, #143525);
   color: var(--emerald-bright, #34d399);
   padding: 2px 6px;
   border-radius: 4px;
@@ -769,8 +769,8 @@ function toggleNativeFullscreen() {
 }
 
 .preview-content :deep(.md-codeblock-wrapper) {
-  background: #040906;
-  border: 1px solid #12261b;
+  background: var(--bg-inner, #040906);
+  border: 1px solid var(--border-card, #12261b);
   border-radius: 8px;
   margin: 14px 0;
   overflow: hidden;
@@ -780,9 +780,9 @@ function toggleNativeFullscreen() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #08140e;
+  background: var(--bg-card, #08140e);
   padding: 6px 14px;
-  border-bottom: 1px solid #102117;
+  border-bottom: 1px solid var(--border-subtle, #102117);
 }
 
 .preview-content :deep(.codeblock-lang) {
@@ -793,9 +793,9 @@ function toggleNativeFullscreen() {
 }
 
 .preview-content :deep(.btn-code-copy) {
-  background: #0d2217;
-  border: 1px solid #183e29;
-  color: #9ca3af;
+  background: var(--bg-card-hover, #0d2217);
+  border: 1px solid var(--border-card, #183e29);
+  color: var(--text-secondary, #9ca3af);
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 4px;
@@ -803,7 +803,7 @@ function toggleNativeFullscreen() {
 }
 
 .preview-content :deep(.btn-code-copy:hover) {
-  color: #fff;
+  color: var(--text-primary, #fff);
   border-color: var(--emerald-main, #10b981);
 }
 
@@ -814,7 +814,7 @@ function toggleNativeFullscreen() {
   font-family: var(--font-mono, monospace);
   font-size: 12.5px;
   line-height: 1.6;
-  color: #d1d5db;
+  color: var(--text-primary, #d1d5db);
 }
 
 .preview-content :deep(.md-task-item) {
@@ -833,7 +833,7 @@ function toggleNativeFullscreen() {
 
 .preview-content :deep(.md-task-item.checked .task-label) {
   text-decoration: line-through;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
 }
 
 .preview-content :deep(.md-callout) {
@@ -846,8 +846,8 @@ function toggleNativeFullscreen() {
   border-left: 3px solid #3b82f6;
 }
 .preview-content :deep(.md-callout-tip) {
-  background: rgba(16, 185, 129, 0.08);
-  border-left: 3px solid #10b981;
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.08));
+  border-left: 3px solid var(--emerald-main, #10b981);
 }
 .preview-content :deep(.md-callout-warning) {
   background: rgba(245, 158, 11, 0.08);
@@ -866,16 +866,16 @@ function toggleNativeFullscreen() {
 }
 
 .preview-content :deep(.md-table th) {
-  background: #091710;
+  background: var(--bg-inner, #091710);
   color: var(--emerald-bright, #34d399);
   padding: 8px 12px;
-  border: 1px solid #142e20;
+  border: 1px solid var(--border-card, #142e20);
   text-align: left;
 }
 
 .preview-content :deep(.md-table td) {
   padding: 8px 12px;
-  border: 1px solid #12241a;
+  border: 1px solid var(--border-subtle, #12241a);
 }
 
 /* Custom Scrollbars */
@@ -886,13 +886,13 @@ function toggleNativeFullscreen() {
 }
 .focus-textarea::-webkit-scrollbar-track,
 .preview-content::-webkit-scrollbar-track {
-  background: #030805;
+  background: var(--bg-inner, #030805);
 }
 .focus-textarea::-webkit-scrollbar-thumb,
 .preview-content::-webkit-scrollbar-thumb {
-  background: #143525;
+  background: var(--border-card, #143525);
   border-radius: 4px;
-  border: 1px solid #030805;
+  border: 1px solid var(--bg-inner, #030805);
 }
 .focus-textarea::-webkit-scrollbar-thumb:hover,
 .preview-content::-webkit-scrollbar-thumb:hover {
@@ -903,14 +903,14 @@ function toggleNativeFullscreen() {
 .focus-footer {
   height: 38px;
   min-height: 38px;
-  background: #06100b;
-  border-top: 1px solid #102419;
+  background: var(--bg-surface, #06100b);
+  border-top: 1px solid var(--border-subtle, #102419);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   flex-shrink: 0;
 }
 
@@ -921,13 +921,13 @@ function toggleNativeFullscreen() {
 }
 
 .metric strong {
-  color: #e5e7eb;
+  color: var(--text-primary, #e5e7eb);
 }
 
 .metric.complexity {
   color: var(--emerald-bright, #34d399);
-  background: #091a11;
-  border: 1px solid #143525;
+  background: var(--bg-inner, #091a11);
+  border: 1px solid var(--border-card, #143525);
   padding: 2px 7px;
   border-radius: 4px;
   font-weight: 700;
@@ -940,15 +940,15 @@ function toggleNativeFullscreen() {
 }
 
 .save-status {
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   font-weight: 600;
 }
 
 .esc-hint kbd {
   font-family: var(--font-mono, monospace);
-  background: #0e2017;
+  background: var(--bg-inner, #0e2017);
   padding: 1px 4px;
   border-radius: 3px;
-  color: #d1d5db;
+  color: var(--text-primary, #d1d5db);
 }
 </style>

@@ -590,8 +590,8 @@ function handleDeleteCurrent() {
   width: 960px;
   max-width: 95vw;
   height: 85vh;
-  background: #060e0a;
-  border: 1px solid #143324;
+  background: var(--bg-card, #060e0a);
+  border: 1px solid var(--border-card, #143324);
   border-radius: 14px;
   display: flex;
   flex-direction: column;
@@ -610,11 +610,11 @@ function handleDeleteCurrent() {
 /* Topbar */
 .modal-topbar {
   padding: 16px 22px;
-  border-bottom: 1px solid #11281d;
+  border-bottom: 1px solid var(--border-subtle, #11281d);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #040a07;
+  background: var(--bg-surface, #040a07);
 }
 
 .modal-title-group {
@@ -642,9 +642,9 @@ function handleDeleteCurrent() {
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 10px;
-  background: #081a12;
-  border: 1px solid #123826;
-  color: #10b981;
+  background: var(--emerald-pill-bg, #081a12);
+  border: 1px solid var(--emerald-pill-border, #123826);
+  color: var(--emerald-bright, #10b981);
 }
 
 .status-pill.debating {
@@ -660,7 +660,7 @@ function handleDeleteCurrent() {
 .modal-heading-input {
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary, #fff);
   background: transparent;
   border: none;
   outline: none;
@@ -669,7 +669,7 @@ function handleDeleteCurrent() {
 }
 
 .modal-heading-input::placeholder {
-  color: #4b5563;
+  color: var(--text-dim, #4b5563);
 }
 
 .modal-controls {
@@ -679,9 +679,9 @@ function handleDeleteCurrent() {
 }
 
 .btn-icon-control {
-  background: #081610;
-  border: 1px solid #143022;
-  color: #9ca3af;
+  background: var(--bg-inner, #081610);
+  border: 1px solid var(--border-card, #143022);
+  color: var(--text-secondary, #9ca3af);
   width: 32px;
   height: 32px;
   border-radius: 6px;
@@ -693,7 +693,7 @@ function handleDeleteCurrent() {
 }
 
 .btn-icon-control:hover {
-  color: #fff;
+  color: var(--text-primary, #fff);
   border-color: var(--emerald-main, #10b981);
 }
 
@@ -705,8 +705,8 @@ function handleDeleteCurrent() {
 /* Meta Toolbar */
 .meta-toolbar {
   padding: 10px 22px;
-  background: #050d09;
-  border-bottom: 1px solid #0f241a;
+  background: var(--bg-surface, #050d09);
+  border-bottom: 1px solid var(--border-subtle, #0f241a);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -725,16 +725,16 @@ function handleDeleteCurrent() {
 .meta-label {
   font-size: 11px;
   font-weight: 600;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   white-space: nowrap;
 }
 
 .meta-select, .meta-input {
-  background: #030805;
-  border: 1px solid #142e21;
+  background: var(--bg-inner, #030805);
+  border: 1px solid var(--border-card, #142e21);
   border-radius: 6px;
   padding: 5px 10px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 11.5px;
   outline: none;
 }
@@ -750,8 +750,8 @@ function handleDeleteCurrent() {
 /* Tab Strip */
 .tab-strip {
   display: flex;
-  background: #040906;
-  border-bottom: 1px solid #102419;
+  background: var(--bg-inner, #040906);
+  border-bottom: 1px solid var(--border-subtle, #102419);
   padding: 0 22px;
   gap: 4px;
 }
@@ -761,7 +761,7 @@ function handleDeleteCurrent() {
   border: none;
   border-bottom: 2px solid transparent;
   padding: 10px 16px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -769,13 +769,13 @@ function handleDeleteCurrent() {
 }
 
 .tab-btn:hover {
-  color: #e5e7eb;
+  color: var(--text-primary, #e5e7eb);
 }
 
 .tab-btn.active {
   color: var(--emerald-bright, #34d399);
   border-bottom-color: var(--emerald-main, #10b981);
-  background: #081a12;
+  background: var(--emerald-pill-bg, #081a12);
 }
 
 /* Modal Body */
@@ -786,19 +786,19 @@ function handleDeleteCurrent() {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  background: #060e0a;
+  background: var(--bg-card, #060e0a);
 }
 
 .subpane-title {
   font-size: 14px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin: 0 0 2px;
 }
 
 .subpane-desc {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   margin: 0;
 }
 
@@ -813,8 +813,8 @@ function handleDeleteCurrent() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #0d281c;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: var(--bg-card-hover, #0d281c);
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.4));
   color: var(--emerald-bright, #34d399);
   padding: 7px 14px;
   border-radius: 6px;
@@ -824,7 +824,7 @@ function handleDeleteCurrent() {
 }
 
 .btn-synthesize:hover {
-  background: #143d2b;
+  background: var(--emerald-pill-bg, #143d2b);
 }
 
 .debate-stream-container {
@@ -834,8 +834,8 @@ function handleDeleteCurrent() {
 }
 
 .debate-turn-card {
-  background: #08140f;
-  border: 1px solid #142e22;
+  background: var(--bg-inner, #08140f);
+  border: 1px solid var(--border-card, #142e22);
   border-radius: 10px;
   padding: 14px 16px;
   display: flex;
@@ -844,7 +844,7 @@ function handleDeleteCurrent() {
 }
 
 .debate-turn-card.pro {
-  border-left: 3px solid #10b981;
+  border-left: 3px solid var(--emerald-main, #10b981);
 }
 
 .debate-turn-card.con {
@@ -874,7 +874,7 @@ function handleDeleteCurrent() {
 .turn-speaker {
   font-size: 12.5px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .stance-badge {
@@ -885,8 +885,8 @@ function handleDeleteCurrent() {
 }
 
 .stance-badge.pro {
-  background: #0a291b;
-  color: #34d399;
+  background: var(--emerald-pill-bg, #0a291b);
+  color: var(--emerald-bright, #34d399);
 }
 
 .stance-badge.con {
@@ -907,13 +907,13 @@ function handleDeleteCurrent() {
 
 .turn-time {
   font-size: 10.5px;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
 }
 
 .btn-remove-turn {
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   cursor: pointer;
 }
 
@@ -923,7 +923,7 @@ function handleDeleteCurrent() {
 
 .turn-body {
   font-size: 12.5px;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
   line-height: 1.5;
   margin: 0;
   white-space: pre-wrap;
@@ -931,8 +931,8 @@ function handleDeleteCurrent() {
 
 /* Add Turn Box */
 .add-turn-box {
-  background: #040a07;
-  border: 1px solid #142e21;
+  background: var(--bg-inner, #040a07);
+  border: 1px solid var(--border-card, #142e21);
   border-radius: 10px;
   padding: 14px;
   display: flex;
@@ -954,11 +954,11 @@ function handleDeleteCurrent() {
 }
 
 .turn-select {
-  background: #08140f;
-  border: 1px solid #143022;
+  background: var(--bg-card, #08140f);
+  border: 1px solid var(--border-card, #143022);
   border-radius: 6px;
   padding: 6px 10px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 11.5px;
   outline: none;
 }
@@ -969,9 +969,9 @@ function handleDeleteCurrent() {
 }
 
 .btn-stance {
-  background: #08140f;
-  border: 1px solid #143022;
-  color: #9ca3af;
+  background: var(--bg-card, #08140f);
+  border: 1px solid var(--border-card, #143022);
+  color: var(--text-secondary, #9ca3af);
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 10.5px;
@@ -985,11 +985,11 @@ function handleDeleteCurrent() {
 }
 
 .turn-textarea {
-  background: #08140f;
-  border: 1px solid #143022;
+  background: var(--bg-card, #08140f);
+  border: 1px solid var(--border-card, #143022);
   border-radius: 6px;
   padding: 10px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 12px;
   outline: none;
   resize: vertical;
@@ -1002,8 +1002,8 @@ function handleDeleteCurrent() {
 }
 
 .btn-add-argument {
-  background: #0d281c;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: var(--bg-card-hover, #0d281c);
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.4));
   color: var(--emerald-bright, #34d399);
   padding: 6px 14px;
   border-radius: 6px;
@@ -1020,8 +1020,8 @@ function handleDeleteCurrent() {
 }
 
 .decision-card {
-  background: #08140f;
-  border: 1px solid #142e22;
+  background: var(--bg-inner, #08140f);
+  border: 1px solid var(--border-card, #142e22);
   border-radius: 10px;
   padding: 16px;
   display: flex;
@@ -1034,11 +1034,11 @@ function handleDeleteCurrent() {
 }
 
 .decision-textarea {
-  background: #040a07;
-  border: 1px solid #142e21;
+  background: var(--bg-inner, #040a07);
+  border: 1px solid var(--border-card, #142e21);
   border-radius: 6px;
   padding: 12px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 12.5px;
   outline: none;
   resize: vertical;
@@ -1059,27 +1059,27 @@ function handleDeleteCurrent() {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #040a07;
-  border: 1px solid #10261b;
+  background: var(--bg-inner, #040a07);
+  border: 1px solid var(--border-subtle, #10261b);
   border-radius: 6px;
   padding: 6px 10px;
 }
 
 .check-icon {
-  color: #10b981;
+  color: var(--emerald-bright, #10b981);
   font-size: 12px;
 }
 
 .takeaway-text {
   font-size: 11.5px;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
   flex: 1;
 }
 
 .btn-delete-sm {
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   cursor: pointer;
 }
 
@@ -1094,18 +1094,18 @@ function handleDeleteCurrent() {
 
 .takeaway-input {
   flex: 1;
-  background: #040a07;
-  border: 1px solid #142e21;
+  background: var(--bg-inner, #040a07);
+  border: 1px solid var(--border-card, #142e21);
   border-radius: 6px;
   padding: 6px 10px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 11.5px;
   outline: none;
 }
 
 .btn-add-sm {
-  background: #0d281c;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: var(--bg-card-hover, #0d281c);
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.4));
   color: var(--emerald-bright, #34d399);
   padding: 6px 12px;
   border-radius: 6px;
@@ -1127,7 +1127,7 @@ function handleDeleteCurrent() {
   gap: 10px;
   font-size: 10.5px;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   padding: 4px 8px;
 }
 
@@ -1136,8 +1136,8 @@ function handleDeleteCurrent() {
   grid-template-columns: 180px 1fr 1fr 30px;
   gap: 10px;
   align-items: center;
-  background: #040a07;
-  border: 1px solid #10261b;
+  background: var(--bg-inner, #040a07);
+  border: 1px solid var(--border-subtle, #10261b);
   border-radius: 6px;
   padding: 8px 10px;
   font-size: 11.5px;
@@ -1145,11 +1145,11 @@ function handleDeleteCurrent() {
 
 .aspect-cell {
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .pro-cell {
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
 }
 
 .con-cell {
@@ -1164,18 +1164,18 @@ function handleDeleteCurrent() {
 }
 
 .tradeoff-input {
-  background: #040a07;
-  border: 1px solid #142e21;
+  background: var(--bg-inner, #040a07);
+  border: 1px solid var(--border-card, #142e21);
   border-radius: 6px;
   padding: 6px 10px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 11.5px;
   outline: none;
 }
 
 .btn-add-tradeoff {
-  background: #0d281c;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: var(--bg-card-hover, #0d281c);
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.4));
   color: var(--emerald-bright, #34d399);
   padding: 6px 14px;
   border-radius: 6px;
@@ -1201,21 +1201,21 @@ function handleDeleteCurrent() {
 .char-count-badge {
   font-size: 10.5px;
   font-family: var(--font-mono, monospace);
-  color: #9ca3af;
-  background: #040a07;
+  color: var(--text-dim, #9ca3af);
+  background: var(--bg-inner, #040a07);
   padding: 3px 8px;
   border-radius: 4px;
-  border: 1px solid #12281c;
+  border: 1px solid var(--border-subtle, #12281c);
 }
 
 .transcript-code-textarea {
   flex: 1;
   min-height: 380px;
-  background: #030805;
-  border: 1px solid #142e21;
+  background: var(--bg-inner, #030805);
+  border: 1px solid var(--border-card, #142e21);
   border-radius: 8px;
   padding: 14px;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
   font-family: var(--font-mono, monospace);
   font-size: 12px;
   line-height: 1.6;
@@ -1243,27 +1243,27 @@ function handleDeleteCurrent() {
 .link-label {
   font-size: 12px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .link-text-input {
-  background: #030805;
-  border: 1px solid #142e21;
+  background: var(--bg-inner, #030805);
+  border: 1px solid var(--border-card, #142e21);
   border-radius: 6px;
   padding: 8px 12px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 12px;
   outline: none;
 }
 
 .link-hint {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-dim, #9ca3af);
 }
 
 .link-preview-box {
-  background: #08140f;
-  border: 1px solid #142e22;
+  background: var(--bg-inner, #08140f);
+  border: 1px solid var(--border-card, #142e22);
   border-radius: 8px;
   padding: 12px 16px;
   display: flex;
@@ -1274,7 +1274,7 @@ function handleDeleteCurrent() {
 .preview-title {
   font-size: 12px;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
 }
 
 .preview-url-link {
@@ -1287,8 +1287,8 @@ function handleDeleteCurrent() {
 /* Modal Footer */
 .modal-footer {
   padding: 14px 22px;
-  border-top: 1px solid #11281d;
-  background: #040a07;
+  border-top: 1px solid var(--border-subtle, #11281d);
+  background: var(--bg-surface, #040a07);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1301,9 +1301,9 @@ function handleDeleteCurrent() {
 }
 
 .btn-footer-secondary {
-  background: #08140f;
-  border: 1px solid #142e22;
-  color: #d1d5db;
+  background: var(--bg-inner, #08140f);
+  border: 1px solid var(--border-card, #142e22);
+  color: var(--text-primary, #d1d5db);
   padding: 8px 14px;
   border-radius: 6px;
   font-size: 12px;
@@ -1312,8 +1312,8 @@ function handleDeleteCurrent() {
 }
 
 .btn-footer-secondary:hover {
-  background: #0d2118;
-  color: #fff;
+  background: var(--bg-card-hover, #0d2118);
+  color: var(--text-primary, #fff);
 }
 
 .btn-footer-danger {
@@ -1334,7 +1334,7 @@ function handleDeleteCurrent() {
 .btn-footer-cancel {
   background: transparent;
   border: none;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   padding: 8px 14px;
   font-size: 12px;
   font-weight: 600;
@@ -1342,7 +1342,7 @@ function handleDeleteCurrent() {
 }
 
 .btn-footer-cancel:hover {
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .btn-footer-save {

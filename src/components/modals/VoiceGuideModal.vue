@@ -307,7 +307,7 @@ function closeModal() {
 .modal-title {
   font-size: 16px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin: 0;
 }
 
@@ -338,7 +338,7 @@ function closeModal() {
 }
 
 .btn-close:hover {
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .modal-body {
@@ -364,7 +364,7 @@ function closeModal() {
 
 .toggle-presence-card.enabled {
   border-color: rgba(244, 63, 94, 0.4);
-  background: #0f1013;
+  background: var(--bg-inner, #0f1013);
 }
 
 .presence-left {
@@ -388,7 +388,7 @@ function closeModal() {
 .presence-title {
   font-size: 13.5px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .presence-desc {
@@ -439,7 +439,7 @@ function closeModal() {
 .card-heading {
   font-size: 13px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
   margin: 0;
 }
 
@@ -468,7 +468,7 @@ function closeModal() {
 .btn-chime {
   background: var(--bg-surface, #06140f);
   border: 1px solid var(--border-card, #10291e);
-  color: #fff;
+  color: var(--text-primary, #fff);
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 11.5px;
@@ -501,7 +501,7 @@ function closeModal() {
 .form-select {
   background: var(--bg-input, #040e0a);
   border: 1px solid var(--border-subtle, #0d2319);
-  color: #fff;
+  color: var(--text-primary, #fff);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 12px;
@@ -548,7 +548,7 @@ function closeModal() {
   flex: 1;
   background: var(--bg-input, #040e0a);
   border: 1px solid var(--border-subtle, #0d2319);
-  color: #fff;
+  color: var(--text-primary, #fff);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 12px;

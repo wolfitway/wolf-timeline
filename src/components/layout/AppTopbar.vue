@@ -347,14 +347,14 @@ function handleSecurityBadgeClick() {
 .app-topbar {
   height: 56px;
   min-height: 56px;
-  background: #040c08;
+  background: var(--bg-inner, #070e0b);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   user-select: none;
   z-index: 100;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+  border-bottom: 1px solid var(--border-subtle, #12221b);
 }
 
 /* Left Brand */
@@ -375,7 +375,7 @@ function handleSecurityBadgeClick() {
   align-items: center;
   justify-content: center;
   color: var(--emerald-bright, #34d399);
-  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.45));
+  filter: drop-shadow(0 0 6px var(--border-glow, rgba(16, 185, 129, 0.45)));
 }
 
 .wolf-icon {
@@ -386,7 +386,7 @@ function handleSecurityBadgeClick() {
   font-family: var(--font-display, "Outfit", sans-serif);
   font-size: 15.5px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   letter-spacing: -0.01em;
 }
 
@@ -413,7 +413,7 @@ function handleSecurityBadgeClick() {
   padding: 6px 16px;
   font-size: 13px;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -423,16 +423,16 @@ function handleSecurityBadgeClick() {
 }
 
 .nav-tab-pill:hover {
-  color: #f1f5f9;
-  background: rgba(16, 185, 129, 0.06);
+  color: var(--text-primary, #f1f5f9);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.06));
 }
 
 .nav-tab-pill.active {
-  background: #082117;
-  border-color: #10b981;
-  color: #34d399;
+  background: var(--emerald-pill-bg, #082117);
+  border-color: var(--border-selected, #10b981);
+  color: var(--emerald-bright, #34d399);
   font-weight: 600;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.15));
 }
 
 /* Right Section */
@@ -446,52 +446,52 @@ function handleSecurityBadgeClick() {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #061610;
-  border: 1px solid #113424;
+  background: var(--bg-card, #061610);
+  border: 1px solid var(--border-card, #113424);
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-gray, #94a3b8);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .topbar-search-btn:hover {
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #ffffff;
-  background: #092017;
+  border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
+  color: var(--text-primary, #ffffff);
+  background: var(--bg-card-hover, #092017);
 }
 
 .search-kbd {
   font-family: var(--font-mono, monospace);
   font-size: 10px;
-  background: #092419;
-  color: #34d399;
+  background: var(--bg-surface, #092419);
+  color: var(--emerald-bright, #34d399);
   padding: 1px 5px;
   border-radius: 4px;
-  border: 1px solid #14432c;
+  border: 1px solid var(--border-card, #14432c);
 }
 
 .topbar-action-icon-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #061610;
-  border: 1px solid #113424;
+  background: var(--bg-card, #061610);
+  border: 1px solid var(--border-card, #113424);
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .topbar-action-icon-btn:hover {
-  background: #092017;
+  background: var(--bg-card-hover, #092017);
   border-color: var(--emerald-main, #10b981);
-  color: #fff;
+  color: var(--text-primary, #fff);
   transform: translateY(-1px);
 }
 
@@ -499,22 +499,22 @@ function handleSecurityBadgeClick() {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #140b10;
-  border: 1px solid #3b1424;
+  background: var(--bg-card, #140b10);
+  border: 1px solid var(--border-card, #3b1424);
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 700;
-  color: #fda4af;
+  color: var(--emerald-bright, #fda4af);
   cursor: pointer;
   transition: all 0.18s ease;
 }
 
 .topbar-kokoro-btn:hover {
-  background: #2a0e1c;
-  border-color: #f43f5e;
-  box-shadow: 0 0 12px rgba(244, 63, 94, 0.3);
-  color: #fff;
+  background: var(--bg-card-hover, #2a0e1c);
+  border-color: var(--emerald-main, #f43f5e);
+  box-shadow: 0 0 12px var(--border-glow, rgba(244, 63, 94, 0.3));
+  color: var(--text-primary, #fff);
   transform: translateY(-1px);
 }
 
@@ -532,36 +532,36 @@ function handleSecurityBadgeClick() {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #061610;
-  border: 1px solid #113424;
+  background: var(--bg-card, #061610);
+  border: 1px solid var(--border-card, #113424);
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--text-gray, #94a3b8);
   cursor: pointer;
   transition: all 0.18s ease;
   position: relative;
 }
 
 .topbar-voice-control-btn:hover {
-  background: #092017;
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #fff;
+  background: var(--bg-card-hover, #092017);
+  border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
+  color: var(--text-primary, #fff);
 }
 
 .topbar-voice-control-btn.listening {
-  background: #092017;
+  background: var(--emerald-pill-bg, #092017);
   border-color: var(--emerald-bright, #34d399);
-  color: #34d399;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+  color: var(--emerald-bright, #34d399);
+  box-shadow: 0 0 14px var(--border-glow, rgba(16, 185, 129, 0.35));
 }
 
 .listening-wave-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #34d399;
+  background: var(--emerald-bright, #34d399);
   animation: listenPulse 1s infinite alternate ease-in-out;
 }
 
@@ -573,7 +573,7 @@ function handleSecurityBadgeClick() {
   to {
     transform: scale(1.4);
     opacity: 1;
-    box-shadow: 0 0 8px #34d399;
+    box-shadow: 0 0 8px var(--emerald-bright, #34d399);
   }
 }
 
@@ -581,33 +581,33 @@ function handleSecurityBadgeClick() {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #092017;
-  border: 1px solid #143d2a;
+  background: var(--emerald-pill-bg, #092017);
+  border: 1px solid var(--emerald-pill-border, #143d2a);
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   cursor: pointer;
   transition: all 0.18s ease;
 }
 
 .topbar-license-btn:hover {
-  background: #10b981;
-  color: #022c22;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-body, #022c22);
+  box-shadow: 0 0 12px var(--border-glow, rgba(16, 185, 129, 0.4));
 }
 
 .topbar-license-btn.activated {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: #10b981;
-  color: #34d399;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.12));
+  border-color: var(--border-selected, #10b981);
+  color: var(--emerald-bright, #34d399);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.2));
 }
 
 .topbar-license-btn.activated:hover {
-  background: #10b981;
-  color: #022c22;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-body, #022c22);
 }
 
 .license-icon {
@@ -618,25 +618,25 @@ function handleSecurityBadgeClick() {
   display: flex;
   align-items: center;
   gap: 7px;
-  background: #061610;
-  border: 1px solid #113424;
+  background: var(--bg-card, #061610);
+  border: 1px solid var(--border-card, #113424);
   border-radius: 8px;
   padding: 6px 14px;
   font-size: 12px;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-gray, #94a3b8);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .security-pill-badge:hover {
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #e2e8f0;
-  background: #092017;
+  border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
+  color: var(--text-primary, #e2e8f0);
+  background: var(--bg-card-hover, #092017);
 }
 
 .lock-icon {
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
 }
 
 .security-pill-badge:hover .lock-icon {

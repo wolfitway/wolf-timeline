@@ -190,8 +190,8 @@ async function handleSaveSelected() {
   position: relative;
   width: 640px;
   max-width: 95vw;
-  background: #09120e;
-  border: 1px solid #162c21;
+  background: var(--bg-card, #09120e);
+  border: 1px solid var(--border-card, #162c21);
   border-radius: 18px;
   padding: 28px 32px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.1);
@@ -228,17 +228,17 @@ async function handleSaveSelected() {
 .modal-title {
   font-size: 17px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin-bottom: 4px;
 }
 
 .modal-subtitle {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
 }
 
 .modal-subtitle code {
-  background: #11221a;
+  background: var(--bg-inner, #11221a);
   color: var(--emerald-bright, #34d399);
   padding: 1px 4px;
   border-radius: 4px;
@@ -251,8 +251,8 @@ async function handleSaveSelected() {
 }
 
 .scanner-dropzone {
-  border: 2px dashed rgba(16, 185, 129, 0.35);
-  background: rgba(16, 185, 129, 0.04);
+  border: 2px dashed var(--border-focus, rgba(16, 185, 129, 0.35));
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.04));
   border-radius: 10px;
   padding: 20px;
   text-align: center;
@@ -263,7 +263,7 @@ async function handleSaveSelected() {
 .scanner-dropzone:hover,
 .scanner-dropzone.dragover {
   border-color: var(--emerald-bright, #34d399);
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--emerald-pill-border, rgba(16, 185, 129, 0.08));
 }
 
 .drop-icon {
@@ -273,7 +273,7 @@ async function handleSaveSelected() {
 
 .drop-text {
   font-size: 13px;
-  color: #e2e8f0;
+  color: var(--text-primary, #e2e8f0);
   margin-bottom: 2px;
 }
 
@@ -285,7 +285,7 @@ async function handleSaveSelected() {
 
 .drop-sub {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
 }
 
 .paste-section {
@@ -297,18 +297,18 @@ async function handleSaveSelected() {
 .paste-label {
   font-size: 11.5px;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
 }
 
 .paste-textarea {
   width: 100%;
-  background: #050b08;
-  border: 1px solid #142820;
+  background: var(--bg-inner, #050b08);
+  border: 1px solid var(--border-card, #142820);
   border-radius: 8px;
   padding: 10px 12px;
   font-family: var(--font-mono, monospace);
   font-size: 11.5px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   resize: vertical;
   outline: none;
 }
@@ -319,7 +319,7 @@ async function handleSaveSelected() {
 
 .btn-detect {
   width: 100%;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--emerald-main, #10b981);
   color: #03100a;
   border: none;
   border-radius: 8px;
@@ -336,7 +336,7 @@ async function handleSaveSelected() {
 }
 
 .results-wrap {
-  border-top: 1px solid #142820;
+  border-top: 1px solid var(--border-subtle, #142820);
   padding-top: 12px;
   display: flex;
   flex-direction: column;
@@ -352,7 +352,7 @@ async function handleSaveSelected() {
 .results-title {
   font-size: 12.5px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .btn-toggle-all {
@@ -376,14 +376,14 @@ async function handleSaveSelected() {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #050b08;
-  border: 1px solid #142820;
+  background: var(--bg-inner, #050b08);
+  border: 1px solid var(--border-card, #142820);
   border-radius: 8px;
   padding: 8px 12px;
 }
 
 .scanned-checkbox {
-  accent-color: #10b981;
+  accent-color: var(--emerald-main, #10b981);
   width: 15px;
   height: 15px;
 }
@@ -391,7 +391,7 @@ async function handleSaveSelected() {
 .scanned-badge {
   font-size: 9.5px;
   font-weight: 800;
-  background: #11221a;
+  background: var(--emerald-pill-bg, #11221a);
   color: var(--emerald-bright, #34d399);
   padding: 2px 6px;
   border-radius: 4px;
@@ -407,12 +407,12 @@ async function handleSaveSelected() {
 .scanned-serv {
   font-size: 12px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .scanned-meta {
   font-size: 10.5px;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -421,14 +421,14 @@ async function handleSaveSelected() {
 .scanned-preview {
   font-family: var(--font-mono, monospace);
   font-size: 11px;
-  color: #4b5563;
+  color: var(--text-dim, #4b5563);
   letter-spacing: 0.1em;
 }
 
 .results-empty {
   padding: 16px;
   text-align: center;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   font-size: 12px;
 }
 
@@ -438,7 +438,7 @@ async function handleSaveSelected() {
 
 .btn-encrypt-selected {
   width: 100%;
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #03100a;
   border: none;
   border-radius: 8px;
@@ -454,7 +454,7 @@ async function handleSaveSelected() {
   right: 18px;
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   font-size: 16px;
   cursor: pointer;
 }

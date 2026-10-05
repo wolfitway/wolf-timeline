@@ -729,8 +729,8 @@ function handleConfirmRoadmapLink() {
   width: 46px;
   height: 46px;
   border-radius: 12px;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.12));
+  border: 1px solid var(--emerald-pill-border, rgba(52, 211, 153, 0.35));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -744,21 +744,21 @@ function handleConfirmRoadmapLink() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--emerald-main, #10b981);
+  box-shadow: 0 0 8px var(--emerald-bright, #10b981);
 }
 
 .bookmarks-main-title {
   font-size: 1.45rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin: 0;
 }
 
 .bookmarks-sub {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
   margin: 0.2rem 0 0 0;
 }
 
@@ -784,32 +784,32 @@ function handleConfirmRoadmapLink() {
 }
 
 .btn-action-emerald {
-  background: #10b981;
-  color: #04120a;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-body, #04120a);
 }
 .btn-action-emerald:hover {
-  background: #34d399;
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+  background: var(--emerald-bright, #34d399);
+  box-shadow: 0 0 15px var(--border-glow, rgba(16, 185, 129, 0.35));
 }
 
 .btn-action-cyan {
-  background: rgba(6, 182, 212, 0.15);
-  color: #22d3ee;
-  border: 1px solid rgba(6, 182, 212, 0.35);
+  background: var(--emerald-pill-bg, rgba(6, 182, 212, 0.15));
+  color: var(--emerald-bright, #22d3ee);
+  border: 1px solid var(--emerald-pill-border, rgba(6, 182, 212, 0.35));
 }
 .btn-action-cyan:hover {
-  background: rgba(6, 182, 212, 0.25);
-  border-color: #22d3ee;
+  background: var(--bg-card-hover, rgba(6, 182, 212, 0.25));
+  border-color: var(--emerald-bright, #22d3ee);
 }
 
 .btn-action-ghost {
   background: rgba(255, 255, 255, 0.05);
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-gray, #cbd5e1);
+  border: 1px solid var(--border-card, rgba(255, 255, 255, 0.1));
 }
 .btn-action-ghost:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 /* Filter Ribbon */
@@ -834,25 +834,25 @@ function handleConfirmRoadmapLink() {
   position: absolute;
   left: 0.85rem;
   font-size: 1rem;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   pointer-events: none;
 }
 
 .search-input {
   width: 100%;
-  background: rgba(4, 12, 8, 0.7);
-  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: var(--bg-surface, rgba(4, 12, 8, 0.7));
+  border: 1px solid var(--border-card, rgba(52, 211, 153, 0.25));
   border-radius: 8px;
   padding: 0.65rem 2.2rem 0.65rem 2.5rem;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 0.95rem;
   outline: none;
   transition: all 0.15s ease;
 }
 
 .search-input:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  border-color: var(--border-selected, #10b981);
+  box-shadow: 0 0 12px var(--border-glow, rgba(16, 185, 129, 0.25));
 }
 
 .clear-search-btn {
@@ -860,12 +860,12 @@ function handleConfirmRoadmapLink() {
   right: 0.85rem;
   background: none;
   border: none;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   cursor: pointer;
   font-size: 0.9rem;
 }
 .clear-search-btn:hover {
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .filter-controls-row {
@@ -883,21 +883,21 @@ function handleConfirmRoadmapLink() {
 
 .filter-label {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
   font-weight: 500;
 }
 
 .filter-select {
-  background: rgba(4, 12, 8, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #e2e8f0;
+  background: var(--bg-surface, rgba(4, 12, 8, 0.85));
+  border: 1px solid var(--border-card, rgba(255, 255, 255, 0.12));
+  color: var(--text-primary, #e2e8f0);
   border-radius: 6px;
   padding: 0.35rem 0.65rem;
   font-size: 0.85rem;
   outline: none;
 }
 .filter-select:focus {
-  border-color: #10b981;
+  border-color: var(--border-selected, #10b981);
 }
 
 .tag-chips-scroll {
@@ -906,12 +906,12 @@ function handleConfirmRoadmapLink() {
   gap: 0.45rem;
   flex-wrap: wrap;
   padding-top: 0.35rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-card, rgba(255, 255, 255, 0.05));
 }
 
 .tag-chips-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -920,8 +920,8 @@ function handleConfirmRoadmapLink() {
 
 .chip-tag {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
+  border: 1px solid var(--border-card, rgba(255, 255, 255, 0.08));
+  color: var(--text-gray, #94a3b8);
   font-size: 0.75rem;
   padding: 0.2rem 0.55rem;
   border-radius: 12px;
@@ -929,14 +929,14 @@ function handleConfirmRoadmapLink() {
   transition: all 0.15s ease;
 }
 .chip-tag:hover {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border-color: rgba(52, 211, 153, 0.3);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.15));
+  color: var(--emerald-bright, #34d399);
+  border-color: var(--emerald-pill-border, rgba(52, 211, 153, 0.3));
 }
 .chip-tag.active {
-  background: #10b981;
-  color: #04120a;
-  border-color: #10b981;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-body, #04120a);
+  border-color: var(--emerald-main, #10b981);
   font-weight: 600;
 }
 
@@ -965,8 +965,8 @@ function handleConfirmRoadmapLink() {
 
 .bookmark-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(52, 211, 153, 0.4);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(16, 185, 129, 0.1);
+  border-color: var(--border-selected, rgba(52, 211, 153, 0.4));
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px var(--border-glow, rgba(16, 185, 129, 0.1));
 }
 
 .card-header-bar {
@@ -979,8 +979,8 @@ function handleConfirmRoadmapLink() {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.12));
+  border: 1px solid var(--emerald-pill-border, rgba(52, 211, 153, 0.25));
   border-radius: 6px;
   padding: 0.2rem 0.5rem;
 }
@@ -989,13 +989,13 @@ function handleConfirmRoadmapLink() {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #34d399;
+  background: var(--emerald-bright, #34d399);
 }
 
 .domain-text {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
 }
 
 .card-top-actions {
@@ -1007,7 +1007,7 @@ function handleConfirmRoadmapLink() {
 .btn-card-icon {
   background: none;
   border: 1px solid transparent;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   border-radius: 6px;
   width: 26px;
   height: 26px;
@@ -1020,13 +1020,13 @@ function handleConfirmRoadmapLink() {
 }
 .btn-card-icon:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary, #fff);
+  border-color: var(--border-card, rgba(255, 255, 255, 0.15));
 }
 .btn-card-icon.speak.active {
-  background: rgba(16, 185, 129, 0.25);
-  color: #34d399;
-  border-color: #34d399;
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.25));
+  color: var(--emerald-bright, #34d399);
+  border-color: var(--emerald-bright, #34d399);
 }
 .btn-card-icon.danger:hover {
   background: rgba(239, 68, 68, 0.2);
@@ -1049,19 +1049,19 @@ function handleConfirmRoadmapLink() {
 }
 
 .card-title-link {
-  color: #f8fafc;
+  color: var(--text-primary, #f8fafc);
   text-decoration: none;
   transition: color 0.15s ease;
 }
 .card-title-link:hover {
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
 }
 
 .card-url-link {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   font-size: 0.8rem;
   text-decoration: none;
   overflow: hidden;
@@ -1069,24 +1069,24 @@ function handleConfirmRoadmapLink() {
   white-space: nowrap;
 }
 .card-url-link:hover {
-  color: #94a3b8;
+  color: var(--text-gray, #94a3b8);
   text-decoration: underline;
 }
 
 .link-arrow {
-  color: #10b981;
+  color: var(--emerald-main, #10b981);
   font-weight: 700;
 }
 
 .card-note-text {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-gray, #94a3b8);
   line-height: 1.4;
   margin: 0.2rem 0 0 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-surface, rgba(0, 0, 0, 0.2));
   padding: 0.45rem 0.65rem;
   border-radius: 6px;
-  border-left: 2px solid #10b981;
+  border-left: 2px solid var(--emerald-main, #10b981);
 }
 
 .card-tags-row {
@@ -1100,21 +1100,21 @@ function handleConfirmRoadmapLink() {
 .card-tag-pill {
   font-size: 0.72rem;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
+  border: 1px solid var(--border-card, rgba(255, 255, 255, 0.08));
+  color: var(--text-muted, #94a3b8);
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 .card-tag-pill:hover {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.15));
+  color: var(--emerald-bright, #34d399);
 }
 .card-tag-pill.highlight {
-  background: rgba(16, 185, 129, 0.25);
-  border-color: #10b981;
-  color: #34d399;
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.25));
+  border-color: var(--border-selected, #10b981);
+  color: var(--emerald-bright, #34d399);
   font-weight: 600;
 }
 
@@ -1123,12 +1123,12 @@ function handleConfirmRoadmapLink() {
   align-items: center;
   justify-content: space-between;
   padding-top: 0.65rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-card, rgba(255, 255, 255, 0.05));
   font-size: 0.75rem;
 }
 
 .project-pill {
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1136,7 +1136,7 @@ function handleConfirmRoadmapLink() {
 }
 
 .date-text {
-  color: #475569;
+  color: var(--text-muted, #475569);
 }
 
 /* Empty State */
@@ -1158,21 +1158,21 @@ function handleConfirmRoadmapLink() {
 .empty-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--text-primary, #f1f5f9);
   margin: 0 0 0.4rem 0;
 }
 
 .empty-desc {
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   max-width: 420px;
   margin: 0 0 1.25rem 0;
 }
 
 .btn-reset-filters {
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #fff;
+  border: 1px solid var(--border-card, rgba(255, 255, 255, 0.15));
+  color: var(--text-primary, #fff);
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -1203,7 +1203,7 @@ function handleConfirmRoadmapLink() {
   border-radius: 14px;
   width: 90vw;
   max-width: 580px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px var(--border-glow, rgba(16, 185, 129, 0.15));
   overflow: hidden;
 }
 
@@ -1219,18 +1219,18 @@ function handleConfirmRoadmapLink() {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .btn-close {
   background: none;
   border: none;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   font-size: 1.1rem;
   cursor: pointer;
 }
 .btn-close:hover {
-  color: #fff;
+  color: var(--text-primary, #fff);
 }
 
 .modal-body {
@@ -1248,7 +1248,7 @@ function handleConfirmRoadmapLink() {
 
 .form-label {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
   font-weight: 600;
 }
 
@@ -1258,9 +1258,9 @@ function handleConfirmRoadmapLink() {
 }
 
 .btn-auto-tag-inline {
-  background: rgba(6, 182, 212, 0.15);
-  border: 1px solid rgba(6, 182, 212, 0.35);
-  color: #22d3ee;
+  background: var(--emerald-pill-bg, rgba(6, 182, 212, 0.15));
+  border: 1px solid var(--emerald-pill-border, rgba(6, 182, 212, 0.35));
+  color: var(--emerald-bright, #22d3ee);
   padding: 0 0.85rem;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -1269,12 +1269,12 @@ function handleConfirmRoadmapLink() {
   white-space: nowrap;
 }
 .btn-auto-tag-inline:hover {
-  background: rgba(6, 182, 212, 0.25);
+  background: var(--bg-card-hover, rgba(6, 182, 212, 0.25));
 }
 
 .classify-feedback-text {
   font-size: 0.75rem;
-  color: #34d399;
+  color: var(--emerald-bright, #34d399);
   font-weight: 500;
 }
 
@@ -1282,11 +1282,11 @@ function handleConfirmRoadmapLink() {
 .form-select,
 .form-textarea {
   width: 100%;
-  background: rgba(4, 12, 8, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--bg-surface, rgba(4, 12, 8, 0.7));
+  border: 1px solid var(--border-card, rgba(255, 255, 255, 0.12));
   border-radius: 8px;
   padding: 0.6rem 0.85rem;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 0.9rem;
   outline: none;
   font-family: inherit;
@@ -1294,7 +1294,7 @@ function handleConfirmRoadmapLink() {
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
-  border-color: #10b981;
+  border-color: var(--border-selected, #10b981);
 }
 
 .modal-footer {
@@ -1308,22 +1308,22 @@ function handleConfirmRoadmapLink() {
 
 .btn-cancel {
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #94a3b8;
+  border: 1px solid var(--border-card, rgba(255, 255, 255, 0.12));
+  color: var(--text-muted, #94a3b8);
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-size: 0.85rem;
   cursor: pointer;
 }
 .btn-cancel:hover {
-  color: #fff;
+  color: var(--text-primary, #fff);
   background: rgba(255, 255, 255, 0.05);
 }
 
 .btn-save {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   border: none;
-  color: #04120a;
+  color: var(--bg-body, #04120a);
   padding: 0.5rem 1.25rem;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -1331,7 +1331,7 @@ function handleConfirmRoadmapLink() {
   cursor: pointer;
 }
 .btn-save:hover {
-  background: #34d399;
+  background: var(--emerald-bright, #34d399);
 }
 
 /* Card Quick Link Actions */
@@ -1348,8 +1348,8 @@ function handleConfirmRoadmapLink() {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.22);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.08));
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.22));
   color: var(--emerald-bright, #34d399);
   padding: 0.35rem 0.6rem;
   border-radius: 6px;
@@ -1360,7 +1360,8 @@ function handleConfirmRoadmapLink() {
   user-select: none;
 }
 .btn-card-link-action:hover {
-  background: rgba(16, 185, 129, 0.2);
+  background: var(--emerald-main, rgba(16, 185, 129, 0.2));
+  color: var(--bg-body, #04120a);
   border-color: var(--emerald-main, #10b981);
   transform: translateY(-1px);
 }
@@ -1388,7 +1389,7 @@ function handleConfirmRoadmapLink() {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--bg-surface, rgba(0, 0, 0, 0.35));
   border: 1px solid var(--border-card, #12281e);
   border-radius: 8px;
   padding: 0.65rem 0.85rem;
@@ -1405,7 +1406,7 @@ function handleConfirmRoadmapLink() {
 
 .snippet-value {
   font-size: 0.82rem;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-family: var(--font-mono, monospace);
   word-break: break-all;
 }

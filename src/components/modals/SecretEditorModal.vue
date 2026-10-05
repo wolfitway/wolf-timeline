@@ -169,8 +169,8 @@ async function handleSave() {
   position: relative;
   width: 520px;
   max-width: 92vw;
-  background: #09120e;
-  border: 1px solid #162c21;
+  background: var(--bg-card, #09120e);
+  border: 1px solid var(--border-card, #162c21);
   border-radius: 18px;
   padding: 28px 32px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.1);
@@ -207,13 +207,13 @@ async function handleSave() {
 .modal-title {
   font-size: 17px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary, #fff);
   margin-bottom: 4px;
 }
 
 .modal-subtitle {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
 }
 
 .secret-form {
@@ -237,17 +237,17 @@ async function handleSave() {
 .form-label {
   font-size: 11.5px;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
 }
 
 .form-input,
 .form-select,
 .form-textarea {
-  background: #050b08;
-  border: 1px solid #142820;
+  background: var(--bg-inner, #050b08);
+  border: 1px solid var(--border-card, #142820);
   border-radius: 8px;
   padding: 9px 12px;
-  color: #fff;
+  color: var(--text-primary, #fff);
   font-size: 12.5px;
   outline: none;
   transition: border-color 0.15s ease;
@@ -274,16 +274,16 @@ async function handleSave() {
 }
 
 .btn-toggle-eye {
-  background: #050b08;
-  border: 1px solid #142820;
+  background: var(--bg-inner, #050b08);
+  border: 1px solid var(--border-card, #142820);
   border-radius: 8px;
   padding: 0 12px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   cursor: pointer;
 }
 
 .btn-toggle-eye:hover {
-  background: #0e1c15;
+  background: var(--bg-card-hover, #0e1c15);
 }
 
 .form-textarea {
@@ -300,22 +300,22 @@ async function handleSave() {
 
 .btn-cancel {
   background: transparent;
-  border: 1px solid #142820;
+  border: 1px solid var(--border-card, #142820);
   border-radius: 8px;
   padding: 8px 16px;
-  color: #9ca3af;
+  color: var(--text-secondary, #9ca3af);
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .btn-cancel:hover {
-  background: #0e1c15;
-  color: #fff;
+  background: var(--bg-card-hover, #0e1c15);
+  color: var(--text-primary, #fff);
 }
 
 .btn-submit {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--emerald-main, #10b981);
   color: #03100a;
   border: none;
   border-radius: 8px;
@@ -335,7 +335,7 @@ async function handleSave() {
   right: 18px;
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   font-size: 16px;
   cursor: pointer;
 }

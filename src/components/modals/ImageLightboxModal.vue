@@ -107,8 +107,8 @@ onUnmounted(() => {
   max-height: 92vh;
   display: flex;
   flex-direction: column;
-  background: #06140f;
-  border: 1px solid #10b98144;
+  background: var(--bg-card, #06140f);
+  border: 1px solid var(--border-card, #10b98144);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95), 0 0 40px rgba(16, 185, 129, 0.15);
@@ -119,8 +119,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 14px 20px;
-  background: #040c08;
-  border-bottom: 1px solid #0f271d;
+  background: var(--bg-inner, #040c08);
+  border-bottom: 1px solid var(--border-subtle, #0f271d);
   gap: 16px;
 }
 
@@ -138,7 +138,7 @@ onUnmounted(() => {
 .lightbox-caption {
   font-size: 14px;
   font-weight: 700;
-  color: #ecfdf5;
+  color: var(--text-primary, #ecfdf5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -147,9 +147,9 @@ onUnmounted(() => {
 .lightbox-counter {
   font-size: 11px;
   font-weight: 600;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--emerald-bright, #10b981);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.12));
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.25));
   padding: 2px 8px;
   border-radius: 12px;
 }
@@ -161,9 +161,9 @@ onUnmounted(() => {
 }
 
 .btn-lightbox-action {
-  background: #092017;
-  border: 1px solid #143828;
-  color: #a7f3d0;
+  background: var(--bg-card-hover, #092017);
+  border: 1px solid var(--border-card, #143828);
+  color: var(--emerald-bright, #a7f3d0);
   font-size: 12px;
   font-weight: 600;
   padding: 5px 12px;
@@ -173,14 +173,14 @@ onUnmounted(() => {
 }
 
 .btn-lightbox-action:hover {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #022c22;
 }
 
 .btn-lightbox-close {
-  background: #092017;
-  border: 1px solid #143828;
-  color: #9ca3af;
+  background: var(--bg-card-hover, #092017);
+  border: 1px solid var(--border-card, #143828);
+  color: var(--text-secondary, #9ca3af);
   font-size: 14px;
   width: 28px;
   height: 28px;
@@ -206,7 +206,7 @@ onUnmounted(() => {
   overflow: hidden;
   max-height: 75vh;
   padding: 16px;
-  background: radial-gradient(circle at center, #071913 0%, #030a07 100%);
+  background: var(--bg-body, #071913);
 }
 
 .lightbox-full-img {
@@ -221,9 +221,9 @@ onUnmounted(() => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(6, 20, 15, 0.85);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #ecfdf5;
+  background: var(--bg-drawer, rgba(6, 20, 15, 0.85));
+  border: 1px solid var(--border-focus, rgba(16, 185, 129, 0.3));
+  color: var(--text-primary, #ecfdf5);
   font-size: 28px;
   width: 44px;
   height: 44px;
@@ -246,7 +246,7 @@ onUnmounted(() => {
 }
 
 .btn-lightbox-nav:hover {
-  background: #10b981;
+  background: var(--emerald-main, #10b981);
   color: #022c22;
   box-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
 }
@@ -256,14 +256,14 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   padding: 10px 20px;
-  background: #040c08;
-  border-top: 1px solid #0f271d;
+  background: var(--bg-inner, #040c08);
+  border-top: 1px solid var(--border-subtle, #0f271d);
 }
 
 .tags-label {
   font-size: 11px;
   font-weight: 700;
-  color: #6b7280;
+  color: var(--text-dim, #6b7280);
   text-transform: uppercase;
 }
 
@@ -276,9 +276,9 @@ onUnmounted(() => {
 .lightbox-tag-pill {
   font-size: 11px;
   font-weight: 600;
-  color: #6ee7b7;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: var(--emerald-bright, #6ee7b7);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.2));
   padding: 2px 8px;
   border-radius: 10px;
 }
