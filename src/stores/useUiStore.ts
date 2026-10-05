@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-export type ActiveTab = "timeline" | "studio" | "roadmap" | "secrets" | "settings";
+export type ActiveTab = "timeline" | "studio" | "roadmap" | "bookmarks" | "secrets" | "settings";
 
 export const useUiStore = defineStore("ui", () => {
   const activeTab = ref<ActiveTab>("timeline");

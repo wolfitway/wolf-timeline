@@ -19,6 +19,7 @@ const navItems: { id: ActiveTab; label: string; icon?: string }[] = [
   { id: "timeline", label: "Timeline" },
   { id: "studio", label: "Studio" },
   { id: "roadmap", label: "Roadmap" },
+  { id: "bookmarks", label: "Bookmarks", icon: "📑" },
   { id: "secrets", label: "Secret Vault", icon: "🔐" },
   { id: "settings", label: "Settings" },
 ];

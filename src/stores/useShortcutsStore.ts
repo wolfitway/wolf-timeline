@@ -65,11 +65,18 @@ export const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     defaultKey: { key: "3", mod: true },
   },
   {
+    id: "tab_bookmarks",
+    label: "Switch to Bookmarks Hub",
+    desc: "Jump to fast search, categorized links & research",
+    category: "navigation",
+    defaultKey: { key: "4", mod: true },
+  },
+  {
     id: "tab_secrets",
     label: "Switch to Secret Vault",
     desc: "Jump to encrypted credentials & env store",
     category: "navigation",
-    defaultKey: { key: "4", mod: true },
+    defaultKey: { key: "5", mod: true },
   },
   {
     id: "tab_settings",
