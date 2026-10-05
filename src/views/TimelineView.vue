@@ -821,13 +821,13 @@ function getStatusBadge(status: string) {
     case "backlog":
       return { label: "Backlog", color: "#6b7280" };
     case "in_progress":
-      return { label: "In Progress", color: "#10b981" };
+      return { label: "In Progress", color: "var(--emerald-main, #10b981)" };
     case "live":
     case "shipped":
-      return { label: "Shipped", color: "#22c55e" };
+      return { label: "Shipped", color: "var(--emerald-bright, #22c55e)" };
     case "ideation":
     default:
-      return { label: "Ideation", color: "#10b981" };
+      return { label: "Ideation", color: "var(--emerald-main, #10b981)" };
   }
 }
 
@@ -1797,7 +1797,8 @@ function toggleMoodTag(tag: string) {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
-  height: calc(100vh - 56px);
+  height: 100%;
+  max-height: 100%;
   padding: 16px 24px 20px 24px;
   overflow: hidden;
   box-sizing: border-box;

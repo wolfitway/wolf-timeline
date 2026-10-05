@@ -145,19 +145,18 @@ onMounted(async () => {
 
   // Initialize theme, font, scale & effects
   const savedTheme = localStorage.getItem("wolf_theme") || "obsidian";
-  if (savedTheme === "obsidian") {
-    delete document.documentElement.dataset.theme;
-  } else {
-    document.documentElement.dataset.theme = savedTheme;
-  }
+  document.documentElement.dataset.theme = savedTheme;
 
   const savedFont = localStorage.getItem("wolf_font") || "jakarta";
   document.documentElement.dataset.font = savedFont;
 
-  const savedScale = localStorage.getItem("wolf_font_scale");
-  if (savedScale) {
-    document.documentElement.style.fontSize = `${savedScale}px`;
-  }
+  const savedScale = localStorage.getItem("wolf_font_scale") || "14";
+  const numericScale = Number(savedScale) || 14;
+  const ratio = (numericScale / 14).toFixed(4);
+  document.documentElement.style.fontSize = `${numericScale}px`;
+  document.documentElement.style.setProperty("--base-font-size", `${numericScale}px`);
+  document.documentElement.style.setProperty("--font-scale-ratio", ratio);
+  document.documentElement.style.zoom = ratio;
 
   const savedGlow = localStorage.getItem("wolf_glow");
   if (savedGlow === "false") {
@@ -230,8 +229,10 @@ onUnmounted(() => {
 <style scoped>
 .wolf-app-shell {
   display: flex;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
   overflow: hidden;
   background: var(--bg-canvas, #040c08);
 }
@@ -240,7 +241,7 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
 }
@@ -249,7 +250,7 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   min-height: 0;
-  height: calc(100vh - 56px);
+  height: calc(100% - 56px);
   overflow: hidden;
   background: var(--bg-canvas, #040c08);
 }

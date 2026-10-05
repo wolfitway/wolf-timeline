@@ -625,7 +625,8 @@ onMounted(() => {
 .bookmarks-view-root {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 58px);
+  height: 100%;
+  max-height: 100%;
   padding: 1.25rem 2rem;
   background: var(--bg-surface, #071510);
   color: var(--text-main, #f0fdf4);
@@ -821,6 +822,15 @@ onMounted(() => {
   padding: 0.35rem 0.65rem;
   font-size: 0.85rem;
   outline: none;
+  font-family: inherit;
+}
+.filter-select option {
+  background-color: var(--bg-card, #0b1410);
+  color: var(--text-primary, #f0fdf4);
+}
+.filter-select option:checked {
+  background-color: var(--bg-card-selected, #0e1c15);
+  color: var(--emerald-bright, #34d399);
 }
 .filter-select:focus {
   border-color: var(--border-selected, #10b981);
@@ -1216,6 +1226,14 @@ onMounted(() => {
   font-size: 0.9rem;
   outline: none;
   font-family: inherit;
+}
+.form-select option {
+  background-color: var(--bg-card, #0b1410);
+  color: var(--text-primary, #f0fdf4);
+}
+.form-select option:checked {
+  background-color: var(--bg-card-selected, #0e1c15);
+  color: var(--emerald-bright, #34d399);
 }
 .form-input:focus,
 .form-select:focus,

@@ -1,4 +1,5 @@
 :root,
+:root[data-theme="obsidian"],
 [data-theme="obsidian"],
 :root:not([data-theme]) {
   --bg-body: #060b09;
@@ -39,6 +40,7 @@
 }
 
 /* Theme Presets */
+:root[data-theme="cyan"],
 [data-theme="cyan"] {
   --bg-body: #030a0e;
   --bg-card: #08141d;
@@ -73,6 +75,7 @@
   --emerald-pill-border: rgba(6, 182, 212, 0.45);
 }
 
+:root[data-theme="amber"],
 [data-theme="amber"] {
   --bg-body: #0d0a04;
   --bg-card: #181309;
@@ -107,6 +110,7 @@
   --emerald-pill-border: rgba(245, 158, 11, 0.45);
 }
 
+:root[data-theme="sapphire"],
 [data-theme="sapphire"] {
   --bg-body: #050612;
   --bg-card: #0c0e24;
@@ -141,6 +145,7 @@
   --emerald-pill-border: rgba(99, 102, 241, 0.45);
 }
 
+:root[data-theme="crimson"],
 [data-theme="crimson"] {
   --bg-body: #0e0404;
   --bg-card: #1c0a0a;
@@ -175,6 +180,7 @@
   --emerald-pill-border: rgba(239, 68, 68, 0.45);
 }
 
+:root[data-theme="matrix"],
 [data-theme="matrix"] {
   --bg-body: #020803;
   --bg-card: #061509;
@@ -210,35 +216,89 @@
 }
 
 /* Font Families */
+:root[data-font="inter"],
 [data-font="inter"] {
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
+:root[data-font="outfit"],
 [data-font="outfit"] {
   --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Outfit", -apple-system, BlinkMacSystemFont, sans-serif;
 }
+:root[data-font="jakarta"],
 [data-font="jakarta"] {
   --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Outfit", -apple-system, BlinkMacSystemFont, sans-serif;
 }
+:root[data-font="mono"],
 [data-font="mono"] {
   --font-sans: "JetBrains Mono", monospace;
+  --font-display: "JetBrains Mono", monospace;
+  --font-mono: "JetBrains Mono", monospace;
 }
+:root[data-font="fira"],
 [data-font="fira"] {
   --font-sans: "Fira Code", "JetBrains Mono", monospace;
+  --font-display: "Fira Code", monospace;
+  --font-mono: "Fira Code", "JetBrains Mono", monospace;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+:root {
+  --base-font-size: 14px;
+  --font-scale-ratio: 1;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: var(--base-font-size, 14px);
+  width: 100%;
+  height: 100%;
+}
+
 body {
   font-family: var(--font-sans);
+  font-size: var(--base-font-size, 14px);
   background: var(--bg-canvas);
   color: var(--text-primary);
   overflow: hidden;
+  width: 100%;
+  height: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* Global Select and Option Styling to fix native OS dropdown text invisibility */
+select {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-card);
+}
+
+select option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+select option:checked {
+  background-color: var(--bg-card-selected) !important;
+  color: var(--emerald-bright) !important;
 }
 
 /* Custom Obsidian Scrollbar */
@@ -264,8 +324,4 @@ body {
 :focus-visible {
   outline: 2px solid var(--emerald-bright);
   outline-offset: 2px;
-}
-
-button {
-  font-family: inherit;
 }

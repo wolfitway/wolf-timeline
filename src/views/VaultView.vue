@@ -243,7 +243,8 @@ function copyToClipboard(val?: string) {
 <style scoped>
 .vault-view {
   flex: 1;
-  height: calc(100vh - 60px);
+  height: 100%;
+  max-height: 100%;
   background: var(--bg-body, #040c08);
   overflow: hidden;
   display: flex;

@@ -196,7 +196,7 @@ const activePhaseProgress = computed(() => {
             width="22"
             height="22"
             fill="none"
-            stroke="#34d399"
+            stroke="var(--emerald-bright, #34d399)"
             stroke-width="1.8"
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -283,7 +283,7 @@ const activePhaseProgress = computed(() => {
               width="16"
               height="16"
               fill="none"
-              stroke="#10b981"
+              stroke="var(--emerald-main, #10b981)"
               stroke-width="1.8"
             >
               <polygon points="4,4 7,11 4,15 9,16 12,20 15,16 20,15 17,11 20,4 14,7 12,5 10,7" />
@@ -304,7 +304,7 @@ const activePhaseProgress = computed(() => {
                 width="22"
                 height="22"
                 fill="none"
-                stroke="#34d399"
+                stroke="var(--emerald-bright, #34d399)"
                 stroke-width="1.8"
               >
                 <polygon points="4,4 7,11 4,15 9,16 12,20 15,16 20,15 17,11 20,4 14,7 12,5 10,7" />
@@ -462,7 +462,8 @@ const activePhaseProgress = computed(() => {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
+  height: 100%;
+  max-height: 100%;
   background: var(--bg-body, #040c08);
   overflow: hidden;
   padding: 16px 24px 20px 24px;

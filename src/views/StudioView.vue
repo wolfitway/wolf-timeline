@@ -1458,6 +1458,15 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   padding: 6px 10px;
   outline: none;
   cursor: pointer;
+  font-family: inherit;
+}
+.status-select-box option {
+  background-color: var(--bg-card, #0b1410);
+  color: var(--text-primary, #f0fdf4);
+}
+.status-select-box option:checked {
+  background-color: var(--bg-card-selected, #0e1c15);
+  color: var(--emerald-bright, #34d399);
 }
 
 .view-mode-group {

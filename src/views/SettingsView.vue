@@ -183,11 +183,14 @@ onMounted(() => {
   applyFont(savedFont);
 
   // Load font scale
-  const savedScale = localStorage.getItem("wolf_font_scale");
-  if (savedScale) {
-    fontScale.value = savedScale;
-    document.documentElement.style.fontSize = `${savedScale}px`;
-  }
+  const savedScale = localStorage.getItem("wolf_font_scale") || "14";
+  fontScale.value = savedScale;
+  const numericScale = Number(savedScale) || 14;
+  const ratio = (numericScale / 14).toFixed(4);
+  document.documentElement.style.fontSize = `${numericScale}px`;
+  document.documentElement.style.setProperty("--base-font-size", `${numericScale}px`);
+  document.documentElement.style.setProperty("--font-scale-ratio", ratio);
+  document.documentElement.style.zoom = ratio;
 
   // Load glow & glass
   const savedGlow = localStorage.getItem("wolf_glow");
@@ -209,11 +212,7 @@ onMounted(() => {
 function applyTheme(themeId: string) {
   currentTheme.value = themeId;
   localStorage.setItem("wolf_theme", themeId);
-  if (themeId === "obsidian") {
-    delete document.documentElement.dataset.theme;
-  } else {
-    document.documentElement.dataset.theme = themeId;
-  }
+  document.documentElement.dataset.theme = themeId;
 }
 
 function applyFont(fontId: string) {
@@ -222,11 +221,18 @@ function applyFont(fontId: string) {
   document.documentElement.dataset.font = fontId;
 }
 
-function changeFontScale(size: string) {
+function changeFontScale(size: string, notify = true) {
   fontScale.value = size;
   localStorage.setItem("wolf_font_scale", size);
-  document.documentElement.style.fontSize = `${size}px`;
-  uiStore.showToast(`Font scale set to ${size}px ✓`);
+  const numericScale = Number(size) || 14;
+  const ratio = (numericScale / 14).toFixed(4);
+  document.documentElement.style.fontSize = `${numericScale}px`;
+  document.documentElement.style.setProperty("--base-font-size", `${numericScale}px`);
+  document.documentElement.style.setProperty("--font-scale-ratio", ratio);
+  document.documentElement.style.zoom = ratio;
+  if (notify) {
+    uiStore.showToast(`Display & font scale set to ${size}px ✓`);
+  }
 }
 
 function toggleGlow() {
@@ -1612,7 +1618,8 @@ function jumpToCategory(catId: SettingsCategory) {
               step="1"
               :value="fontScale"
               class="scale-range-slider"
-              @input="(e) => changeFontScale((e.target as HTMLInputElement).value)"
+              @input="(e) => changeFontScale((e.target as HTMLInputElement).value, false)"
+              @change="(e) => changeFontScale((e.target as HTMLInputElement).value, true)"
             />
             <div class="scale-ticks-row">
               <span class="scale-tick">11px (Micro)</span>
@@ -1922,7 +1929,8 @@ function jumpToCategory(catId: SettingsCategory) {
 .settings-view-layout {
   display: flex;
   width: 100%;
-  height: calc(100vh - 60px);
+  height: 100%;
+  max-height: 100%;
   background: var(--bg-body, #040c08);
   overflow: hidden;
 }
