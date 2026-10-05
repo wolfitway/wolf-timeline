@@ -86,16 +86,21 @@ function handleSecurityBadgeClick() {
         <kbd class="search-kbd">{{ shortcutsStore.formatShortcut('command_palette') }}</kbd>
       </button>
 
-      <!-- License / Founder Pass Trigger -->
+      <!-- License / Tier Status Trigger -->
       <button
         type="button"
         class="topbar-license-btn"
-        :class="{ activated: licenseStore.isActivated }"
+        :class="{
+          activated: licenseStore.isPaid,
+          'tier-team': licenseStore.isTeam,
+          'tier-comm': licenseStore.isCommercialSolo,
+          'tier-free': licenseStore.isFree,
+        }"
         @click="uiStore.showLicenseModal = true"
-        :title="licenseStore.isActivated ? 'Sovereign Founder Node (Active)' : 'Claim Founder Alpha Pass'"
+        :title="licenseStore.isPaid ? `${licenseStore.tierLabel} (Active)` : 'Solo Personal Node (Free) — Upgrade for Commercial / Team'"
       >
-        <span class="license-icon">{{ licenseStore.isActivated ? '👑' : (isDev ? '⚡' : '🛡️') }}</span>
-        <span>{{ licenseStore.isActivated ? 'Founder VIP' : (isDev ? 'Keygen (Dev)' : 'Founder Pass') }}</span>
+        <span class="license-icon">{{ licenseStore.isTeam ? '👥' : licenseStore.isCommercialSolo ? '⚡' : '🐺' }}</span>
+        <span>{{ licenseStore.isTeam ? 'Pack Mesh (Team)' : licenseStore.isCommercialSolo ? 'Commercial Solo' : 'Free Solo' }}</span>
       </button>
 
       <!-- Security / Encryption Status Badge -->

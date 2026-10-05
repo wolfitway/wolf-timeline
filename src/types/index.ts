@@ -138,12 +138,19 @@ export interface ScannedCredentialCandidate {
   selected: boolean;
 }
 
+export type LicenseTier = "solo_free" | "commercial_solo" | "team";
+
 export interface LicenseInfo {
   activated: boolean;
+  tier: LicenseTier;
+  tier_label: string;
   machine_id: string;
   key?: string;
-  tier: string;
+  company_name?: string;
+  seats?: number;
   activated_at?: string;
+  expires_at?: string | null;
+  features?: string[];
 }
 
 export interface CouncilExpert {
@@ -152,6 +159,7 @@ export interface CouncilExpert {
   avatar: string;
   mandate: string;
   status: string;
+  discipline?: string;
 }
 
 export interface WolfitwayProduct {

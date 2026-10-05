@@ -715,13 +715,58 @@ fn compute_license_key(machine_id: &str) -> String {
     format!("WOLF-KEY-{}-{}-{}", p1, p2, p3)
 }
 
-fn verify_key_internal(machine_id: &str, entered_key: &str) -> bool {
+const COMMERCIAL_PREFIX: &str = "WOLF-COMM-";
+const TEAM_PREFIX: &str = "WOLF-TEAM-";
+
+fn compute_license_key_for_tier(machine_id: &str, tier_type: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(machine_id.as_bytes());
+    hasher.update(tier_type.as_bytes());
+    hasher.update(MASTER_SIGNING_SECRET.as_bytes());
+    let result = hasher.finalize();
+    let hex = format!("{:02X}", result);
+    let clean: String = hex.chars().filter(|c| c.is_ascii_hexdigit()).collect();
+    let p1 = &clean[0..4];
+    let p2 = &clean[4..8];
+    let p3 = &clean[8..12];
+
+    match tier_type {
+        "commercial_solo" => format!("WOLF-COMM-{}-{}-{}", p1, p2, p3),
+        "team" => format!("WOLF-TEAM-5S-{}-{}-{}", p1, p2, p3),
+        _ => format!("WOLF-KEY-{}-{}-{}", p1, p2, p3),
+    }
+}
+
+fn verify_key_internal(machine_id: &str, entered_key: &str) -> (bool, String, String) {
     let trimmed = entered_key.trim().to_uppercase();
     if trimmed == MASTER_FOUNDER_KEY {
-        return true;
+        return (true, "Founder Sovereign VIP".to_string(), "commercial_solo".to_string());
     }
-    let expected = compute_license_key(machine_id);
-    trimmed == expected
+
+    // Free tier bypass/default
+    if trimmed.starts_with("WOLF-FREE-") {
+        return (true, "Solo Personal (Free Sovereign Node)".to_string(), "solo_free".to_string());
+    }
+
+    // Check Commercial Solo
+    let expected_comm = compute_license_key_for_tier(machine_id, "commercial_solo");
+    if trimmed == expected_comm {
+        return (true, "Commercial Solo License".to_string(), "commercial_solo".to_string());
+    }
+
+    // Check Team Pack (5 Seats default)
+    let expected_team = compute_license_key_for_tier(machine_id, "team");
+    if trimmed == expected_team || (trimmed.starts_with(TEAM_PREFIX) && trimmed.contains(&compute_license_key(machine_id)[9..18])) {
+        return (true, "Team / Pack Mesh License (5 Seats)".to_string(), "team".to_string());
+    }
+
+    // Check Legacy / General Alpha key
+    let expected_alpha = compute_license_key(machine_id);
+    if trimmed == expected_alpha {
+        return (true, "Commercial Solo (Alpha Seat)".to_string(), "commercial_solo".to_string());
+    }
+
+    (false, "Invalid License".to_string(), "solo_free".to_string())
 }
 
 fn license_file_path() -> PathBuf {
@@ -736,7 +781,11 @@ pub struct LicenseInfo {
     pub machine_id: String,
     pub key: Option<String>,
     pub tier: String,
+    pub tier_label: String,
+    pub company_name: Option<String>,
+    pub seats: Option<u32>,
     pub activated_at: Option<String>,
+    pub features: Vec<String>,
 }
 
 #[tauri::command]
@@ -753,8 +802,12 @@ fn check_license_status() -> Result<LicenseInfo, String> {
     
     if let Ok(content) = fs::read_to_string(&path) {
         if let Ok(info) = serde_json::from_str::<LicenseInfo>(&content) {
-            if info.machine_id == machine_id && verify_key_internal(&machine_id, info.key.as_deref().unwrap_or_default()) {
-                return Ok(info);
+            let (is_valid, label, tier) = verify_key_internal(&machine_id, info.key.as_deref().unwrap_or_default());
+            if info.machine_id == machine_id && is_valid {
+                let mut updated = info;
+                updated.tier = tier;
+                updated.tier_label = label;
+                return Ok(updated);
             }
         }
     }
@@ -763,8 +816,16 @@ fn check_license_status() -> Result<LicenseInfo, String> {
         activated: false,
         machine_id,
         key: None,
-        tier: "Community Alpha Node".to_string(),
+        tier: "solo_free".to_string(),
+        tier_label: "Solo Personal Node (Free)".to_string(),
+        company_name: None,
+        seats: Some(1),
         activated_at: None,
+        features: vec![
+            "Local AES-256-GCM vault".to_string(),
+            "Unlimited solo notes & timeline".to_string(),
+            "Standard Markdown/JSON export".to_string(),
+        ],
     })
 }
 
@@ -773,19 +834,43 @@ fn activate_license(key: String) -> Result<LicenseInfo, String> {
     let raw = get_raw_machine_id();
     let machine_id = compute_device_fingerprint(&raw);
     
-    if !verify_key_internal(&machine_id, &key) {
-        return Err("Invalid license key for this device. Please check key or contact founder on X.".to_string());
+    let (is_valid, label, tier) = verify_key_internal(&machine_id, &key);
+    if !is_valid {
+        return Err("Invalid license key for this device. Please check key or select a tier.".to_string());
     }
 
-    let is_master = key.trim().to_uppercase() == MASTER_FOUNDER_KEY;
-    let tier = if is_master { "Founder Sovereign Access" } else { "Private Alpha Node Seat" };
+    let is_team = tier == "team";
+    let seats = if is_team { Some(5) } else { Some(1) };
+    let features = if is_team {
+        vec![
+            "Multi-Seat Pack mesh".to_string(),
+            "Team shared credentials locker".to_string(),
+            "Unbranded clean export suite".to_string(),
+            "Multi-author event attribution".to_string(),
+        ]
+    } else if tier == "commercial_solo" {
+        vec![
+            "Commercial & client usage rights".to_string(),
+            "Unbranded white-label export suite".to_string(),
+            "Priority AI decision studio".to_string(),
+        ]
+    } else {
+        vec![
+            "Local AES-256-GCM vault".to_string(),
+            "Solo personal projects".to_string(),
+        ]
+    };
     
     let info = LicenseInfo {
-        activated: true,
+        activated: tier != "solo_free",
         machine_id: machine_id.clone(),
         key: Some(key.trim().to_uppercase()),
-        tier: tier.to_string(),
+        tier,
+        tier_label: label,
+        company_name: if is_team { Some("Sovereign Pack Org".to_string()) } else { None },
+        seats,
         activated_at: Some(Utc::now().to_rfc3339()),
+        features,
     };
 
     let json = serde_json::to_string_pretty(&info).map_err(|e| e.to_string())?;

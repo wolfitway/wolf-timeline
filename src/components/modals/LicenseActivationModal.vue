@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useUiStore } from "@/stores/useUiStore";
 import { useLicenseStore } from "@/stores/useLicenseStore";
+import type { LicenseTier } from "@/types";
 
 const uiStore = useUiStore();
 const licenseStore = useLicenseStore();
@@ -10,7 +11,13 @@ const isDev = import.meta.env.DEV;
 
 function continueToApp() {
   uiStore.showLicenseModal = false;
-  uiStore.showToast("Welcome to Wolf Timeline Alpha! Enjoy building 🐺");
+  uiStore.showToast("Welcome to Wolf Timeline! Enjoy sovereign building 🐺");
+}
+
+async function selectFreeTier() {
+  await licenseStore.selectFreeSoloTier();
+  uiStore.showToast("Solo Personal Node activated (Free forever) ✓");
+  uiStore.showLicenseModal = false;
 }
 
 const activeTab = ref<"activation" | "keygen">("activation");
@@ -22,7 +29,8 @@ const isCopied = ref(false);
 
 // Keygen state
 const keygenDeviceId = ref("");
-const keygenTier = ref("Founder Alpha Access (Lifetime Seat)");
+const keygenTier = ref<LicenseTier>("commercial_solo");
+const keygenOrg = ref("Sovereign Studio Inc");
 const generatedSerial = ref("");
 const generatedMessage = ref("");
 const isSerialCopied = ref(false);
@@ -40,10 +48,10 @@ function copyDeviceId() {
 
 async function handleGenerateKey() {
   const targetId = keygenDeviceId.value.trim() || licenseStore.deviceId;
-  const result = await licenseStore.generateKeyForDevice(targetId, keygenTier.value);
+  const result = await licenseStore.generateKeyForDevice(targetId, keygenTier.value, keygenOrg.value);
   generatedSerial.value = result.key;
   generatedMessage.value = result.message;
-  uiStore.showToast("Hardware cryptographic serial generated ✓");
+  uiStore.showToast(`Cryptographic serial generated for ${result.tierLabel} ✓`);
 }
 
 function copySerialOnly() {
@@ -58,23 +66,23 @@ function copyFullMessage() {
   if (!generatedMessage.value) return;
   navigator.clipboard.writeText(generatedMessage.value);
   isMessageCopied.value = true;
-  uiStore.showToast("Formatted DM message copied to clipboard ✓");
+  uiStore.showToast("Formatted activation instructions copied ✓");
   setTimeout(() => (isMessageCopied.value = false), 2000);
 }
 
-async function handleAutoActivateCurrentHardware() {
-  const res = await licenseStore.autoActivateHardware(keygenTier.value);
+async function handleAutoActivateCurrentHardware(tierType: LicenseTier = "commercial_solo") {
+  const res = await licenseStore.autoActivateHardware(tierType);
   if (res.success) {
-    uiStore.showToast(`Hardware auto-activated with key ${res.key} ✓`);
+    uiStore.showToast(`Node activated as ${tierType.replace('_', ' ').toUpperCase()} ✓`);
     keyInput.value = res.key;
   } else {
-    uiStore.showToast("Auto-activation failed.");
+    uiStore.showToast("Activation failed.");
   }
 }
 
 function pasteMasterFounderKey() {
   keyInput.value = licenseStore.MASTER_FOUNDER_KEY;
-  uiStore.showToast("Master Founder Bypass Key loaded ✓");
+  uiStore.showToast("Founder Sovereign VIP Key loaded ✓");
 }
 
 async function handleActivate() {
@@ -87,16 +95,16 @@ async function handleActivate() {
   const res = await licenseStore.activate(keyInput.value);
   if (res.success) {
     uiStore.showLicenseModal = false;
-    uiStore.showToast("Sovereign Node successfully activated! Welcome pack member 🐺");
+    uiStore.showToast(`Sovereign Node successfully activated! (${licenseStore.tierLabel}) 🐺`);
   } else {
     errorMessage.value = res.error || "Activation failed. Please check key.";
   }
 }
 
 async function handleDeactivate() {
-  if (confirm("Deactivate license on this device?")) {
+  if (confirm("Reset to Free Solo Personal mode on this device?")) {
     await licenseStore.deactivate();
-    uiStore.showToast("License deactivated.");
+    uiStore.showToast("Reverted to Free Solo Personal Node.");
   }
 }
 </script>
@@ -108,15 +116,13 @@ async function handleDeactivate() {
       <div class="modal-header-centered">
         <div class="modal-brand">
           <img src="/assets/wolf-logo.png" alt="Wolf Logo" class="modal-wolf-logo" />
-          <span class="modal-brand-text">WOLF TIMELINE</span>
+          <span class="modal-brand-text">WOLF TIMELINE LICENSING</span>
         </div>
         <h2 class="modal-title">
-          {{ licenseStore.isActivated ? '🛡️ Sovereign Founder Node' : '🐺 Wolf Timeline Alpha' }}
+          {{ licenseStore.isTeam ? '👥 Sovereign Pack Node (Team)' : licenseStore.isCommercialSolo ? '⚡ Commercial Solo Node' : '🐺 Solo Personal Workspace' }}
         </h2>
         <p class="modal-subtitle">
-          {{ licenseStore.isActivated
-            ? 'Your device is authenticated with verified Sovereign Founder VIP privileges.'
-            : 'Zero-telemetry sovereign workspace. 100% free community alpha with optional Founder VIP unlock.' }}
+          Free for solo personal builders &amp; hobbyists. Commercial and team seats require a verifiable offline license key.
         </p>
 
         <!-- Mode Switcher Tabs (Dev Only: hidden in production) -->
@@ -127,7 +133,7 @@ async function handleDeactivate() {
             :class="{ active: activeTab === 'activation' }"
             @click="activeTab = 'activation'"
           >
-            🔑 Node Activation
+            🔑 License &amp; Tiers
           </button>
           <button
             type="button"
@@ -141,34 +147,90 @@ async function handleDeactivate() {
       </div>
 
       <div class="license-body">
-        <!-- TAB 1: NODE ACTIVATION & COMMUNITY ONBOARDING -->
+        <!-- TAB 1: 3-TIER OVERVIEW & ACTIVATION -->
         <template v-if="activeTab === 'activation'">
-          <!-- Tier Overview Cards -->
-          <div class="tier-comparison-box">
-            <div class="tier-card community" :class="{ current: !licenseStore.isActivated }">
+          <!-- Tier Overview Cards 3-Column Layout -->
+          <div class="tier-comparison-box three-col">
+            <!-- Tier 1: Free Solo Personal -->
+            <div class="tier-card community" :class="{ current: licenseStore.isFree }">
               <div class="tier-card-head">
-                <span class="tier-status-pill">🟢 CURRENT TIER</span>
-                <span class="tier-name">Community Alpha</span>
+                <div class="tier-badge-line">
+                  <span class="tier-status-pill green">100% FREE</span>
+                  <span v-if="licenseStore.isFree" class="tier-current-tag">ACTIVE</span>
+                </div>
+                <span class="tier-name">Solo Personal</span>
+                <span class="tier-price">$0 <span>forever</span></span>
               </div>
               <ul class="tier-features">
-                <li>✓ Full offline timeline &amp; notes</li>
+                <li>✓ Personal projects &amp; learning</li>
+                <li>✓ Full offline AES-256 SQLite vault</li>
                 <li>✓ Studio focus &amp; deep spec editor</li>
-                <li>✓ Human-Mode roadmap &amp; practices</li>
-                <li>✓ Local AES-256 SQLite encryption</li>
+                <li>✓ Standard JSON/MD export</li>
+                <li class="disabled-feature">✗ Commercial client projects</li>
+                <li class="disabled-feature">✗ Unbranded white-label exports</li>
               </ul>
+              <button
+                type="button"
+                class="btn-tier-action free-tier-btn"
+                :class="{ active: licenseStore.isFree }"
+                @click="selectFreeTier"
+              >
+                {{ licenseStore.isFree ? "Current Active Tier" : "Switch to Free Solo" }}
+              </button>
             </div>
 
-            <div class="tier-card founder" :class="{ current: licenseStore.isActivated }">
+            <!-- Tier 2: Commercial Solo -->
+            <div class="tier-card commercial" :class="{ current: licenseStore.isCommercialSolo }">
               <div class="tier-card-head">
-                <span class="tier-status-pill gold">{{ licenseStore.isActivated ? '👑 ACTIVE' : '✨ VIP PASS' }}</span>
-                <span class="tier-name">Founder Sovereign Seat</span>
+                <div class="tier-badge-line">
+                  <span class="tier-status-pill cyan">SOLO PRO</span>
+                  <span v-if="licenseStore.isCommercialSolo" class="tier-current-tag">ACTIVE</span>
+                </div>
+                <span class="tier-name">Commercial Solo</span>
+                <span class="tier-price">$49 <span>lifetime or $9/mo</span></span>
               </div>
               <ul class="tier-features">
-                <li>★ Glowing Founder VIP badge in topbar</li>
-                <li>★ Cryptographic offline serial</li>
-                <li>★ Direct feature roadmap influence on X</li>
-                <li>★ Lifetime seat access for private alpha</li>
+                <li>★ <strong>Full Commercial &amp; Client Rights</strong></li>
+                <li>★ Unbranded white-label exports</li>
+                <li>★ Priority AI Decision Studio ADRs</li>
+                <li>★ Cryptographic Proof-of-License</li>
+                <li class="disabled-feature">✗ Multi-seat team sync</li>
               </ul>
+              <button
+                type="button"
+                class="btn-tier-action commercial-btn"
+                :class="{ active: licenseStore.isCommercialSolo }"
+                @click="handleAutoActivateCurrentHardware('commercial_solo')"
+              >
+                {{ licenseStore.isCommercialSolo ? "✓ Active Commercial" : "Activate Commercial ($49)" }}
+              </button>
+            </div>
+
+            <!-- Tier 3: Team / Pack Node -->
+            <div class="tier-card team" :class="{ current: licenseStore.isTeam }">
+              <div class="tier-card-head">
+                <div class="tier-badge-line">
+                  <span class="tier-status-pill gold">MULTI-SEAT</span>
+                  <span v-if="licenseStore.isTeam" class="tier-current-tag">ACTIVE</span>
+                </div>
+                <span class="tier-name">Team / Pack Node</span>
+                <span class="tier-price">$19 <span>/seat/month</span></span>
+              </div>
+              <ul class="tier-features">
+                <li>★ <strong>5 to 25 Seat Mesh Licenses</strong></li>
+                <li>★ Shared Team Secret Locker</li>
+                <li>★ Git-backed repo auto-sync</li>
+                <li>★ Multi-author attribution &amp; ADRs</li>
+                <li>★ Priority Council of Experts audit</li>
+              </ul>
+              <button
+                type="button"
+                class="btn-tier-action team-btn"
+                :class="{ active: licenseStore.isTeam }"
+                @click="handleAutoActivateCurrentHardware('team')"
+              >
+                {{ licenseStore.isTeam ? "✓ Active Team Mesh" : "Activate Team Seat ($19)" }}
+              </button>
             </div>
           </div>
 
@@ -185,37 +247,37 @@ async function handleDeactivate() {
               </button>
             </div>
             <p class="device-hint">
-              Drop this Device ID in replies or DMs on X to claim your Founder VIP cryptographic activation key.
+              Drop this Device ID in replies on X or pass to your team admin to receive your cryptographically bound key.
             </p>
           </div>
 
-          <!-- Status Card if Activated -->
-          <div v-if="licenseStore.isActivated" class="activated-card">
+          <!-- Status Card if Activated with Paid Key -->
+          <div v-if="licenseStore.isPaid" class="activated-card">
             <div class="act-header">
-              <span class="act-dot"></span>
-              <span class="act-title">Active Sovereign License</span>
+              <span class="act-dot" :class="{ 'team-dot': licenseStore.isTeam }"></span>
+              <span class="act-title">Active License: {{ licenseStore.tierLabel }}</span>
             </div>
             <div class="act-details">
-              <span class="act-tier">Tier: {{ licenseStore.tier }}</span>
               <span class="act-key">Key: {{ licenseStore.licenseKey }}</span>
+              <span v-if="licenseStore.seats > 1" class="act-seats">Seats Allocated: {{ licenseStore.seats }}</span>
             </div>
             <div class="act-actions-row">
               <button type="button" class="btn-continue-alpha" @click="continueToApp">
-                Enter Alpha Workspace →
+                Open Workspace →
               </button>
               <button type="button" class="btn-deactivate" @click="handleDeactivate">
-                Deactivate Key
+                Revert to Free Solo
               </button>
             </div>
           </div>
 
-          <!-- Key Input Form if not activated -->
+          <!-- Key Input Form if not paid or wishing to upgrade -->
           <form v-else class="key-form" @submit.prevent="handleActivate">
             <div class="form-group">
               <div class="form-label-row">
-                <label class="form-label">Have a Founder VIP Key?</label>
+                <label class="form-label">Have a Commercial or Team Key?</label>
                 <button v-if="isDev" type="button" class="btn-link-action" @click="pasteMasterFounderKey">
-                  Use Master Key (Dev)
+                  Use Master Founder Key (Dev)
                 </button>
               </div>
               <div class="key-input-row">
@@ -223,7 +285,7 @@ async function handleDeactivate() {
                   v-model="keyInput"
                   type="text"
                   class="form-input mono"
-                  placeholder="WOLF-KEY-XXXX-XXXX-XXXX"
+                  placeholder="WOLF-COMM-XXXX-XXXX-XXXX or WOLF-TEAM-..."
                 />
                 <button type="submit" class="btn-activate" :disabled="!keyInput.trim()">
                   Activate Key
@@ -238,21 +300,18 @@ async function handleDeactivate() {
             <!-- Primary Action: Frictionless Continue Button -->
             <div class="onboarding-actions">
               <button type="button" class="btn-continue-alpha" @click="continueToApp">
-                <span>Enter Alpha Workspace (Free Community Node) →</span>
-              </button>
-              <button v-if="isDev" type="button" class="btn-auto-unlock dev-only" @click="handleAutoActivateCurrentHardware">
-                ⚡ Auto-Unlock (Dev Only)
+                <span>Enter Workspace as Free Solo Personal Node →</span>
               </button>
             </div>
           </form>
         </template>
 
-        <!-- TAB 2: HARDWARE KEYGEN STUDIO -->
+        <!-- TAB 2: HARDWARE KEYGEN STUDIO (DEV / ADMIN) -->
         <template v-else-if="activeTab === 'keygen'">
           <div class="keygen-studio-panel">
             <div class="keygen-header-row">
               <span class="keygen-title">Cryptographic Key Generator</span>
-              <span class="keygen-badge">SHA-256 HMAC Engine</span>
+              <span class="keygen-badge">SHA-256 HMAC Multi-Tier Engine</span>
             </div>
 
             <div class="keygen-field-group">
@@ -276,13 +335,22 @@ async function handleDeactivate() {
             </div>
 
             <div class="keygen-field-group">
-              <label class="keygen-label">License Tier / Allocation</label>
+              <label class="keygen-label">License Tier Allocation</label>
               <select v-model="keygenTier" class="keygen-select">
-                <option value="Founder Alpha Access (Lifetime Seat)">Founder Alpha Access (Lifetime Seat)</option>
-                <option value="Private Cyber Alpha Node">Private Cyber Alpha Node</option>
-                <option value="Enterprise Sovereign Mesh Seat">Enterprise Sovereign Mesh Seat</option>
-                <option value="Community Beta Tester">Community Beta Tester</option>
+                <option value="solo_free">Solo Personal Node (Free)</option>
+                <option value="commercial_solo">Commercial Solo License ($49 Lifetime)</option>
+                <option value="team">Team / Pack Mesh License ($19/seat/mo • 5 Seats)</option>
               </select>
+            </div>
+
+            <div v-if="keygenTier === 'team'" class="keygen-field-group">
+              <label class="keygen-label">Organization Name</label>
+              <input
+                v-model="keygenOrg"
+                type="text"
+                class="keygen-input"
+                placeholder="Company or Studio Name"
+              />
             </div>
 
             <button type="button" class="btn-run-keygen" @click="handleGenerateKey">
@@ -300,11 +368,11 @@ async function handleDeactivate() {
                 <button type="button" class="btn-output-action" @click="copySerialOnly">
                   {{ isSerialCopied ? "Copied ✓" : "📋 Copy Serial" }}
                 </button>
-                <button type="button" class="btn-output-action highlight" @click="handleAutoActivateCurrentHardware">
+                <button type="button" class="btn-output-action highlight" @click="handleAutoActivateCurrentHardware(keygenTier)">
                   ⚡ 1-Click Activate This Node
                 </button>
                 <button type="button" class="btn-output-action" @click="copyFullMessage">
-                  {{ isMessageCopied ? "Message Copied ✓" : "💬 Copy DM for X" }}
+                  {{ isMessageCopied ? "Copied ✓" : "💬 Copy Instructions" }}
                 </button>
               </div>
             </div>
@@ -331,8 +399,10 @@ async function handleDeactivate() {
 
 .modal-window {
   position: relative;
-  width: 540px;
-  max-width: 94vw;
+  width: 760px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
   background: #06140f;
   border: 1px solid #10b98144;
   border-radius: 18px;
@@ -605,17 +675,28 @@ async function handleDeactivate() {
 .tier-comparison-box {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 12px;
+}
+
+.tier-comparison-box.three-col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 680px) {
+  .tier-comparison-box.three-col {
+    grid-template-columns: 1fr;
+  }
 }
 
 .tier-card {
   background: #040e0a;
   border: 1px solid #0f271d;
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
   transition: all 0.2s ease;
 }
 
@@ -625,17 +706,53 @@ async function handleDeactivate() {
   box-shadow: 0 0 16px rgba(16, 185, 129, 0.08);
 }
 
+.tier-card.commercial.current {
+  border-color: rgba(6, 182, 212, 0.5);
+  background: rgba(6, 182, 212, 0.05);
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.1);
+}
+
+.tier-card.team.current {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.05);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.1);
+}
+
 .tier-card-head {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
+}
+
+.tier-badge-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tier-current-tag {
+  font-size: 8.5px;
+  font-weight: 800;
+  background: #10b981;
+  color: #03140b;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
 }
 
 .tier-status-pill {
   font-size: 9px;
   font-weight: 800;
-  color: #34d399;
   letter-spacing: 0.06em;
+}
+
+.tier-status-pill.green {
+  color: #34d399;
+}
+
+.tier-status-pill.cyan {
+  color: #06b6d4;
 }
 
 .tier-status-pill.gold {
@@ -643,9 +760,21 @@ async function handleDeactivate() {
 }
 
 .tier-name {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 800;
   color: #ffffff;
+}
+
+.tier-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.tier-price span {
+  font-size: 10px;
+  font-weight: 500;
+  color: #94a3b8;
 }
 
 .tier-features {
@@ -654,7 +783,8 @@ async function handleDeactivate() {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
+  flex: 1;
 }
 
 .tier-features li {
@@ -663,8 +793,60 @@ async function handleDeactivate() {
   line-height: 1.35;
 }
 
-.tier-card.founder .tier-features li {
-  color: #cbd5e1;
+.tier-features li.disabled-feature {
+  color: #4b5563;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.btn-tier-action {
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 6px;
+}
+
+.free-tier-btn {
+  background: #092017;
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.free-tier-btn:hover, .free-tier-btn.active {
+  background: #10b981;
+  color: #03140b;
+}
+
+.commercial-btn {
+  background: #062028;
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.commercial-btn:hover, .commercial-btn.active {
+  background: #06b6d4;
+  color: #021a22;
+}
+
+.team-btn {
+  background: #251605;
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.team-btn:hover, .team-btn.active {
+  background: #f59e0b;
+  color: #1a0f02;
+}
+
+.act-dot.team-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
 }
 
 .act-actions-row {

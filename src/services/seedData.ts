@@ -37,11 +37,36 @@ export const WOLFITWAY_PRODUCTS: WolfitwayProduct[] = [
 
 export const SOVEREIGN_EXPERTS: CouncilExpert[] = [
   {
+    role: "Software IP & Commercial Licensing Counsel",
+    handle: "@legal-counsel",
+    avatar: "⚖️",
+    mandate: "Governs dual-use licensing terms (Free Solo vs Commercial Solo vs Team Pack) ensuring rock-solid copyright and zero enterprise exposure.",
+    status: "Active Council",
+    discipline: "Licensing & Legal",
+  },
+  {
+    role: "Enterprise Multi-Tenant & Team Systems Architect",
+    handle: "@enterprise-arch",
+    avatar: "🏢",
+    mandate: "Architects zero-cloud team synchronization, Git-backed mesh synchronization, multi-seat nodes, and shared credential vaults.",
+    status: "Active Council",
+    discipline: "Team & Enterprise Architecture",
+  },
+  {
+    role: "SaaS & Desktop Commercialization Strategist",
+    handle: "@monetization-lead",
+    avatar: "💰",
+    mandate: "Structures commercial solo ($49) and team mesh ($19/seat/mo) monetization funnels with frictionless zero-friction upgrades.",
+    status: "Active Council",
+    discipline: "Monetization & Growth",
+  },
+  {
     role: "Chief Product & Funnel Architect",
     handle: "@product-strategist",
     avatar: "🏛️",
     mandate: "Translates high-leverage capture notes into structured creator funnels (TOFU → MOFU → Core Engine → Revenue).",
     status: "Active Council",
+    discipline: "Product Strategy",
   },
   {
     role: "Principal Systems & Cryptography Engineer",
@@ -49,6 +74,7 @@ export const SOVEREIGN_EXPERTS: CouncilExpert[] = [
     avatar: "🔐",
     mandate: "Guarantees 100% local-first ownership, AES-256-GCM hardware key encryption, and zero-telemetry offline execution.",
     status: "Active Council",
+    discipline: "Systems & Security",
   },
   {
     role: "Lead UX/UI & Motion Engineering Guardian",
@@ -56,6 +82,7 @@ export const SOVEREIGN_EXPERTS: CouncilExpert[] = [
     avatar: "🎨",
     mandate: "Preserves the cyber-obsidian design language, emerald luminescence, responsive cards, and zero design drift.",
     status: "Active Council",
+    discipline: "Design Systems",
   },
   {
     role: "AI & Semantic Context Specialist",
@@ -63,6 +90,7 @@ export const SOVEREIGN_EXPERTS: CouncilExpert[] = [
     avatar: "🧠",
     mandate: "Provides transparent multi-model attribution, smart decision rationale tracking, and research exploration synthesis.",
     status: "Active Council",
+    discipline: "AI & Reasoning",
   },
   {
     role: "User Flow & Cognitive Ergonomics Architect",
@@ -70,6 +98,7 @@ export const SOVEREIGN_EXPERTS: CouncilExpert[] = [
     avatar: "🌊",
     mandate: "Eliminates cognitive friction via full-focus writing modes, universal drag-and-drop reordering, and tactile feedback.",
     status: "Active Council",
+    discipline: "Ergonomics & Flow",
   },
   {
     role: "CRO & Funnel Velocity Strategist",
@@ -77,6 +106,7 @@ export const SOVEREIGN_EXPERTS: CouncilExpert[] = [
     avatar: "📈",
     mandate: "Optimizes action triggers (<3s Quick Capture, ⌘K spotlight, direct-on-canvas editing) for creator velocity.",
     status: "Active Council",
+    discipline: "Growth & CRO",
   },
   {
     role: "Accessibility (a11y) & Inclusive Interaction Specialist",
@@ -84,6 +114,7 @@ export const SOVEREIGN_EXPERTS: CouncilExpert[] = [
     avatar: "♿",
     mandate: "Enforces WCAG 2.1 AAA high-contrast standards, full keyboard navigation traps, and visible glowing emerald focus rings.",
     status: "Active Council",
+    discipline: "Accessibility",
   },
 ];
 
