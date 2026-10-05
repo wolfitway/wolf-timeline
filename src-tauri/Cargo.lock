@@ -4882,7 +4882,7 @@ dependencies = [
 
 [[package]]
 name = "wolf-timeline"
-version = "1.0.0-alpha.1"
+version = "1.0.0"
 dependencies = [
  "aes-gcm",
  "argon2",
