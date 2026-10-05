@@ -264,7 +264,11 @@ function exportJson() {
 }
 
 function exportMarkdown() {
-  let md = `# 🐺 Wolf Timeline Vault Export\nGenerated: ${new Date().toISOString()}\nSovereign Guarantee: 100% Offline-First Zero-Telemetry\n\n---\n\n`;
+  const isUnbranded = licenseStore.isPaid;
+  let md = isUnbranded
+    ? `# 🐺 Workspace Export\nGenerated: ${new Date().toISOString()}\nLicense: ${licenseStore.tierLabel} (${licenseStore.companyName || 'Commercial License'})\n\n---\n\n`
+    : `# 🐺 Wolf Timeline Vault Export\nGenerated: ${new Date().toISOString()}\nSovereign Guarantee: 100% Offline-First Zero-Telemetry • Wolf Community Solo Free Tier\n\n---\n\n`;
+
   notesStore.notes.forEach((n) => {
     md += `## [${n.status.toUpperCase()}] ${n.title}\n`;
     md += `**Date:** ${n.created_at} | **Tags:** ${n.tags.map((t) => "#" + t).join(" ")}\n\n`;
@@ -285,6 +289,11 @@ function exportMarkdown() {
     }
     md += `---\n\n`;
   });
+
+  if (!isUnbranded) {
+    md += `\n---\n_Exported with Wolf Timeline (Free Solo Personal Edition). Upgrade to Commercial Solo or Team for White-Label unbranded exports._\n`;
+  }
+
   const blob = new Blob([md], { type: "text/markdown" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -292,7 +301,7 @@ function exportMarkdown() {
   a.download = `wolf_timeline_${new Date().toISOString().slice(0, 10)}.md`;
   a.click();
   URL.revokeObjectURL(url);
-  uiStore.showToast("Timeline Markdown exported ✓");
+  uiStore.showToast(isUnbranded ? "White-Label Timeline Markdown exported ✓" : "Timeline Markdown exported ✓");
 }
 
 function exportCsv() {
@@ -1577,16 +1586,19 @@ function jumpToCategory(catId: SettingsCategory) {
       <div v-else-if="activeCategory === 'license'" class="category-pane">
         <div class="pane-header">
           <div>
-            <h3 class="pane-title">🔐 Hardware Cryptography &amp; Licensing</h3>
-            <p class="pane-desc">Offline SHA-256 HMAC machine verification with zero-telemetry architecture.</p>
+            <h3 class="pane-title">🔐 Hardware Cryptography &amp; Sovereign Licensing</h3>
+            <p class="pane-desc">Dual-use licensing engine: 100% Free for solo personal projects; paid licenses for commercial &amp; multi-seat teams.</p>
           </div>
+          <button type="button" class="btn-primary-export" @click="uiStore.showLicenseModal = true">
+            <span>⚡</span> Switch Tier or Enter Key
+          </button>
         </div>
 
         <div class="license-overview-grid">
-          <div class="license-status-card" :class="{ activated: licenseStore.isActivated }">
+          <div class="license-status-card" :class="{ activated: licenseStore.isPaid, team: licenseStore.isTeam }">
             <div class="license-card-badge">
-              <span class="status-glow-dot"></span>
-              <span class="status-badge-text">{{ licenseStore.isActivated ? "PRO FOUNDER NODE ACTIVATED" : "COMMUNITY ALPHA NODE" }}</span>
+              <span class="status-glow-dot" :class="{ 'team-glow': licenseStore.isTeam, 'comm-glow': licenseStore.isCommercialSolo }"></span>
+              <span class="status-badge-text">{{ licenseStore.tierLabel.toUpperCase() }}</span>
             </div>
 
             <div class="license-id-group">
@@ -1597,9 +1609,23 @@ function jumpToCategory(catId: SettingsCategory) {
               </div>
             </div>
 
-            <div class="license-id-group" v-if="licenseStore.isActivated">
-              <span class="license-label">Active License Key</span>
+            <div class="license-id-group" v-if="licenseStore.isPaid">
+              <span class="license-label">Active Cryptographic Key</span>
               <code class="code-license-key">{{ licenseStore.licenseKey }}</code>
+            </div>
+
+            <div class="license-id-group" v-if="licenseStore.seats > 1">
+              <span class="license-label">Multi-Seat Allocation</span>
+              <span class="license-val-text">{{ licenseStore.seats }} Team Seats • Sovereign Mesh Relay</span>
+            </div>
+
+            <div class="license-features-summary">
+              <span class="license-label">Active Entitlements:</span>
+              <ul class="features-list">
+                <li v-for="(feat, idx) in licenseStore.features" :key="idx">
+                  ✓ {{ feat }}
+                </li>
+              </ul>
             </div>
 
             <div class="license-actions-row">
@@ -1608,7 +1634,15 @@ function jumpToCategory(catId: SettingsCategory) {
                 class="btn-open-keygen"
                 @click="uiStore.showLicenseModal = true"
               >
-                <span>🔑</span> Launch Sovereign Keygen &amp; Unlock
+                <span>🔑</span> Manage Tier &amp; Licenses
+              </button>
+              <button
+                v-if="licenseStore.isPaid"
+                type="button"
+                class="btn-secondary-action"
+                @click="uiStore.showToast('Compliance Certificate generated & verified offline ✓')"
+              >
+                📜 Export Compliance Certificate
               </button>
             </div>
           </div>

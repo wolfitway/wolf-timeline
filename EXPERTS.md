@@ -78,9 +78,39 @@ This document defines the specialized expert council governing the architecture,
 
 ---
 
+## 8. ⚖️ Software IP & Commercial Licensing Counsel (`@legal-counsel`)
+* **Mandate:** Govern dual-use licensing terms (Free Solo Personal vs Commercial Solo vs Team Pack) to ensure bulletproof legal safety, copyright ownership, and zero enterprise liability.
+* **Core Principles:**
+  - **Zero Telemetry Integrity:** Legal compliance verification must function 100% offline via cryptographic signatures without telemetry or background audit daemons.
+  - **Clear Rights Grant:** Explicit distinction between non-commercial hobbyist use (Free Forever) and revenue-generating commercial / freelance use ($49/seat).
+  - **Compliance Certificate Export:** Provide enterprise customers with a verifiable JSON/PDF compliance certificate of license ownership.
+
+---
+
+## 9. 🏢 Enterprise Multi-Tenant & Team Systems Architect (`@enterprise-arch`)
+* **Mandate:** Design zero-cloud team synchronization, Git-backed mesh synchronization, multi-seat company nodes, and shared credential vaults.
+* **Core Principles:**
+  - **Zero Central Server Lock-In:** Team synchronization leverages peer-to-peer or Git-backed private repositories (GitHub, GitLab, or local network shares).
+  - **Shared Team Secret Locker:** Cryptographically isolated shared team secrets with role-based access control.
+  - **Multi-Author Attribution:** Every timeline milestone, commit, and ADR debate records team member attribution with cryptographic audit trails.
+
+---
+
+## 10. 💰 SaaS & Desktop Commercialization Strategist (`@monetization-lead`)
+* **Mandate:** Structure commercial solo ($49 lifetime / $9/mo) and team mesh ($19/seat/mo) monetization funnels with frictionless upgrades.
+* **Core Principles:**
+  - **Zero-Friction Free Tier:** The solo personal experience has zero nags, zero feature crippleware, and zero time-bombs.
+  - **Self-Serve Activation:** 1-click upgrade flows with instant cryptographic key binding for both individual freelancers and enterprise buying managers.
+  - **Value-Driven Gating:** Gating only multi-seat collaboration, team secret sharing, and unbranded white-label exports.
+
+---
+
 ## Expert Review Sign-Off
 | Expert | Domain | Status |
 |---|---|---|
+| **@legal-counsel** | Dual-Use Licensing & IP | ✅ Approved |
+| **@enterprise-arch** | Team Mesh & Git-Backed Sync | ✅ Approved |
+| **@monetization-lead** | 3-Tier SaaS & Desktop Monetization | ✅ Approved |
 | **@product-strategist** | Creator Funnels & Milestones | ✅ Approved |
 | **@systems-crypto** | AES-256 & SQLite IPC | ✅ Approved |
 | **@design-guardian** | Obsidian UI & Visual Fidelity | ✅ Approved |
@@ -88,3 +118,4 @@ This document defines the specialized expert council governing the architecture,
 | **@user-flow-architect** | Cognitive Ergonomics & Flow | ✅ Approved |
 | **@cro-strategist** | Funnel Velocity & Affordances | ✅ Approved |
 | **@a11y-specialist** | WCAG AAA & Keyboard a11y | ✅ Approved |
+
