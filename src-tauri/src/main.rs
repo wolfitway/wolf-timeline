@@ -715,7 +715,9 @@ fn compute_license_key(machine_id: &str) -> String {
     format!("WOLF-KEY-{}-{}-{}", p1, p2, p3)
 }
 
+#[allow(dead_code)]
 const COMMERCIAL_PREFIX: &str = "WOLF-COMM-";
+#[allow(dead_code)]
 const TEAM_PREFIX: &str = "WOLF-TEAM-";
 
 fn compute_license_key_for_tier(machine_id: &str, tier_type: &str) -> String {
