@@ -625,12 +625,15 @@ onMounted(() => {
 .bookmarks-view-root {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   height: 100%;
   max-height: 100%;
-  padding: 1.25rem 2rem;
+  padding: 1.25rem 2rem 5rem 2rem;
   background: var(--bg-surface, #071510);
   color: var(--text-main, #f0fdf4);
   overflow-y: auto;
+  scrollbar-gutter: stable;
   gap: 1.25rem;
 }
 
@@ -1353,5 +1356,33 @@ onMounted(() => {
   color: var(--text-primary, #fff);
   font-family: var(--font-mono, monospace);
   word-break: break-all;
+}
+
+/* High-Contrast Bookmarks Cyber Scrollbars */
+.bookmarks-view-root::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.bookmarks-view-root::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+  border-radius: 6px;
+}
+
+.bookmarks-view-root::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(16, 185, 129, 0.45));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.bookmarks-view-root::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, #34d399);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.4));
+}
+
+.bookmarks-view-root {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
 }
 </style>

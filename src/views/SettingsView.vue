@@ -190,7 +190,7 @@ onMounted(() => {
   document.documentElement.style.fontSize = `${numericScale}px`;
   document.documentElement.style.setProperty("--base-font-size", `${numericScale}px`);
   document.documentElement.style.setProperty("--font-scale-ratio", ratio);
-  document.documentElement.style.zoom = ratio;
+  document.documentElement.style.zoom = "";
 
   // Load glow & glass
   const savedGlow = localStorage.getItem("wolf_glow");
@@ -229,7 +229,7 @@ function changeFontScale(size: string, notify = true) {
   document.documentElement.style.fontSize = `${numericScale}px`;
   document.documentElement.style.setProperty("--base-font-size", `${numericScale}px`);
   document.documentElement.style.setProperty("--font-scale-ratio", ratio);
-  document.documentElement.style.zoom = ratio;
+  document.documentElement.style.zoom = "";
   if (notify) {
     uiStore.showToast(`Display & font scale set to ${size}px ✓`);
   }
@@ -2031,7 +2031,9 @@ function jumpToCategory(catId: SettingsCategory) {
 /* Nav items */
 .settings-nav {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 12px 10px;
   display: flex;
   flex-direction: column;
@@ -2137,8 +2139,10 @@ function jumpToCategory(catId: SettingsCategory) {
 /* Main Detail Pane */
 .settings-main-pane {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 30px 40px;
+  scrollbar-gutter: stable;
+  padding: 30px 40px 80px 40px;
   background: var(--bg-body, #040c08);
 }
 
@@ -4661,5 +4665,38 @@ function jumpToCategory(catId: SettingsCategory) {
 .fs-time-val {
   font-family: var(--font-mono, monospace);
   color: var(--text-gray, #cbd5e1);
+}
+
+/* High-Contrast Settings Cyber Scrollbars */
+.settings-main-pane::-webkit-scrollbar,
+.settings-nav::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.settings-main-pane::-webkit-scrollbar-track,
+.settings-nav::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+  border-radius: 6px;
+}
+
+.settings-main-pane::-webkit-scrollbar-thumb,
+.settings-nav::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(16, 185, 129, 0.45));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.settings-main-pane::-webkit-scrollbar-thumb:hover,
+.settings-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, #34d399);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.4));
+}
+
+.settings-main-pane,
+.settings-nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
 }
 </style>

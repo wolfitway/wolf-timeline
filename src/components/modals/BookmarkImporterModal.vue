@@ -377,6 +377,7 @@ function closeModal() {
 .modal-body {
   padding: 20px 24px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   flex: 1;
   display: flex;
   flex-direction: column;

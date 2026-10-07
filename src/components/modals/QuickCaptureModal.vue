@@ -220,6 +220,9 @@ function handleKeyDown(e: KeyboardEvent) {
 .modal-card {
   width: 100%;
   max-width: 460px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   background: var(--bg-card, #06140f);
   border: 1px solid var(--border-card, #0f2b1d);
   border-radius: 18px;

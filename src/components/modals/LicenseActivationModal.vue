@@ -403,6 +403,7 @@ async function handleDeactivate() {
   max-width: 95vw;
   max-height: 90vh;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   background: var(--bg-card, #06140f);
   border: 1px solid var(--border-card, #10b98144);
   border-radius: 18px;

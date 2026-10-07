@@ -526,6 +526,7 @@ const activePhaseProgress = computed(() => {
 .roadmap-body {
   display: grid;
   grid-template-columns: 440px 1fr;
+  grid-template-rows: minmax(0, 1fr);
   gap: 24px;
   flex: 1;
   min-height: 0;
@@ -535,6 +536,7 @@ const activePhaseProgress = computed(() => {
 /* Left Column: Phases Track Card */
 .roadmap-column-left {
   height: 100%;
+  min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -594,10 +596,13 @@ const activePhaseProgress = computed(() => {
 
 .phases-connected-list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   padding-right: 4px;
+  padding-bottom: 20px;
 }
 
 .phase-node-item {
@@ -774,7 +779,10 @@ const activePhaseProgress = computed(() => {
 /* Right Column: Phase Detail Card */
 .roadmap-column-right {
   height: 100%;
+  min-height: 0;
   overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding-bottom: 60px;
 }
 
 .phase-detail-card {
@@ -1216,5 +1224,38 @@ const activePhaseProgress = computed(() => {
   border: 2px solid var(--bg-card, #06140f);
   box-shadow: 0 0 8px var(--border-glow, rgba(52, 211, 153, 0.8));
   transition: left 0.3s ease;
+}
+
+/* High-Contrast Roadmap Cyber Scrollbars */
+.phases-connected-list::-webkit-scrollbar,
+.roadmap-column-right::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.phases-connected-list::-webkit-scrollbar-track,
+.roadmap-column-right::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+  border-radius: 6px;
+}
+
+.phases-connected-list::-webkit-scrollbar-thumb,
+.roadmap-column-right::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(16, 185, 129, 0.45));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.phases-connected-list::-webkit-scrollbar-thumb:hover,
+.roadmap-column-right::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, #34d399);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.4));
+}
+
+.phases-connected-list,
+.roadmap-column-right {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
 }
 </style>

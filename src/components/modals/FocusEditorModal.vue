@@ -100,11 +100,21 @@ function handlePreviewClick(e: MouseEvent) {
   const target = e.target as HTMLElement;
 
   // 1. Copy code block button
-  if (target.classList.contains("btn-code-copy") || target.closest(".btn-code-copy")) {
-    const btn = target.classList.contains("btn-code-copy") ? target : (target.closest(".btn-code-copy") as HTMLElement);
-    const code = btn.getAttribute("data-code");
+  const copyBtn = target.classList.contains("btn-code-copy")
+    ? target
+    : (target.closest(".btn-code-copy") as HTMLElement | null);
+  if (copyBtn) {
+    const code = copyBtn.getAttribute("data-code");
     if (code) {
       navigator.clipboard.writeText(decodeURIComponent(code));
+      const labelSpan = copyBtn.querySelector(".btn-copy-label") || copyBtn;
+      const originalText = labelSpan.textContent || "Copy";
+      labelSpan.textContent = "Copied! ✓";
+      copyBtn.style.color = "var(--emerald-bright)";
+      setTimeout(() => {
+        labelSpan.textContent = originalText;
+        copyBtn.style.color = "";
+      }, 1800);
       uiStore.showToast("Code copied to clipboard ✓");
     }
     return;
@@ -712,6 +722,8 @@ function toggleNativeFullscreen() {
   box-sizing: border-box;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-bottom: 80px;
 }
 
 .pane-preview {
@@ -725,9 +737,10 @@ function toggleNativeFullscreen() {
 
 .preview-content {
   flex: 1;
-  padding: 24px 32px 60px 32px;
+  padding: 24px 32px 80px 32px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   color: var(--text-primary, #e5e7eb);
   line-height: 1.8;
   font-size: 14px;
@@ -878,25 +891,33 @@ function toggleNativeFullscreen() {
   border: 1px solid var(--border-subtle, #12241a);
 }
 
-/* Custom Scrollbars */
+/* Custom Cyber Scrollbars */
 .focus-textarea::-webkit-scrollbar,
 .preview-content::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 .focus-textarea::-webkit-scrollbar-track,
 .preview-content::-webkit-scrollbar-track {
-  background: var(--bg-inner, #030805);
+  background: var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+  border-radius: 6px;
 }
 .focus-textarea::-webkit-scrollbar-thumb,
 .preview-content::-webkit-scrollbar-thumb {
-  background: var(--border-card, #143525);
-  border-radius: 4px;
-  border: 1px solid var(--bg-inner, #030805);
+  background: var(--scrollbar-thumb, rgba(16, 185, 129, 0.45));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 .focus-textarea::-webkit-scrollbar-thumb:hover,
 .preview-content::-webkit-scrollbar-thumb:hover {
-  background: var(--emerald-main, #10b981);
+  background: var(--scrollbar-thumb-hover, #34d399);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.4));
+}
+.focus-textarea,
+.preview-content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
 }
 
 /* Footer Metrics */

@@ -782,6 +782,7 @@ function handleDeleteCurrent() {
 .modal-body-scrollable {
   flex: 1;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 20px 24px;
   display: flex;
   flex-direction: column;

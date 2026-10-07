@@ -190,6 +190,9 @@ async function handleSaveSelected() {
   position: relative;
   width: 640px;
   max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   background: var(--bg-card, #09120e);
   border: 1px solid var(--border-card, #162c21);
   border-radius: 18px;

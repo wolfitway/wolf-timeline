@@ -156,7 +156,7 @@ onMounted(async () => {
   document.documentElement.style.fontSize = `${numericScale}px`;
   document.documentElement.style.setProperty("--base-font-size", `${numericScale}px`);
   document.documentElement.style.setProperty("--font-scale-ratio", ratio);
-  document.documentElement.style.zoom = ratio;
+  document.documentElement.style.zoom = "";
 
   const savedGlow = localStorage.getItem("wolf_glow");
   if (savedGlow === "false") {
@@ -250,7 +250,8 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   min-height: 0;
-  height: calc(100% - 56px);
+  height: calc(100vh - 56px);
+  max-height: calc(100vh - 56px);
   overflow: hidden;
   background: var(--bg-canvas, #040c08);
 }

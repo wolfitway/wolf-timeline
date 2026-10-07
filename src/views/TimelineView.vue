@@ -19,22 +19,33 @@ const showMoodGallery = ref(true);
 
 // Timeline Notes Live Preview mode
 const timelineNotesViewMode = ref<"preview" | "edit">("preview");
+const isPreviewExpanded = ref<boolean>(false);
 
 function handleTimelinePreviewClick(e: MouseEvent) {
   const target = e.target as HTMLElement;
 
-  // Copy code block button
-  if (target.classList.contains("btn-code-copy") || target.closest(".btn-code-copy")) {
-    const btn = target.classList.contains("btn-code-copy") ? target : (target.closest(".btn-code-copy") as HTMLElement);
-    const code = btn.getAttribute("data-code");
+  // 1. Copy code block button
+  const copyBtn = target.classList.contains("btn-code-copy")
+    ? target
+    : (target.closest(".btn-code-copy") as HTMLElement | null);
+  if (copyBtn) {
+    const code = copyBtn.getAttribute("data-code");
     if (code) {
       navigator.clipboard.writeText(decodeURIComponent(code));
+      const labelSpan = copyBtn.querySelector(".btn-copy-label") || copyBtn;
+      const originalText = labelSpan.textContent || "Copy";
+      labelSpan.textContent = "Copied! ✓";
+      copyBtn.style.color = "var(--emerald-bright)";
+      setTimeout(() => {
+        labelSpan.textContent = originalText;
+        copyBtn.style.color = "";
+      }, 1800);
       uiStore.showToast("Code copied to clipboard ✓");
     }
     return;
   }
 
-  // Task list checkbox click
+  // 2. Task list checkbox click
   if (target.classList.contains("task-checkbox") && notesStore.selectedNote) {
     const input = target as HTMLInputElement;
     const taskIdx = parseInt(input.getAttribute("data-task-index") || "-1", 10);
@@ -1163,26 +1174,38 @@ function toggleMoodTag(tag: string) {
               </div>
             </div>
 
-            <button
-              type="button"
-              class="btn-expand-focus"
-              @click="uiStore.showFocusEditor = true"
-              title="Expand to Deep Focus Zen Mode (⤢)"
-            >
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="15 3 21 3 21 9"></polyline>
-                <polyline points="9 21 3 21 3 15"></polyline>
-                <line x1="21" y1="3" x2="14" y2="10"></line>
-                <line x1="3" y1="21" x2="10" y2="14"></line>
-              </svg>
-              <span>Zen Focus</span>
-            </button>
+            <div class="notes-header-actions">
+              <button
+                v-if="timelineNotesViewMode === 'preview'"
+                type="button"
+                class="btn-expand-preview"
+                :title="isPreviewExpanded ? 'Collapse preview height' : 'Expand full height'"
+                @click="isPreviewExpanded = !isPreviewExpanded"
+              >
+                {{ isPreviewExpanded ? '▲ Compact' : '▼ Full Height' }}
+              </button>
+              <button
+                type="button"
+                class="btn-expand-focus"
+                @click="uiStore.showFocusEditor = true"
+                title="Expand to Deep Focus Zen Mode (⤢)"
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <polyline points="9 21 3 21 3 15"></polyline>
+                  <line x1="21" y1="3" x2="14" y2="10"></line>
+                  <line x1="3" y1="21" x2="10" y2="14"></line>
+                </svg>
+                <span>Zen Focus</span>
+              </button>
+            </div>
           </div>
 
           <!-- Live Rendered Markdown View (No Gibberish!) -->
           <div
             v-if="timelineNotesViewMode === 'preview'"
-            class="timeline-live-preview-box"
+            class="markdown-rendered timeline-live-preview-box cyber-scrollbar"
+            :class="{ 'expanded-full': isPreviewExpanded }"
             @click="handleTimelinePreviewClick"
             v-html="renderMarkdown(notesStore.selectedNote.body)"
           ></div>
@@ -1793,6 +1816,7 @@ function toggleMoodTag(tag: string) {
 .timeline-view {
   display: grid;
   grid-template-columns: 380px 1fr;
+  grid-template-rows: minmax(0, 1fr);
   gap: 20px;
   max-width: 1400px;
   margin: 0 auto;
@@ -1812,6 +1836,7 @@ function toggleMoodTag(tag: string) {
   flex-direction: column;
   gap: 10px;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -1927,11 +1952,14 @@ function toggleMoodTag(tag: string) {
 /* Cards Feed */
 .cards-feed-list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding-right: 4px;
+  padding-bottom: 30px;
 }
 
 .project-card {
@@ -2095,6 +2123,8 @@ function toggleMoodTag(tag: string) {
    ========================================================================= */
 .detail-column {
   height: 100%;
+  min-height: 0;
+  max-height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -2105,8 +2135,10 @@ function toggleMoodTag(tag: string) {
   border: 1px solid var(--border-card, #0f271d);
   border-radius: 16px;
   height: 100%;
+  min-height: 0;
   overflow-y: auto;
-  padding: 24px 30px;
+  scrollbar-gutter: stable;
+  padding: 24px 28px 80px 30px;
   display: flex;
   flex-direction: column;
 }
@@ -2364,6 +2396,29 @@ function toggleMoodTag(tag: string) {
   border: 1px solid var(--emerald-pill-border, #1c452e);
 }
 
+.notes-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-expand-preview {
+  background: var(--emerald-pill-bg, #081e14);
+  border: 1px solid var(--emerald-pill-border, #133a28);
+  color: var(--emerald-bright, #34d399);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-expand-preview:hover {
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #03140b);
+}
+
 /* Timeline Live Preview Box */
 .timeline-live-preview-box {
   background: var(--bg-inner, #060e0a);
@@ -2372,9 +2427,16 @@ function toggleMoodTag(tag: string) {
   padding: 16px 20px;
   max-height: 380px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   color: var(--text-primary, #e5e7eb);
   font-size: 13.5px;
   line-height: 1.7;
+  transition: max-height 0.2s ease;
+}
+
+.timeline-live-preview-box.expanded-full {
+  max-height: none;
+  overflow-y: visible;
 }
 
 /* Markdown typography inside timeline preview */
@@ -3819,5 +3881,48 @@ select.adder-input:focus {
 .action-icon {
   font-size: 14px;
   font-weight: 700;
+}
+
+/* High-Contrast Timeline Scrollbars */
+.cards-feed-list::-webkit-scrollbar,
+.detail-card-panel::-webkit-scrollbar,
+.timeline-live-preview-box::-webkit-scrollbar,
+.timeline-inline-textarea::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.cards-feed-list::-webkit-scrollbar-track,
+.detail-card-panel::-webkit-scrollbar-track,
+.timeline-live-preview-box::-webkit-scrollbar-track,
+.timeline-inline-textarea::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+  border-radius: 6px;
+}
+
+.cards-feed-list::-webkit-scrollbar-thumb,
+.detail-card-panel::-webkit-scrollbar-thumb,
+.timeline-live-preview-box::-webkit-scrollbar-thumb,
+.timeline-inline-textarea::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(16, 185, 129, 0.45));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.cards-feed-list::-webkit-scrollbar-thumb:hover,
+.detail-card-panel::-webkit-scrollbar-thumb:hover,
+.timeline-live-preview-box::-webkit-scrollbar-thumb:hover,
+.timeline-inline-textarea::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, #34d399);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.4));
+}
+
+.cards-feed-list,
+.detail-card-panel,
+.timeline-live-preview-box,
+.timeline-inline-textarea {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
 }
 </style>

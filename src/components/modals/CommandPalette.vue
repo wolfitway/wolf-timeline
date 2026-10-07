@@ -307,6 +307,7 @@ function handleKeyDown(e: KeyboardEvent) {
 .palette-results-list {
   max-height: 380px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 8px;
   display: flex;
   flex-direction: column;

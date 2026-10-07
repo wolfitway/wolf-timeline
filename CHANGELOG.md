@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-10-07 (Velocity)
+
+### 🚀 High-Fidelity Sovereign Markdown Engine & Presentation
+- **Numbered Step Headers**: Replaced restarting `<ol>` lists with numbered step headers (`.md-step-item`) featuring neon circle badges (`1`, `2`, `3`, `4`) that never reset to 1 when separated by paragraphs.
+- **Resource Pill Bars**: Automatically detects pipe-delimited navigation and tag bars (`Item 1 | Item 2 | Item 3`) and transforms them into interactive cyber pill tags with hover glows.
+- **Automatic Paragraph Spacing & Typography**: Intelligently separates distinct sentences into individual paragraphs with 18px margin and 1.82 line-height, eliminating cramped text walls while preserving natural word wrapping for multi-line clauses.
+- **Instruction Cards**: Groups multi-step workflows and requirements into bulleted card blocks with dedicated `▸` action rows.
+- **Lead Badges**: Formats line-starting labels (e.g. `Format ideas:`) into high-contrast highlighted badges.
+- **Real Fenced Code Blocks**: Full syntax and whitespace preservation without rogue `<br>` tags, featuring macOS window dots and 1-click copy feedback.
+- **CI / GitHub Actions Stability**: Added concurrency group controls and job timeouts to prevent parallel release upload collisions across multi-platform matrix runners.
+- **Unit Test Suite**: 36/36 passing unit tests with dedicated Markdown presentation tests.
+
+---
+
 ## [1.1.1] - 2026-10-06
 
 ### ⚡ Smart Secret & Credential Scanner Engine

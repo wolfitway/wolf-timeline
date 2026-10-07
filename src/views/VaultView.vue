@@ -474,8 +474,10 @@ function copyToClipboard(val?: string) {
 
 .secrets-grid-container {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 24px;
+  scrollbar-gutter: stable;
+  padding: 24px 24px 80px 24px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
@@ -632,5 +634,33 @@ function copyToClipboard(val?: string) {
   display: flex;
   gap: 12px;
   margin-top: 8px;
+}
+
+/* High-Contrast Vault Cyber Scrollbars */
+.secrets-grid-container::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.secrets-grid-container::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+  border-radius: 6px;
+}
+
+.secrets-grid-container::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(16, 185, 129, 0.45));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.secrets-grid-container::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, #34d399);
+  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.4));
+}
+
+.secrets-grid-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
 }
 </style>
