@@ -174,11 +174,31 @@ export const useNotesStore = defineStore("notes", () => {
     // 5. Set notes value or use initial seed only if no previous data existed anywhere
     if (loadedData && loadedData.length > 0) {
       notes.value = loadedData;
-      saveToLocal(); // Sync to IDB Vault and localStorage
     } else {
       notes.value = JSON.parse(JSON.stringify(INITIAL_NOTES));
-      saveToLocal();
     }
+
+    // Non-destructive seed body enhancement: upgrade flat legacy seed text to rich markdown
+    notes.value.forEach((note) => {
+      if (note.id === 1 && typeof note.body === "string" && note.body.startsWith("Goal Rebuild deployment pipeline")) {
+        const seed1 = INITIAL_NOTES.find((n) => n.id === 1);
+        if (seed1) note.body = seed1.body;
+      } else if (note.id === 2 && typeof note.body === "string" && note.body.startsWith("Improve long-term memory")) {
+        const seed2 = INITIAL_NOTES.find((n) => n.id === 2);
+        if (seed2) note.body = seed2.body;
+      } else if (note.id === 3 && typeof note.body === "string" && note.body.startsWith("Enable reliable offline-first")) {
+        const seed3 = INITIAL_NOTES.find((n) => n.id === 3);
+        if (seed3) note.body = seed3.body;
+      } else if (note.id === 4 && typeof note.body === "string" && note.body.startsWith("Unify components and improve")) {
+        const seed4 = INITIAL_NOTES.find((n) => n.id === 4);
+        if (seed4) note.body = seed4.body;
+      } else if (note.id === 5 && typeof note.body === "string" && note.body.startsWith("Standardize events and improve")) {
+        const seed5 = INITIAL_NOTES.find((n) => n.id === 5);
+        if (seed5) note.body = seed5.body;
+      }
+    });
+
+    saveToLocal(); // Sync to IDB Vault and localStorage
 
     // 2. Hydrate any IndexedDB photos for each note
     for (const note of notes.value) {

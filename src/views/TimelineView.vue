@@ -97,7 +97,9 @@ const showMoodGallery = ref(true);
 
 // Mobile responsive master-detail toggle state
 const mobileShowDetail = ref(false);
-const activeMobileSection = ref<"notes" | "timeline" | "ai" | "docs" | "mood">("notes");
+const activeDetailSection = ref<"all" | "notes" | "timeline" | "ai" | "docs" | "mood">(
+  typeof window !== "undefined" && window.innerWidth <= 768 ? "notes" : "all"
+);
 
 // Timeline Notes Live Preview mode
 const timelineNotesViewMode = ref<"preview" | "edit">("preview");
@@ -1307,7 +1309,9 @@ function toggleMoodTag(tag: string) {
             </button>
             <div v-if="!isEditingNoteTitle" class="title-display-wrap" @dblclick="startEditingNoteTitle">
               <h1 class="detail-title">{{ notesStore.selectedNote.title }}</h1>
-              <button type="button" class="btn-edit-title" @click="startEditingNoteTitle" title="Edit project title">✏️</button>
+              <button type="button" class="btn-edit-title" @click="startEditingNoteTitle" title="Edit project title">
+                <WolfIcon name="write" :size="13" />
+              </button>
             </div>
             <div v-else class="title-edit-wrap">
               <input
@@ -1353,9 +1357,9 @@ function toggleMoodTag(tag: string) {
             </div>
           </div>
 
-          <!-- Selected Note Tag Filter Strip -->
+          <!-- Selected Note Tag Filter Strip (Single-line smooth scroll) -->
           <div v-if="selectedNoteAllTags.length" class="detail-tags-bar">
-            <span class="detail-tag-label">Filter Resource Tags:</span>
+            <span class="detail-tag-label"><WolfIcon name="tag" :size="11" /> Tags:</span>
             <button
               type="button"
               class="tag-filter-chip sm"
@@ -1377,44 +1381,63 @@ function toggleMoodTag(tag: string) {
           </div>
         </div>
 
-        <!-- Mobile Section Navigation Strip (Switch seamlessly on phones) -->
-        <div class="mobile-detail-nav-strip">
+        <!-- Unified Executive Workspace Dock (Desktop & Mobile) -->
+        <div class="detail-workspace-dock">
           <button
             type="button"
-            class="mobile-nav-chip"
-            :class="{ active: activeMobileSection === 'notes' }"
-            @click="activeMobileSection = 'notes'"
+            class="dock-tab-btn"
+            :class="{ active: activeDetailSection === 'all' }"
+            @click="activeDetailSection = 'all'"
+          >
+            <WolfIcon name="split" :size="12" /> <span>All</span>
+          </button>
+          <button
+            type="button"
+            class="dock-tab-btn"
+            :class="{ active: activeDetailSection === 'notes' }"
+            @click="activeDetailSection = 'notes'"
           >
             <WolfIcon name="file-text" :size="12" /> <span>Notes &amp; Specs</span>
           </button>
           <button
             type="button"
-            class="mobile-nav-chip"
-            :class="{ active: activeMobileSection === 'timeline' }"
-            @click="activeMobileSection = 'timeline'"
+            class="dock-tab-btn"
+            :class="{ active: activeDetailSection === 'timeline' }"
+            @click="activeDetailSection = 'timeline'"
           >
             <WolfIcon name="clock" :size="12" /> <span>Timeline ({{ filteredEvents.length }})</span>
           </button>
           <button
             type="button"
-            class="mobile-nav-chip"
-            :class="{ active: activeMobileSection === 'ai' }"
-            @click="activeMobileSection = 'ai'"
+            class="dock-tab-btn"
+            :class="{ active: activeDetailSection === 'ai' }"
+            @click="activeDetailSection = 'ai'"
           >
             <WolfIcon name="cpu" :size="12" /> <span>AI Debates ({{ filteredAiExplorations.length }})</span>
           </button>
           <button
             type="button"
-            class="mobile-nav-chip"
-            :class="{ active: activeMobileSection === 'mood' }"
-            @click="activeMobileSection = 'mood'"
+            class="dock-tab-btn"
+            :class="{ active: activeDetailSection === 'mood' }"
+            @click="activeDetailSection = 'mood'"
           >
-            <WolfIcon name="image" :size="12" /> <span>Mood ({{ filteredMoodGallery.length }})</span>
+            <WolfIcon name="image" :size="12" /> <span>Mood Gallery ({{ filteredMoodGallery.length }})</span>
+          </button>
+          <button
+            type="button"
+            class="dock-tab-btn"
+            :class="{ active: activeDetailSection === 'docs' }"
+            @click="activeDetailSection = 'docs'"
+          >
+            <WolfIcon name="bookmark" :size="12" /> <span>Web Links ({{ notesStore.selectedNote?.bookmarks?.length || 0 }})</span>
           </button>
         </div>
 
         <!-- Notes Section with Live Markdown Preview & Deep Focus Trigger -->
-        <div class="detail-section timeline-notes-section" :class="{ 'mobile-hidden': activeMobileSection !== 'notes' }">
+        <div
+          v-show="activeDetailSection === 'all' || activeDetailSection === 'notes'"
+          class="detail-section timeline-notes-section"
+        >
           <div class="section-title-row">
             <div class="notes-title-left">
               <h2 class="section-title">Notes &amp; Specs</h2>
@@ -1496,7 +1519,10 @@ function toggleMoodTag(tag: string) {
         </div>
 
         <!-- 1. Timeline Section with Drag & Drop Reordering and Full CRUD -->
-        <div class="detail-section timeline-section" :class="{ 'mobile-hidden': activeMobileSection !== 'timeline' }">
+        <div
+          v-show="activeDetailSection === 'all' || activeDetailSection === 'timeline'"
+          class="detail-section timeline-section"
+        >
           <div class="section-title-row">
             <h2 class="section-title">Timeline ({{ filteredEvents.length }})</h2>
             <span class="section-reorder-hint">Drag items to reorder</span>
@@ -1623,7 +1649,10 @@ function toggleMoodTag(tag: string) {
         </div>
 
         <!-- 2. Collapsible AI Explorations Section with Decision Studio & Multi-Model Debates -->
-        <div class="collapsible-section" :class="{ 'mobile-hidden': activeMobileSection !== 'ai' }">
+        <div
+          v-show="activeDetailSection === 'all' || activeDetailSection === 'ai'"
+          class="collapsible-section"
+        >
           <button
             type="button"
             class="collapsible-header"
@@ -1703,7 +1732,9 @@ function toggleMoodTag(tag: string) {
                   <a v-if="ai.url" :href="ai.url" target="_blank" rel="noopener noreferrer" class="badge-link-pill" title="Open thread URL">
                     LINK ↗
                   </a>
-                  <button type="button" class="btn-item-icon" @click="uiStore.openAiExplorationModal(ai.id)" title="Open Full Debate Studio">✏️</button>
+                  <button type="button" class="btn-item-icon" @click="uiStore.openAiExplorationModal(ai.id)" title="Open Full Debate Studio">
+                    <WolfIcon name="write" :size="12" />
+                  </button>
                   <button type="button" class="btn-item-icon danger" @click="handleDeleteAi(ai.id)" title="Delete Record">✕</button>
                 </div>
               </div>
@@ -1723,8 +1754,11 @@ function toggleMoodTag(tag: string) {
           </div>
         </div>
 
-        <!-- 3. Sovereign Bookmarks Hub Quick-Link (Separated into Dedicated Discovery Tab) -->
-        <div class="collapsible-section bookmarks-hub-shortcut-card" :class="{ 'mobile-hidden': activeMobileSection !== 'mood' }">
+        <!-- 3. Sovereign Bookmarks Hub Quick-Link (Dedicated Docs & Discovery) -->
+        <div
+          v-show="activeDetailSection === 'all' || activeDetailSection === 'docs'"
+          class="collapsible-section bookmarks-hub-shortcut-card"
+        >
           <div class="bookmarks-shortcut-inner">
             <div class="bookmarks-shortcut-left">
               <div class="shortcut-icon-badge"><WolfIcon name="bookmarks" :size="14" /></div>
@@ -1751,8 +1785,9 @@ function toggleMoodTag(tag: string) {
 
         <!-- 4. Refactored Mood Gallery Section with Drag & Drop Reorder, Instant Upload Dropzone -->
         <div
+          v-show="activeDetailSection === 'all' || activeDetailSection === 'mood'"
           class="collapsible-section mood-gallery-section"
-          :class="{ 'gallery-drop-active': isGalleryDraggingFiles, 'mobile-hidden': activeMobileSection !== 'mood' }"
+          :class="{ 'gallery-drop-active': isGalleryDraggingFiles }"
           @dragover.prevent="isGalleryDraggingFiles = true"
           @dragleave.prevent="isGalleryDraggingFiles = false"
           @drop.prevent="onGalleryDropFiles"
@@ -2870,19 +2905,102 @@ function toggleMoodTag(tag: string) {
   text-transform: capitalize;
 }
 
+.btn-edit-title {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted, #d4a373);
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.btn-edit-title:hover {
+  background: var(--bg-surface, #181208);
+  border-color: var(--border-card, #33220a);
+  color: var(--emerald-bright, #fbbf24);
+}
+
 .detail-tags-bar {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
-  padding-top: 4px;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 0 2px 0;
+}
+
+.detail-tags-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .detail-tag-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   font-weight: 700;
   color: var(--text-dim, #64748b);
   text-transform: uppercase;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+/* Unified Executive Workspace Dock */
+.detail-workspace-dock {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface, #140e06);
+  border: 1px solid var(--border-card, #261908);
+  border-radius: 10px;
+  padding: 3px;
+  margin: 10px 0 16px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex-shrink: 0;
+}
+
+.detail-workspace-dock::-webkit-scrollbar {
+  display: none;
+}
+
+.dock-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted, #d4a373);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.dock-tab-btn:hover {
+  color: var(--text-primary, #ffffff);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.dock-tab-btn.active {
+  background: var(--emerald-pill-bg, #281b05);
+  border-color: var(--border-selected, #f59e0b);
+  color: var(--emerald-bright, #fbbf24);
+  font-weight: 700;
+  box-shadow: 0 0 10px var(--border-glow, rgba(245, 158, 11, 0.2));
 }
 
 /* Sections */
@@ -4603,48 +4721,18 @@ select.adder-input:focus {
     font-size: 14px;
   }
 
-  /* Mobile Section Switcher Strip */
-  .mobile-detail-nav-strip {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 8px 0 12px;
-    margin-bottom: 8px;
+  /* Mobile Workspace Dock Touch Optimization */
+  .detail-workspace-dock {
+    gap: 6px;
+    padding: 6px 2px;
+    margin: 8px 0 14px 0;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    border-bottom: 1px solid var(--border-subtle, #261a07);
-    flex-shrink: 0;
   }
 
-  .mobile-detail-nav-strip::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mobile-nav-chip {
-    flex-shrink: 0;
-    padding: 7px 13px;
-    border-radius: 20px;
-    background: var(--bg-surface, #181208);
-    border: 1px solid var(--border-card, #33220a);
-    color: var(--text-secondary, #fcd34d);
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
+  .dock-tab-btn {
     min-height: 38px;
-    transition: all 0.15s ease;
-  }
-
-  .mobile-nav-chip.active {
-    background: var(--emerald-main, #f59e0b);
-    color: var(--bg-canvas, #000000);
-    border-color: var(--emerald-main, #f59e0b);
-    box-shadow: 0 0 10px var(--border-glow, rgba(245, 158, 11, 0.3));
-  }
-
-  /* Single Section Display on Phone */
-  .detail-section.mobile-hidden,
-  .collapsible-section.mobile-hidden {
-    display: none !important;
+    padding: 6px 12px;
+    font-size: 12px;
   }
 
   /* Safe scrolling clearance for mobile bottom bar */
