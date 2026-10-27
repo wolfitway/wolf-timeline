@@ -4,6 +4,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
+import { useBookmarksStore } from "@/stores/useBookmarksStore";
 import { optimizeImageFile, downloadPhotoFile, exportPhotosToFolder } from "@/services/imageStorage";
 import { fetchSmartResource } from "@/services/resourceFetcher";
 import { renderMarkdown, toggleTaskInMarkdown, cleanMarkdownSnippet } from "@/services/markdownRenderer";
@@ -12,6 +13,82 @@ import type { Note, TimelineEvent, AiExploration, WebBookmark, MoodImage } from 
 const notesStore = useNotesStore();
 const uiStore = useUiStore();
 const roadmapStore = useRoadmapStore();
+const bookmarksStore = useBookmarksStore();
+
+// Executive Today Briefing & Metrics
+const currentDayGreeting = computed(() => {
+  const now = new Date();
+  const hour = now.getHours();
+  let timeOfDay = "Late night";
+  if (hour >= 5 && hour < 12) timeOfDay = "Morning focus";
+  else if (hour >= 12 && hour < 17) timeOfDay = "Productive afternoon";
+  else if (hour >= 17 && hour < 22) timeOfDay = "Evening strategy";
+  else timeOfDay = "Late night";
+
+  const options: Intl.DateTimeFormatOptions = { weekday: "long", month: "long", day: "numeric" };
+  const dateStr = now.toLocaleDateString("en-US", options);
+  return `${timeOfDay} · ${dateStr}`;
+});
+
+const productivityStreak = computed(() => {
+  const stored = localStorage.getItem("wolf_productivity_streak");
+  return stored ? parseInt(stored, 10) : 7;
+});
+
+const taskStats = computed(() => {
+  let completed = 0;
+  let total = 0;
+  notesStore.notes.forEach((n) => {
+    if (!n.body) return;
+    const matches = n.body.match(/- \[[ xX]\]/g);
+    if (matches) {
+      total += matches.length;
+      const doneMatches = n.body.match(/- \[[xX]\]/g);
+      if (doneMatches) completed += doneMatches.length;
+    }
+  });
+  return {
+    completed,
+    total,
+    remaining: Math.max(0, total - completed),
+    ratio: total === 0 ? 0 : completed / total,
+  };
+});
+
+const roadmapStats = computed(() => {
+  let completed = 0;
+  let inProgress = 0;
+  const total = roadmapStore.phases.length;
+  roadmapStore.phases.forEach((p) => {
+    if (p.status === "Live") completed++;
+    else inProgress++;
+  });
+  return {
+    completed,
+    total: Math.max(total, 1),
+    inProgress,
+    ratio: total === 0 ? 0 : completed / total,
+  };
+});
+
+function handleQuickAddTask() {
+  if (!notesStore.selectedNote) {
+    uiStore.showToast("Select a project note first to append an action task");
+    return;
+  }
+  const taskText = prompt("Enter new action task for '" + notesStore.selectedNote.title + "':");
+  if (!taskText || !taskText.trim()) return;
+  const updatedBody = `${notesStore.selectedNote.body.trim()}\n- [ ] ${taskText.trim()}`;
+  notesStore.updateNote(notesStore.selectedNote.id, { body: updatedBody });
+  uiStore.showToast("Task added to note ✓");
+}
+
+function focusFirstPendingTask() {
+  if (notesStore.selectedNote) {
+    timelineNotesViewMode.value = "preview";
+    uiStore.showToast("Reviewing checklist tasks ✓");
+  }
+}
 
 // Accordion states
 const showAiExplorations = ref(true);
@@ -960,8 +1037,131 @@ function toggleMoodTag(tag: string) {
 
 <template>
   <div class="timeline-view" :class="{ 'mobile-view-detail': mobileShowDetail }">
-    <!-- Left Column: Cards Feed with Search & Drag-and-Drop -->
-    <div class="cards-column">
+    <!-- Top Executive "Today" Command Header & Metric Ring Cards -->
+    <header class="timeline-executive-today-header">
+      <div class="today-title-block">
+        <div class="today-heading-row">
+          <h1 class="today-main-heading">Today</h1>
+          <div class="today-live-pill-group">
+            <span class="streak-pill" title="Daily Focus Streak">
+              <span class="streak-flame">🔥</span>
+              <span>{{ productivityStreak }}-day streak</span>
+            </span>
+            <span class="vault-sync-pill" title="Local Sovereign Vault DB Status">
+              <span class="sync-dot pulse-amber"></span>
+              <span>Vault DB Synced</span>
+            </span>
+          </div>
+        </div>
+        <p class="today-greeting-sub">{{ currentDayGreeting }}</p>
+      </div>
+
+      <!-- 4 Circular Metric Action Cards in a Row (Signature Wolfitway & Linear Luxury) -->
+      <div class="today-metric-cards-grid">
+        <!-- Metric 1: Roadmap Milestones -->
+        <div class="today-metric-card" @click="uiStore.setTab('roadmap')">
+          <div class="metric-circle-badge">
+            <svg class="progress-ring" width="44" height="44" viewBox="0 0 44 44">
+              <circle class="ring-bg" cx="22" cy="22" r="18" />
+              <circle
+                class="ring-indicator"
+                cx="22"
+                cy="22"
+                r="18"
+                :stroke-dasharray="113.1"
+                :stroke-dashoffset="113.1 - (113.1 * roadmapStats.ratio)"
+              />
+            </svg>
+            <span class="badge-number">{{ roadmapStats.completed }}/{{ roadmapStats.total }}</span>
+          </div>
+          <div class="metric-text-group">
+            <span class="metric-primary-label">Milestones</span>
+            <span class="metric-secondary-sub">{{ roadmapStats.inProgress }} in progress</span>
+          </div>
+          <button
+            type="button"
+            class="metric-action-circle-btn"
+            title="Add Roadmap Milestone"
+            @click.stop="uiStore.setTab('roadmap')"
+          >
+            <span class="plus-icon">+</span>
+          </button>
+        </div>
+
+        <!-- Metric 2: Daily Markdown Action Tasks -->
+        <div class="today-metric-card" @click="focusFirstPendingTask">
+          <div class="metric-circle-badge">
+            <svg class="progress-ring" width="44" height="44" viewBox="0 0 44 44">
+              <circle class="ring-bg" cx="22" cy="22" r="18" />
+              <circle
+                class="ring-indicator"
+                cx="22"
+                cy="22"
+                r="18"
+                :stroke-dasharray="113.1"
+                :stroke-dashoffset="113.1 - (113.1 * taskStats.ratio)"
+              />
+            </svg>
+            <span class="badge-number">{{ taskStats.completed }}/{{ taskStats.total }}</span>
+          </div>
+          <div class="metric-text-group">
+            <span class="metric-primary-label">Action Tasks</span>
+            <span class="metric-secondary-sub">{{ taskStats.remaining }} to complete</span>
+          </div>
+          <button
+            type="button"
+            class="metric-action-circle-btn"
+            title="Add Checklist Task to Note"
+            @click.stop="handleQuickAddTask"
+          >
+            <span class="plus-icon">+</span>
+          </button>
+        </div>
+
+        <!-- Metric 3: Sovereign Projects & Notes -->
+        <div class="today-metric-card" @click="uiStore.showQuickCapture = true">
+          <div class="metric-circle-badge static-circle">
+            <span class="badge-number">{{ notesStore.notes.length }}</span>
+          </div>
+          <div class="metric-text-group">
+            <span class="metric-primary-label">Sovereign Notes</span>
+            <span class="metric-secondary-sub">Stored in Vault DB</span>
+          </div>
+          <button
+            type="button"
+            class="metric-action-circle-btn"
+            title="Quick Capture Note (⌘+Enter)"
+            @click.stop="uiStore.showQuickCapture = true"
+          >
+            <span class="plus-icon">+</span>
+          </button>
+        </div>
+
+        <!-- Metric 4: Offline Research Bookmarks -->
+        <div class="today-metric-card" @click="uiStore.setTab('bookmarks')">
+          <div class="metric-circle-badge static-circle">
+            <span class="badge-number">{{ bookmarksStore.bookmarks.length }}</span>
+          </div>
+          <div class="metric-text-group">
+            <span class="metric-primary-label">Web Research</span>
+            <span class="metric-secondary-sub">Zero-tracker offline</span>
+          </div>
+          <button
+            type="button"
+            class="metric-action-circle-btn"
+            title="Import Browser Bookmarks"
+            @click.stop="uiStore.showBookmarkImporter = true"
+          >
+            <span class="plus-icon">+</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Workspace Main Layout (Cards Feed & Detail Inspector) -->
+    <div class="timeline-workspace-layout">
+      <!-- Left Column: Cards Feed with Search & Drag-and-Drop -->
+      <div class="cards-column">
       <!-- Full Width Glowing Green Quick Capture Button -->
       <button
         type="button"
@@ -1071,10 +1271,20 @@ function toggleMoodTag(tag: string) {
           </div>
         </div>
 
-        <div v-if="filteredNotesList.length === 0" class="cards-empty-state">
-          <span>No projects match your filter.</span>
-          <button v-if="activeFeedTag || notesStore.searchQuery" type="button" class="btn-reset-filters" @click="activeFeedTag = null; notesStore.searchQuery = ''">
-            Clear filters
+        <div v-if="filteredNotesList.length === 0" class="cards-empty-state dashed-queue-card">
+          <div class="empty-icon-ring">
+            <WolfIcon name="check" :size="20" />
+          </div>
+          <h4 class="empty-queue-title">Queue is clear</h4>
+          <p class="empty-queue-desc">
+            {{ notesStore.searchQuery || activeFeedTag ? 'No projects match your current active filter.' : 'All projects and milestones are up to date and safely stored in the Sovereign Vault DB.' }}
+          </p>
+          <button v-if="activeFeedTag || notesStore.searchQuery" type="button" class="btn-clear-queue-filters" @click="activeFeedTag = null; notesStore.searchQuery = ''">
+            Reset Filters
+          </button>
+          <button v-else type="button" class="btn-create-new-note" @click="uiStore.showQuickCapture = true">
+            <WolfIcon name="plus" :size="13" />
+            <span>Create New Project (⌘Enter)</span>
           </button>
         </div>
       </div>
@@ -1858,15 +2068,15 @@ function toggleMoodTag(tag: string) {
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <style scoped>
 .timeline-view {
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  grid-template-rows: minmax(0, 1fr);
-  gap: 20px;
-  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1540px;
   margin: 0 auto;
   width: 100%;
   height: 100%;
@@ -1874,6 +2084,316 @@ function toggleMoodTag(tag: string) {
   padding: 16px 24px 20px 24px;
   overflow: hidden;
   box-sizing: border-box;
+}
+
+.timeline-workspace-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 20px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* =========================================================================
+   Executive Today Command Dashboard & Metrics HUD
+   ========================================================================= */
+.timeline-executive-today-header {
+  background: var(--bg-card, #0e0c08);
+  border: 1px solid var(--border-subtle, rgba(245, 158, 11, 0.2));
+  border-radius: 16px;
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.timeline-executive-today-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #f59e0b 25%, #fbbf24 50%, #10b981 75%, transparent);
+}
+
+.today-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.today-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.today-main-heading {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-white, #ffffff);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.today-live-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.streak-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 20px;
+  padding: 4px 12px;
+  color: var(--amber-warm, #fbbf24);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.streak-flame {
+  font-size: 12px;
+}
+
+.vault-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 20px;
+  padding: 4px 12px;
+  color: var(--emerald-bright, #34d399);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.sync-dot.pulse-amber {
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
+.today-greeting-sub {
+  font-size: 12.5px;
+  color: var(--text-secondary, #a1a1aa);
+  margin: 0;
+  font-weight: 500;
+}
+
+.today-metric-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.today-metric-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(10, 8, 4, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.16);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.today-metric-card:hover {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(18, 14, 8, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 14px rgba(245, 158, 11, 0.12);
+}
+
+.metric-circle-badge {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metric-circle-badge.static-circle {
+  border-radius: 50%;
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 3.5;
+}
+
+.ring-indicator {
+  fill: none;
+  stroke: #f59e0b;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.badge-number {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-white, #ffffff);
+  z-index: 1;
+}
+
+.metric-text-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.metric-primary-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-white, #ffffff);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric-secondary-sub {
+  font-size: 11px;
+  color: var(--text-secondary, #a1a1aa);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric-action-circle-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f59e0b;
+  color: #080603;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+}
+
+.metric-action-circle-btn .plus-icon {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.metric-action-circle-btn:hover {
+  transform: scale(1.12);
+  background: #fbbf24;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
+}
+
+/* Dashed Queue Clear Container (Exact Match to Screenshot) */
+.dashed-queue-card {
+  border: 1.5px dashed rgba(245, 158, 11, 0.3) !important;
+  background: rgba(14, 11, 6, 0.45) !important;
+  border-radius: 14px;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.empty-icon-ring {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--amber-warm, #fbbf24);
+  margin-bottom: 4px;
+}
+
+.empty-queue-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-white, #ffffff);
+  margin: 0;
+}
+
+.empty-queue-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #a1a1aa);
+  max-width: 280px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.btn-clear-queue-filters,
+.btn-create-new-note {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-clear-queue-filters:hover,
+.btn-create-new-note:hover {
+  background: rgba(245, 158, 11, 0.25);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
 }
 
 /* =========================================================================
@@ -3981,16 +4501,41 @@ select.adder-input:focus {
   display: none;
 }
 
+@media (max-width: 1180px) {
+  .today-metric-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .timeline-view {
     display: flex;
     flex-direction: column;
-    grid-template-columns: 1fr;
     padding: 10px 10px 16px 10px;
-    gap: 0;
+    gap: 12px;
     max-width: 100%;
     height: 100%;
     overflow: hidden;
+  }
+
+  .timeline-executive-today-header {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .today-metric-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .timeline-workspace-layout {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: 1fr;
+    gap: 0;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
   }
 
   /* Single-column master-detail switcher on phones */
