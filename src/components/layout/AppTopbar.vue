@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useUiStore, type ActiveTab } from "@/stores/useUiStore";
 import { useVaultStore } from "@/stores/useVaultStore";
 import { useShortcutsStore } from "@/stores/useShortcutsStore";
@@ -14,21 +14,47 @@ const vaultStore = useVaultStore();
 const shortcutsStore = useShortcutsStore();
 const licenseStore = useLicenseStore();
 const notesStore = useNotesStore();
-const isDev = import.meta.env.DEV;
 
+// 5 Core Workspace Navigation Tabs (Settings belongs in Control Center / User menu)
 const navItems: { id: ActiveTab; label: string; icon: IconName }[] = [
   { id: "timeline", label: "Timeline", icon: "timeline" },
   { id: "studio", label: "Studio", icon: "studio" },
   { id: "roadmap", label: "Roadmap", icon: "roadmap" },
   { id: "bookmarks", label: "Bookmarks", icon: "bookmarks" },
   { id: "secrets", label: "Secret Vault", icon: "vault" },
-  { id: "settings", label: "Settings", icon: "settings" },
 ];
 
 // Voice control status
 const voiceStatus = ref<VoiceControlStatus>(voiceControl.getStatus());
 
+// Control Center Popover State
+const isControlCenterOpen = ref(false);
+const controlCenterRef = ref<HTMLElement | null>(null);
+
+function toggleControlCenter() {
+  isControlCenterOpen.value = !isControlCenterOpen.value;
+}
+
+function closeControlCenter() {
+  isControlCenterOpen.value = false;
+}
+
+function handleGlobalClick(e: MouseEvent) {
+  if (controlCenterRef.value && !controlCenterRef.value.contains(e.target as Node)) {
+    isControlCenterOpen.value = false;
+  }
+}
+
+function handleGlobalKeyDown(e: KeyboardEvent) {
+  if (e.key === "Escape" && isControlCenterOpen.value) {
+    isControlCenterOpen.value = false;
+  }
+}
+
 onMounted(() => {
+  window.addEventListener("click", handleGlobalClick);
+  window.addEventListener("keydown", handleGlobalKeyDown);
+
   // Register hands-free voice commands
   voiceControl.registerCommands([
     {
@@ -178,6 +204,11 @@ onMounted(() => {
   });
 });
 
+onUnmounted(() => {
+  window.removeEventListener("click", handleGlobalClick);
+  window.removeEventListener("keydown", handleGlobalKeyDown);
+});
+
 function toggleVoiceControl() {
   if (!voiceStatus.value.isSupported) {
     kokoroVoice.playHeartChime("notice");
@@ -220,13 +251,13 @@ function toggleTheme() {
 
 <template>
   <header class="app-topbar">
-    <!-- Left: Brand Logo & Title -->
+    <!-- Left: Brand Logo, Title & Local Node Pill -->
     <div class="topbar-brand" @click="uiStore.setTab('timeline')">
       <div class="brand-icon-wrapper">
         <svg
           viewBox="0 0 24 24"
-          width="22"
-          height="22"
+          width="20"
+          height="20"
           fill="none"
           stroke="currentColor"
           stroke-width="1.8"
@@ -241,9 +272,10 @@ function toggleTheme() {
         </svg>
       </div>
       <span class="brand-title">Wolf Timeline</span>
+      <span class="brand-version-pill">Local Vault</span>
     </div>
 
-    <!-- Center: Main Navigation Tabs -->
+    <!-- Center: Segmented Navigation Pill Group (5 Core Workspaces) -->
     <nav class="topbar-nav" aria-label="Main Navigation">
       <div class="nav-pill-group">
         <button
@@ -260,97 +292,34 @@ function toggleTheme() {
       </div>
     </nav>
 
-    <!-- Right: Search Button & Security Badge -->
+    <!-- Right: Clean High-End Action Hub (Search, Quick Capture, Vault DB, Control Center) -->
     <div class="topbar-right">
-      <!-- Search Trigger ⌘K -->
+      <!-- 1. Search Trigger (⌘K) -->
       <button
         type="button"
         class="topbar-search-btn"
         @click="uiStore.showCommandPalette = true"
-        title="Search (⌘K)"
+        title="Search Workspace & Actions (⌘K)"
+        aria-label="Search Command Palette"
       >
         <WolfIcon name="search" :size="13" />
-        <span>Search</span>
+        <span class="search-label">Search</span>
         <kbd class="search-kbd">{{ shortcutsStore.formatShortcut('command_palette') }}</kbd>
       </button>
 
-      <!-- Import Bookmarks Trigger -->
+      <!-- 2. Primary Quick Capture Button (+ Capture) -->
       <button
         type="button"
-        class="topbar-action-icon-btn"
-        @click="uiStore.showBookmarkImporter = true"
-        title="Import Bookmarks from Chrome, Firefox, Safari, Brave (Safe & Offline)"
-      >
-        <WolfIcon name="import" :size="14" />
-        <span class="btn-label-desktop">Import Bookmarks</span>
-      </button>
-
-      <!-- Kokoro Voice Companion Trigger -->
-      <button
-        type="button"
-        class="topbar-kokoro-btn"
-        @click="uiStore.showVoiceGuideModal = true"
-        title="Kokoro Voice — Audio Companion & Guidance"
-      >
-        <WolfIcon name="voice" :size="14" />
-        <span class="btn-label-desktop">Kokoro Voice</span>
-      </button>
-
-      <!-- Hands-Free Voice Control Toggle -->
-      <button
-        type="button"
-        class="topbar-voice-control-btn"
-        :class="{ listening: voiceStatus.isListening }"
-        @click="toggleVoiceControl"
-        :title="voiceStatus.isListening ? 'Voice Control Listening... Click to Pause' : 'Enable Hands-Free Voice Control'"
-      >
-        <WolfIcon :name="voiceStatus.isListening ? 'mic' : 'mic-off'" :size="14" />
-        <span>{{ voiceStatus.isListening ? 'Listening...' : 'Voice Control' }}</span>
-        <span v-if="voiceStatus.isListening" class="listening-wave-dot"></span>
-      </button>
-
-      <!-- License / Tier Status Trigger -->
-      <button
-        type="button"
-        class="topbar-license-btn"
-        :class="{
-          activated: licenseStore.isPaid,
-          'tier-team': licenseStore.isTeam,
-          'tier-comm': licenseStore.isCommercialSolo,
-          'tier-free': licenseStore.isFree,
-        }"
-        @click="uiStore.showLicenseModal = true"
-        :title="licenseStore.isPaid ? `${licenseStore.tierLabel} (Active)` : 'Solo Personal Node (Free) — Upgrade for Commercial / Team'"
-      >
-        <WolfIcon name="shield-check" :size="14" />
-        <span>{{ licenseStore.isTeam ? 'Pack Mesh (Team)' : licenseStore.isCommercialSolo ? 'Commercial Solo' : 'Free Solo' }}</span>
-      </button>
-
-      <!-- Quick Theme Switcher (Amber & Black <-> Solar Light) -->
-      <button
-        type="button"
-        class="topbar-theme-toggle-btn"
-        @click="toggleTheme"
-        :title="isLightTheme ? 'Switch to Wolfitway Amber & Black' : 'Switch to Wolfitway Solar Light'"
-        aria-label="Toggle Theme"
-      >
-        <WolfIcon :name="isLightTheme ? 'sun' : 'moon'" :size="14" />
-        <span class="btn-label-desktop">{{ isLightTheme ? 'Solar' : 'Amber' }}</span>
-      </button>
-
-      <!-- Mobile-only Quick Capture Button -->
-      <button
-        type="button"
-        class="topbar-mobile-qc-btn"
+        class="topbar-capture-btn"
         @click="uiStore.showQuickCapture = true"
-        title="Quick Capture (⌘+Enter)"
+        title="Quick Capture Note / Task (⌘+Enter)"
         aria-label="Quick Capture"
       >
         <WolfIcon name="plus" :size="14" />
-        <span class="qc-label">Capture</span>
+        <span class="capture-text">Capture</span>
       </button>
 
-      <!-- Security / Encryption Status Badge -->
+      <!-- 3. Sovereign Vault DB Status Pill -->
       <button
         type="button"
         class="security-pill-badge"
@@ -360,33 +329,182 @@ function toggleTheme() {
       >
         <span class="vault-db-indicator-dot"></span>
         <WolfIcon :name="vaultStore.isUnlocked ? 'shield-check' : 'lock'" :size="13" />
-        <span>{{ vaultStore.isUnlocked ? 'Vault DB Active' : 'Vault DB AES-256' }}</span>
+        <span class="vault-label">{{ vaultStore.isUnlocked ? 'Vault Active' : 'Vault DB' }}</span>
       </button>
+
+      <!-- 4. Wolfitway Control Center Popover Trigger -->
+      <div class="control-center-anchor" ref="controlCenterRef">
+        <button
+          type="button"
+          class="control-center-btn"
+          :class="{ active: isControlCenterOpen, 'has-active': voiceStatus.isListening }"
+          @click.stop="toggleControlCenter"
+          title="Wolfitway Quick Control Center & Tools"
+          aria-label="Control Center"
+          aria-haspopup="true"
+          :aria-expanded="isControlCenterOpen"
+        >
+          <WolfIcon name="sliders" :size="14" />
+          <span v-if="voiceStatus.isListening" class="pulse-indicator-dot"></span>
+        </button>
+
+        <!-- Glassmorphic Dropdown Popover -->
+        <Transition name="popover-fade">
+          <div
+            v-if="isControlCenterOpen"
+            class="control-center-popover"
+            role="dialog"
+            aria-label="Wolfitway Control Center"
+            @click.stop
+          >
+            <!-- Popover Header -->
+            <div class="popover-header">
+              <div class="popover-title-row">
+                <span class="popover-title">Control Center</span>
+                <span class="popover-node-chip">Offline Sovereign</span>
+              </div>
+              <p class="popover-subtitle">Quick toggles, companion audio & vault tools</p>
+            </div>
+
+            <!-- Quick Toggles Grid (Voice Control & Kokoro Companion) -->
+            <div class="popover-toggles-grid">
+              <!-- Voice Control Card -->
+              <button
+                type="button"
+                class="toggle-card"
+                :class="{ active: voiceStatus.isListening }"
+                @click="toggleVoiceControl"
+              >
+                <div class="toggle-card-top">
+                  <WolfIcon :name="voiceStatus.isListening ? 'mic' : 'mic-off'" :size="16" />
+                  <span class="toggle-pill" :class="{ on: voiceStatus.isListening }">
+                    {{ voiceStatus.isListening ? 'Active' : 'Off' }}
+                  </span>
+                </div>
+                <div class="toggle-card-info">
+                  <span class="toggle-card-title">Voice Control</span>
+                  <span class="toggle-card-sub">{{ voiceStatus.isListening ? 'Listening...' : 'Hands-free' }}</span>
+                </div>
+              </button>
+
+              <!-- Kokoro Voice Audio Companion Card -->
+              <button
+                type="button"
+                class="toggle-card audio-card"
+                @click="uiStore.showVoiceGuideModal = true; closeControlCenter();"
+              >
+                <div class="toggle-card-top">
+                  <WolfIcon name="voice" :size="16" />
+                  <span class="toggle-pill on">Ready</span>
+                </div>
+                <div class="toggle-card-info">
+                  <span class="toggle-card-title">Kokoro Voice</span>
+                  <span class="toggle-card-sub">Audio guide</span>
+                </div>
+              </button>
+            </div>
+
+            <!-- Appearance / Theme Row -->
+            <div class="popover-row-item theme-row" @click="toggleTheme">
+              <div class="row-item-left">
+                <WolfIcon :name="isLightTheme ? 'sun' : 'moon'" :size="15" />
+                <div class="row-item-meta">
+                  <span class="row-item-title">Color Mode</span>
+                  <span class="row-item-sub">{{ isLightTheme ? 'Solar Light Mode ☀️' : 'Obsidian Amber 🐺' }}</span>
+                </div>
+              </div>
+              <button type="button" class="theme-switch-pill" @click.stop="toggleTheme">
+                {{ isLightTheme ? 'Switch Amber' : 'Switch Solar' }}
+              </button>
+            </div>
+
+            <!-- Utilities Section -->
+            <div class="popover-section-divider"></div>
+
+            <div class="popover-actions-list">
+              <!-- Import Bookmarks Action -->
+              <button
+                type="button"
+                class="popover-action-row"
+                @click="uiStore.showBookmarkImporter = true; closeControlCenter();"
+              >
+                <div class="action-row-left">
+                  <div class="action-icon-box">
+                    <WolfIcon name="import" :size="14" />
+                  </div>
+                  <div class="action-row-meta">
+                    <span class="action-row-title">Import Browser Bookmarks</span>
+                    <span class="action-row-sub">Chrome, Firefox, Safari, Brave HTML</span>
+                  </div>
+                </div>
+                <WolfIcon name="chevron-right" :size="12" class="action-chevron" />
+              </button>
+
+              <!-- Settings & Vault Configuration Action -->
+              <button
+                type="button"
+                class="popover-action-row"
+                :class="{ selected: uiStore.activeTab === 'settings' }"
+                @click="uiStore.setTab('settings'); closeControlCenter();"
+              >
+                <div class="action-row-left">
+                  <div class="action-icon-box">
+                    <WolfIcon name="settings" :size="14" />
+                  </div>
+                  <div class="action-row-meta">
+                    <span class="action-row-title">Settings & Vault Center</span>
+                    <span class="action-row-sub">Themes, typography, hotkeys & backups</span>
+                  </div>
+                </div>
+                <WolfIcon name="chevron-right" :size="12" class="action-chevron" />
+              </button>
+            </div>
+
+            <!-- Footer: Node License Tier & Security Lock -->
+            <div class="popover-footer">
+              <div class="license-footer-left">
+                <WolfIcon name="shield-check" :size="13" class="license-shield" />
+                <span class="license-tier-text">
+                  {{ licenseStore.isTeam ? 'Pack Mesh' : licenseStore.isCommercialSolo ? 'Commercial Solo' : 'Free Solo Node' }}
+                </span>
+              </div>
+              <button
+                type="button"
+                class="license-upgrade-btn"
+                @click="uiStore.showLicenseModal = true; closeControlCenter();"
+              >
+                {{ licenseStore.isPaid ? 'License Details' : 'Upgrade' }}
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
     </div>
   </header>
 </template>
 
 <style scoped>
 .app-topbar {
-  height: 56px;
-  min-height: 56px;
-  background: var(--bg-inner, #070e0b);
+  height: 50px;
+  min-height: 50px;
+  background: var(--bg-inner, #080603);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 16px;
   user-select: none;
   z-index: 100;
-  border-bottom: 1px solid var(--border-subtle, #12221b);
+  border-bottom: 1px solid var(--border-subtle, #1a140b);
 }
 
 /* Left Brand */
 .topbar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   transition: opacity 0.15s ease;
+  flex-shrink: 0;
 }
 
 .topbar-brand:hover {
@@ -397,8 +515,8 @@ function toggleTheme() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--emerald-bright, #34d399);
-  filter: drop-shadow(0 0 6px var(--border-glow, rgba(16, 185, 129, 0.45)));
+  color: var(--emerald-bright, #fbbf24);
+  filter: drop-shadow(0 0 6px var(--border-glow, rgba(245, 158, 11, 0.45)));
 }
 
 .wolf-icon {
@@ -407,10 +525,21 @@ function toggleTheme() {
 
 .brand-title {
   font-family: var(--font-display, "Outfit", sans-serif);
-  font-size: 15.5px;
+  font-size: 14.5px;
   font-weight: 700;
   color: var(--text-primary, #ffffff);
   letter-spacing: -0.01em;
+}
+
+.brand-version-pill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: var(--emerald-pill-bg, #281b05);
+  color: var(--emerald-bright, #fbbf24);
+  border: 1px solid var(--border-card, #33220a);
+  letter-spacing: 0.02em;
 }
 
 /* Center Navigation */
@@ -423,7 +552,11 @@ function toggleTheme() {
 .nav-pill-group {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  background: var(--bg-surface, #100b05);
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid var(--border-card, #261908);
 }
 
 .nav-tab-pill {
@@ -432,397 +565,562 @@ function toggleTheme() {
   gap: 6px;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 6px 16px;
-  font-size: 13px;
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 12.5px;
   font-weight: 500;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, #d4a373);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.tab-emoji-icon {
-  font-size: 13px;
-}
-
 .nav-tab-pill:hover {
   color: var(--text-primary, #f1f5f9);
-  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.06));
+  background: rgba(245, 158, 11, 0.06);
 }
 
 .nav-tab-pill.active {
-  background: var(--emerald-pill-bg, #082117);
-  border-color: var(--border-selected, #10b981);
-  color: var(--emerald-bright, #34d399);
+  background: var(--emerald-pill-bg, #281b05);
+  border-color: var(--border-selected, #f59e0b);
+  color: var(--emerald-bright, #fbbf24);
   font-weight: 600;
-  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.15));
+  box-shadow: 0 0 10px var(--border-glow, rgba(245, 158, 11, 0.18));
+}
+
+.tab-svg-icon {
+  opacity: 0.85;
+}
+
+.nav-tab-pill.active .tab-svg-icon {
+  opacity: 1;
 }
 
 /* Right Section */
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
+/* 1. Search Trigger */
 .topbar-search-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--bg-card, #061610);
-  border: 1px solid var(--border-card, #113424);
-  border-radius: 8px;
-  padding: 6px 12px;
+  gap: 6px;
+  background: var(--bg-card, #120e06);
+  border: 1px solid var(--border-card, #261908);
+  border-radius: 7px;
+  padding: 5px 10px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--text-gray, #94a3b8);
+  color: var(--text-muted, #d4a373);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .topbar-search-btn:hover {
-  border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
+  border-color: var(--border-selected, rgba(245, 158, 11, 0.45));
   color: var(--text-primary, #ffffff);
-  background: var(--bg-card-hover, #092017);
+  background: var(--bg-card-hover, #181208);
 }
 
 .search-kbd {
   font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  background: var(--bg-surface, #092419);
-  color: var(--emerald-bright, #34d399);
-  padding: 1px 5px;
+  font-size: 9.5px;
+  background: var(--bg-surface, #1e1509);
+  color: var(--emerald-bright, #fbbf24);
+  padding: 1px 4px;
   border-radius: 4px;
-  border: 1px solid var(--border-card, #14432c);
+  border: 1px solid var(--border-card, #33220a);
 }
 
-.topbar-action-icon-btn {
+/* 2. Primary Capture Action */
+.topbar-capture-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: var(--bg-card, #061610);
-  border: 1px solid var(--border-card, #113424);
-  border-radius: 8px;
-  padding: 6px 12px;
+  gap: 5px;
+  background: var(--emerald-main, #f59e0b);
+  color: #080501;
+  border: none;
+  border-radius: 7px;
+  padding: 5px 11px;
   font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary, #e2e8f0);
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 1px 8px var(--border-glow, rgba(245, 158, 11, 0.3));
   transition: all 0.15s ease;
 }
 
-.topbar-action-icon-btn:hover {
-  background: var(--bg-card-hover, #092017);
-  border-color: var(--emerald-main, #10b981);
-  color: var(--text-primary, #fff);
+.topbar-capture-btn:hover {
+  background: var(--emerald-bright, #fbbf24);
   transform: translateY(-1px);
+  box-shadow: 0 2px 12px var(--border-glow, rgba(245, 158, 11, 0.45));
 }
 
-.topbar-kokoro-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-card, #140b10);
-  border: 1px solid var(--border-card, #3b1424);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--emerald-bright, #fda4af);
-  cursor: pointer;
-  transition: all 0.18s ease;
+.topbar-capture-btn:active {
+  transform: translateY(0);
 }
 
-.topbar-kokoro-btn:hover {
-  background: var(--bg-card-hover, #2a0e1c);
-  border-color: var(--emerald-main, #f43f5e);
-  box-shadow: 0 0 12px var(--border-glow, rgba(244, 63, 94, 0.3));
-  color: var(--text-primary, #fff);
-  transform: translateY(-1px);
-}
-
-.kokoro-icon-pulse {
-  font-size: 13px;
-  animation: heartPulse 2s infinite ease-in-out;
-}
-
-@keyframes heartPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-}
-
-.topbar-voice-control-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-card, #061610);
-  border: 1px solid var(--border-card, #113424);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-gray, #94a3b8);
-  cursor: pointer;
-  transition: all 0.18s ease;
-  position: relative;
-}
-
-.topbar-voice-control-btn:hover {
-  background: var(--bg-card-hover, #092017);
-  border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
-  color: var(--text-primary, #fff);
-}
-
-.topbar-voice-control-btn.listening {
-  background: var(--emerald-pill-bg, #092017);
-  border-color: var(--emerald-bright, #34d399);
-  color: var(--emerald-bright, #34d399);
-  box-shadow: 0 0 14px var(--border-glow, rgba(16, 185, 129, 0.35));
-}
-
-.listening-wave-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--emerald-bright, #34d399);
-  animation: listenPulse 1s infinite alternate ease-in-out;
-}
-
-@keyframes listenPulse {
-  from {
-    transform: scale(0.8);
-    opacity: 0.6;
-  }
-  to {
-    transform: scale(1.4);
-    opacity: 1;
-    box-shadow: 0 0 8px var(--emerald-bright, #34d399);
-  }
-}
-
-.topbar-license-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--emerald-pill-bg, #092017);
-  border: 1px solid var(--emerald-pill-border, #143d2a);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--emerald-bright, #34d399);
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.topbar-license-btn:hover {
-  background: var(--emerald-main, #10b981);
-  color: var(--bg-body, #022c22);
-  box-shadow: 0 0 12px var(--border-glow, rgba(16, 185, 129, 0.4));
-}
-
-.topbar-license-btn.activated {
-  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.12));
-  border-color: var(--border-selected, #10b981);
-  color: var(--emerald-bright, #34d399);
-  box-shadow: 0 0 10px var(--border-glow, rgba(16, 185, 129, 0.2));
-}
-
-.topbar-license-btn.activated:hover {
-  background: var(--emerald-main, #10b981);
-  color: var(--bg-body, #022c22);
-}
-
-.license-icon {
-  font-size: 12px;
-}
-
+/* 3. Security Status Pill */
 .security-pill-badge {
   display: flex;
   align-items: center;
-  gap: 7px;
-  background: var(--bg-card, #061610);
-  border: 1px solid var(--border-card, #113424);
-  border-radius: 8px;
-  padding: 6px 14px;
-  font-size: 12px;
+  gap: 6px;
+  background: var(--bg-card, #120e06);
+  border: 1px solid var(--border-card, #261908);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 11.5px;
   font-weight: 600;
-  color: var(--text-gray, #94a3b8);
+  color: var(--text-muted, #d4a373);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .security-pill-badge:hover {
-  border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
-  color: var(--text-primary, #e2e8f0);
-  background: var(--bg-card-hover, #092017);
+  border-color: var(--border-selected, rgba(245, 158, 11, 0.4));
+  color: var(--text-primary, #ffffff);
+  background: var(--bg-card-hover, #181208);
 }
 
 .security-pill-badge.unlocked {
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.45);
-  color: var(--emerald-bright, #34d399);
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: var(--emerald-bright, #fbbf24);
 }
 
 .vault-db-indicator-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald-main, #f59e0b);
+  box-shadow: 0 0 6px var(--emerald-bright, #fbbf24);
+}
+
+/* 4. Control Center Anchor & Button */
+.control-center-anchor {
+  position: relative;
+}
+
+.control-center-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-card, #120e06);
+  border: 1px solid var(--border-card, #261908);
+  border-radius: 7px;
+  color: var(--text-muted, #d4a373);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.control-center-btn:hover {
+  border-color: var(--border-selected, #f59e0b);
+  color: var(--emerald-bright, #fbbf24);
+  background: var(--bg-card-hover, #181208);
+}
+
+.control-center-btn.active {
+  background: var(--emerald-pill-bg, #281b05);
+  border-color: var(--emerald-bright, #fbbf24);
+  color: var(--emerald-bright, #fbbf24);
+  box-shadow: 0 0 10px var(--border-glow, rgba(245, 158, 11, 0.3));
+}
+
+.pulse-indicator-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #10b981;
   box-shadow: 0 0 6px #10b981;
+  animation: pulseListen 1.2s infinite alternate;
 }
 
-.lock-icon {
-  color: var(--text-muted, #94a3b8);
+@keyframes pulseListen {
+  from { opacity: 0.6; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.3); }
 }
 
-.security-pill-badge:hover .lock-icon {
-  color: var(--emerald-bright, #34d399);
-}
-
-/* Theme Toggle Button */
-.topbar-theme-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* Glassmorphic Control Center Popover */
+.control-center-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 310px;
+  max-width: calc(100vw - 24px);
   background: var(--bg-card, #120e06);
   border: 1px solid var(--border-card, #33220a);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--emerald-bright, #fbbf24);
-  cursor: pointer;
-  min-height: 36px;
-  min-width: 36px;
-  justify-content: center;
-  transition: all 0.15s ease;
-  user-select: none;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(245, 158, 11, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 14px;
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.topbar-theme-toggle-btn:hover {
-  background: var(--bg-card-hover, #1c160a);
-  border-color: var(--border-focus, #fbbf24);
+.popover-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.popover-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.popover-title {
+  font-family: var(--font-display, "Outfit", sans-serif);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+}
+
+.popover-node-chip {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--emerald-bright, #fbbf24);
+  background: var(--emerald-pill-bg, #281b05);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.popover-subtitle {
+  font-size: 11px;
+  color: var(--text-muted, #d4a373);
+  margin: 0;
+}
+
+/* Quick Toggles Grid */
+.popover-toggles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.toggle-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--bg-surface, #181208);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 9px;
+  padding: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.toggle-card:hover {
+  background: var(--bg-card-hover, #20170a);
+  border-color: var(--border-selected, rgba(245, 158, 11, 0.4));
+}
+
+.toggle-card.active {
+  background: var(--emerald-pill-bg, #281b05);
+  border-color: var(--emerald-bright, #fbbf24);
   box-shadow: 0 0 10px var(--border-glow, rgba(245, 158, 11, 0.25));
 }
 
-.theme-icon {
-  font-size: 13px;
-  line-height: 1;
+.toggle-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--emerald-bright, #fbbf24);
 }
 
-/* Mobile Quick Capture Button (hidden on desktop) */
-.topbar-mobile-qc-btn {
-  display: none;
+.toggle-pill {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted, #94a3b8);
+}
+
+.toggle-pill.on {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--emerald-bright, #fbbf24);
+}
+
+.toggle-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.toggle-card-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+}
+
+.toggle-card-sub {
+  font-size: 10px;
+  color: var(--text-muted, #d4a373);
+}
+
+/* Theme Switch Row */
+.popover-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface, #181208);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 9px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.popover-row-item:hover {
+  background: var(--bg-card-hover, #20170a);
+  border-color: var(--border-selected, rgba(245, 158, 11, 0.4));
+}
+
+.row-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--emerald-bright, #fbbf24);
+}
+
+.row-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.row-item-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+}
+
+.row-item-sub {
+  font-size: 10px;
+  color: var(--text-muted, #d4a373);
+}
+
+.theme-switch-pill {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--emerald-pill-bg, #281b05);
+  border: 1px solid var(--border-card, #33220a);
+  color: var(--emerald-bright, #fbbf24);
+  padding: 3px 7px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.theme-switch-pill:hover {
+  border-color: var(--emerald-bright, #fbbf24);
+}
+
+.popover-section-divider {
+  height: 1px;
+  background: var(--border-card, #261908);
+  margin: 1px 0;
+}
+
+/* Action Rows List */
+.popover-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.popover-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.popover-action-row:hover {
+  background: var(--bg-surface, #181208);
+  border-color: var(--border-card, #33220a);
+}
+
+.popover-action-row.selected {
+  background: var(--emerald-pill-bg, #281b05);
+  border-color: var(--border-selected, #f59e0b);
+}
+
+.action-row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-icon-box {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  height: 38px;
-  min-height: 38px;
-  padding: 0 12px;
-  background: var(--emerald-main, #f59e0b);
-  color: var(--bg-canvas, #000000);
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 800;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--bg-surface, #181208);
+  border: 1px solid var(--border-card, #33220a);
+  color: var(--emerald-bright, #fbbf24);
+}
+
+.action-row-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.action-row-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+}
+
+.action-row-sub {
+  font-size: 10px;
+  color: var(--text-muted, #d4a373);
+}
+
+.action-chevron {
+  color: var(--text-muted, #d4a373);
+  opacity: 0.6;
+}
+
+/* Popover Footer */
+.popover-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-card, #261908);
+}
+
+.license-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--emerald-bright, #fbbf24);
+}
+
+.license-shield {
+  opacity: 0.9;
+}
+
+.license-tier-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #d4a373);
+}
+
+.license-upgrade-btn {
+  font-size: 10.5px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--emerald-bright, #fbbf24);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 5px;
+  padding: 3px 8px;
   cursor: pointer;
-  box-shadow: 0 0 12px var(--border-glow, rgba(245, 158, 11, 0.35));
-  transition: transform 0.15s ease;
+  transition: all 0.15s ease;
 }
 
-.topbar-mobile-qc-btn:active {
-  transform: scale(0.95);
+.license-upgrade-btn:hover {
+  background: var(--emerald-pill-bg, #281b05);
+  border-color: var(--emerald-bright, #fbbf24);
 }
 
-.qc-plus {
-  font-size: 16px;
-  line-height: 1;
+/* Popover Transitions */
+.popover-fade-enter-active,
+.popover-fade-leave-active {
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.qc-label {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+.popover-fade-enter-from,
+.popover-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
 }
 
 /* Responsive Breakpoints & Mobile Optimization */
-@media (max-width: 1024px) {
-  .topbar-right .btn-label-desktop {
+@media (max-width: 900px) {
+  .brand-version-pill {
     display: none;
+  }
+  .nav-tab-pill {
+    padding: 5px 9px;
+    font-size: 12px;
   }
 }
 
 @media (max-width: 768px) {
   .app-topbar {
-    height: 54px;
-    min-height: 54px;
-    padding: 0 14px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 12px;
     background: var(--bg-card, #120e06);
     border-bottom: 1px solid var(--border-card, #33220a);
   }
 
-  /* Defer navigation tabs to MobileBottomNav */
+  /* Center tabs hidden on mobile; handled elegantly by MobileBottomNav */
   .topbar-nav {
     display: none;
   }
 
   .brand-title {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--text-primary);
+    font-size: 13.5px;
   }
 
-  .topbar-right {
-    gap: 8px;
-  }
-
-  /* Show mobile quick capture */
-  .topbar-mobile-qc-btn {
-    display: flex;
-  }
-
-  /* Hide secondary desktop buttons on mobile to avoid overflow */
-  .topbar-action-icon-btn,
-  .topbar-kokoro-btn,
-  .topbar-voice-control-btn,
-  .topbar-license-btn,
+  /* Right actions: clean & compact */
   .security-pill-badge {
-    display: none !important;
-  }
-
-  .topbar-search-btn {
-    padding: 8px 10px;
-    min-height: 38px;
-    background: var(--bg-surface, #181208);
-    border: 1px solid var(--border-card, #33220a);
-    border-radius: 8px;
-  }
-
-  .topbar-search-btn kbd {
     display: none;
   }
 
-  .topbar-theme-toggle-btn {
-    min-height: 38px;
-    min-width: 38px;
-    padding: 6px 10px;
+  .search-kbd {
+    display: none;
+  }
+
+  .topbar-search-btn {
+    padding: 5px 8px;
+  }
+
+  .search-label {
+    display: none;
+  }
+
+  .topbar-capture-btn {
+    padding: 5px 8px;
+  }
+
+  .control-center-popover {
+    right: -4px;
+    width: 295px;
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 360px) {
   .brand-title {
-    font-size: 13px;
-  }
-
-  .topbar-search-btn span {
-    display: none;
-  }
-
-  .topbar-search-btn {
-    min-width: 38px;
-    padding: 8px;
-    justify-content: center;
+    font-size: 12.5px;
   }
 }
 </style>
