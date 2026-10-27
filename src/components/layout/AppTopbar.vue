@@ -7,6 +7,7 @@ import { useLicenseStore } from "@/stores/useLicenseStore";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { kokoroVoice } from "@/services/voiceGuide";
 import { voiceControl, type VoiceControlStatus } from "@/services/voiceControl";
+import WolfIcon, { type IconName } from "@/components/common/WolfIcon.vue";
 
 const uiStore = useUiStore();
 const vaultStore = useVaultStore();
@@ -15,13 +16,13 @@ const licenseStore = useLicenseStore();
 const notesStore = useNotesStore();
 const isDev = import.meta.env.DEV;
 
-const navItems: { id: ActiveTab; label: string; icon?: string }[] = [
-  { id: "timeline", label: "Timeline" },
-  { id: "studio", label: "Studio" },
-  { id: "roadmap", label: "Roadmap" },
-  { id: "bookmarks", label: "Bookmarks", icon: "📑" },
-  { id: "secrets", label: "Secret Vault", icon: "🔐" },
-  { id: "settings", label: "Settings" },
+const navItems: { id: ActiveTab; label: string; icon: IconName }[] = [
+  { id: "timeline", label: "Timeline", icon: "timeline" },
+  { id: "studio", label: "Studio", icon: "studio" },
+  { id: "roadmap", label: "Roadmap", icon: "roadmap" },
+  { id: "bookmarks", label: "Bookmarks", icon: "bookmarks" },
+  { id: "secrets", label: "Secret Vault", icon: "vault" },
+  { id: "settings", label: "Settings", icon: "settings" },
 ];
 
 // Voice control status
@@ -253,7 +254,7 @@ function toggleTheme() {
           :class="{ active: uiStore.activeTab === item.id }"
           @click="uiStore.setTab(item.id)"
         >
-          <span v-if="item.icon" class="tab-emoji-icon">{{ item.icon }}</span>
+          <WolfIcon :name="item.icon" :size="14" class="tab-svg-icon" />
           <span>{{ item.label }}</span>
         </button>
       </div>
@@ -268,10 +269,7 @@ function toggleTheme() {
         @click="uiStore.showCommandPalette = true"
         title="Search (⌘K)"
       >
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
+        <WolfIcon name="search" :size="13" />
         <span>Search</span>
         <kbd class="search-kbd">{{ shortcutsStore.formatShortcut('command_palette') }}</kbd>
       </button>
@@ -283,18 +281,18 @@ function toggleTheme() {
         @click="uiStore.showBookmarkImporter = true"
         title="Import Bookmarks from Chrome, Firefox, Safari, Brave (Safe & Offline)"
       >
-        <span class="btn-icon">📑</span>
+        <WolfIcon name="import" :size="14" />
         <span class="btn-label-desktop">Import Bookmarks</span>
       </button>
 
-      <!-- Kokoro Voice Heart Companion Trigger -->
+      <!-- Kokoro Voice Companion Trigger -->
       <button
         type="button"
         class="topbar-kokoro-btn"
         @click="uiStore.showVoiceGuideModal = true"
-        title="Kokoro Voice Heart — Audio Companion & Guidance"
+        title="Kokoro Voice — Audio Companion & Guidance"
       >
-        <span class="kokoro-icon-pulse">💖</span>
+        <WolfIcon name="voice" :size="14" />
         <span class="btn-label-desktop">Kokoro Voice</span>
       </button>
 
@@ -306,7 +304,7 @@ function toggleTheme() {
         @click="toggleVoiceControl"
         :title="voiceStatus.isListening ? 'Voice Control Listening... Click to Pause' : 'Enable Hands-Free Voice Control'"
       >
-        <span class="mic-icon">{{ voiceStatus.isListening ? '🎙️' : '🎤' }}</span>
+        <WolfIcon :name="voiceStatus.isListening ? 'mic' : 'mic-off'" :size="14" />
         <span>{{ voiceStatus.isListening ? 'Listening...' : 'Voice Control' }}</span>
         <span v-if="voiceStatus.isListening" class="listening-wave-dot"></span>
       </button>
@@ -324,7 +322,7 @@ function toggleTheme() {
         @click="uiStore.showLicenseModal = true"
         :title="licenseStore.isPaid ? `${licenseStore.tierLabel} (Active)` : 'Solo Personal Node (Free) — Upgrade for Commercial / Team'"
       >
-        <span class="license-icon">{{ licenseStore.isTeam ? '👥' : licenseStore.isCommercialSolo ? '⚡' : '🐺' }}</span>
+        <WolfIcon name="shield-check" :size="14" />
         <span>{{ licenseStore.isTeam ? 'Pack Mesh (Team)' : licenseStore.isCommercialSolo ? 'Commercial Solo' : 'Free Solo' }}</span>
       </button>
 
@@ -336,7 +334,7 @@ function toggleTheme() {
         :title="isLightTheme ? 'Switch to Wolfitway Amber & Black' : 'Switch to Wolfitway Solar Light'"
         aria-label="Toggle Theme"
       >
-        <span class="theme-icon">{{ isLightTheme ? '☀️' : '🐺' }}</span>
+        <WolfIcon :name="isLightTheme ? 'sun' : 'moon'" :size="14" />
         <span class="btn-label-desktop">{{ isLightTheme ? 'Solar' : 'Amber' }}</span>
       </button>
 
@@ -348,7 +346,7 @@ function toggleTheme() {
         title="Quick Capture (⌘+Enter)"
         aria-label="Quick Capture"
       >
-        <span class="qc-plus">+</span>
+        <WolfIcon name="plus" :size="14" />
         <span class="qc-label">Capture</span>
       </button>
 
@@ -359,20 +357,7 @@ function toggleTheme() {
         @click="handleSecurityBadgeClick"
         title="Local-First Hardware Cryptography Engine"
       >
-        <svg
-          viewBox="0 0 24 24"
-          width="13"
-          height="13"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lock-icon"
-        >
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
+        <WolfIcon name="lock" :size="13" />
         <span>Local-First AES-256</span>
       </button>
     </div>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import { WOLFITWAY_PRODUCTS, SOVEREIGN_EXPERTS } from "@/services/seedData";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useVaultStore } from "@/stores/useVaultStore";
@@ -9,6 +8,7 @@ import { useLicenseStore } from "@/stores/useLicenseStore";
 import { useShortcutsStore, type KeyCombo } from "@/stores/useShortcutsStore";
 import { kokoroVoice } from "@/services/voiceGuide";
 import { voiceControl } from "@/services/voiceControl";
+import WolfIcon, { type IconName } from "@/components/common/WolfIcon.vue";
 
 const notesStore = useNotesStore();
 const roadmapStore = useRoadmapStore();
@@ -19,19 +19,15 @@ const shortcutsStore = useShortcutsStore();
 
 // Navigation Tabs
 export type SettingsCategory =
-  | "proof"
-  | "about"
-  | "connections"
-  | "shortcuts"
-  | "export"
   | "themes"
   | "fonts"
+  | "shortcuts"
   | "voice"
+  | "export"
   | "license"
-  | "experts"
   | "performance";
 
-const activeCategory = ref<SettingsCategory>("shortcuts");
+const activeCategory = ref<SettingsCategory>("themes");
 const searchQuery = ref("");
 
 // Shortcuts State
@@ -127,7 +123,6 @@ const filteredShortcutsList = computed(() => {
 });
 
 // Connections State
-const connections = ref<Record<string, { connected: boolean; token: string }>>({});
 
 // Themes State
 const currentTheme = ref<string>("amber");
@@ -263,26 +258,6 @@ function applyReorderSpeed(speed: string) {
 }
 
 // Wolfitway Connection Handlers
-function toggleConnection(prodId: string) {
-  if (!connections.value[prodId]) {
-    connections.value[prodId] = { connected: false, token: "" };
-  }
-  const next = !connections.value[prodId].connected;
-  connections.value[prodId].connected = next;
-  if (next && !connections.value[prodId].token) {
-    connections.value[prodId].token = `wfw_${prodId}_live_${Math.random().toString(36).substring(2, 10)}`;
-  }
-  localStorage.setItem("wolfitway_connections_state", JSON.stringify(connections.value));
-  uiStore.showToast(next ? `Connected to ${prodId.toUpperCase()} ✓` : `Disconnected from ${prodId.toUpperCase()}`);
-}
-
-function updateToken(prodId: string, val: string) {
-  if (!connections.value[prodId]) {
-    connections.value[prodId] = { connected: false, token: "" };
-  }
-  connections.value[prodId].token = val;
-  localStorage.setItem("wolfitway_connections_state", JSON.stringify(connections.value));
-}
 
 // Export Handlers
 function exportJson() {
@@ -406,189 +381,22 @@ function copyDeviceId() {
   uiStore.showToast("Device Hardware Fingerprint copied ✓");
 }
 
-function copyFounderKey() {
-  navigator.clipboard.writeText("Drăguța Dan-Ioan • Timiș, Romania • 15+ Yrs Solo Builder • Certified Trainer • wolfitway.com • wolfitwayos • wolfscentvideo.com • @wolfaistory • WOLF-RO-DEV-BC66-AF84-F7F1");
-  uiStore.showToast("Drăguța Dan-Ioan's credentials & signature copied ✓");
-}
-
-// Proof of Work & Build Timeline Data
-interface ProofPhase {
-  id: string;
-  name: string;
-  timeWindow: string;
-  hours: string;
-  badge: string;
-  summary: string;
-  filesVerified: string[];
-  deliverables: string[];
-}
-
-interface GitCommitItem {
-  hash: string;
-  timestamp: string;
-  category: "Scaffold" | "Engine" | "UI/UX" | "AI" | "Docs" | "Ergonomics" | "Security";
-  subject: string;
-}
-
-interface FileBirthRecord {
-  path: string;
-  birthtime: string;
-  lastModified: string;
-  role: string;
-}
-
-const proofPhases: ProofPhase[] = [
-  {
-    id: "phase-1",
-    name: "Phase 1: Rust Engine, AES-256-GCM & Hardware Device Fingerprint",
-    timeWindow: "Sept 26, 2026 • 14:16 – 17:15 (+0300)",
-    hours: "3.0h",
-    badge: "BACKEND GENESIS",
-    summary: "Built the sovereign local-first backbone in native Rust with AES-256-GCM encryption, local key derivation, and SQLite IPC.",
-    filesVerified: ["src-tauri/src/main.rs", "src-tauri/Cargo.toml", "src/style.css", "src/main.js"],
-    deliverables: [
-      "Hardware device ID extraction from /etc/machine-id, IOPlatformUUID, MachineGuid",
-      "AES-256-GCM symmetric cipher with unique 12-byte nonce per encrypted record",
-      "Secure key storage on disk with strict 0600 POSIX permissions",
-      "Encrypted SQLite tables for notes and hardware licensing",
-      "Foundational Obsidian Cyber design system tokens (5,400+ lines)",
-    ],
-  },
-  {
-    id: "phase-2",
-    name: "Phase 2: Council of Sovereign Experts & Architecture RFCs",
-    timeWindow: "Sept 27, 2026 • 16:30 – 19:30 (+0300)",
-    hours: "2.0h",
-    badge: "ARCHITECTURE & AUDIT",
-    summary: "Formalized the product philosophy, Council of Sovereign Experts, and complete offline creator funnel topology.",
-    filesVerified: ["EXPERTS.md", "AUDIT_AND_PLAN.md", "LICENSING_AUDIT.md"],
-    deliverables: [
-      "Drafted 7 Council of Sovereign Experts with strict governance rules",
-      "Formulated Sovereign Funnel Topology: Awareness (TOFU) → Lead Magnet (MOFU) → Core Engine → Revenue (BOFU)",
-      "Defined offline-first zero telemetry requirement and zero cloud dependencies",
-      "Established WCAG AAA accessibility, keyboard-first navigation standards",
-    ],
-  },
-  {
-    id: "phase-3",
-    name: "Phase 3: Vue 3 + Pinia Modern Architecture Migration",
-    timeWindow: "Sept 27, 2026 • 20:30 – 23:30 (+0300)",
-    hours: "2.5h",
-    badge: "VUE REACTIVITY REWRITE",
-    summary: "Migrated the prototype into an enterprise-grade modular Vue 3 + Pinia + TypeScript application.",
-    filesVerified: ["package.json", "src/App.vue", "src/stores/*", "src/types/index.ts", "tests/*"],
-    deliverables: [
-      "Modularized into 7 specialized Pinia stores (notes, vault, roadmap, UI, shortcuts, license)",
-      "Implemented seamless dual-layer storage: Tauri SQLite in desktop, LocalStorage in browser preview",
-      "Created Vitest test harness verifying cryptography, licensing, scanner, and shortcuts (15/15 passing)",
-      "Constructed modular topbar and sidebar navigation with sub-second view transitions",
-    ],
-  },
-  {
-    id: "phase-4",
-    name: "Phase 4: The Midnight Velocity Sprint (14 Atomic Commits)",
-    timeWindow: "Sept 28, 2026 • 00:20 – 03:05 (+0300)",
-    hours: "2.75h",
-    badge: "MIDNIGHT SPRINT",
-    summary: "High-intensity 2.75h coding sprint producing 14 atomic commits delivering God-Tier features.",
-    filesVerified: ["StudioView.vue", "TimelineView.vue", "AiExplorationModal.vue", "SettingsView.vue"],
-    deliverables: [
-      "Sovereign IndexedDB photo gallery with canvas image compression & drag-and-drop reordering",
-      "Multi-Model AI Debate Studio (GPT-4o vs Claude 3.5 Sonnet vs DeepSeek) with Council consensus",
-      "God-Tier Studio overhaul: Zen ribbon, dual-pane synced/independent scroll lock, templates popup",
-      "Interactive Keyboard Shortcuts recorder with conflict detection and modifier normalization",
-      "Timiș Forge Founder manifesto documenting 15 years of solo building",
-      "Deep Focus Mode with customizable zen themes and real-time Markdown preview in Timeline",
-    ],
-  },
-  {
-    id: "phase-5",
-    name: "Phase 5: Ergonomics, Human Roadmap & Sovereign Hybrid",
-    timeWindow: "Sept 28, 2026 • 12:56 – 13:16 (+0300)",
-    hours: "0.5h",
-    badge: "SOVEREIGN HYBRID POLISH",
-    summary: "Final polish isolating roadmap checkmarks from text inputs and introducing the Sovereign VIP Hybrid onboarding.",
-    filesVerified: ["RoadmapView.vue", "useRoadmapStore.ts", "LicenseActivationModal.vue", "AppTopbar.vue"],
-    deliverables: [
-      "Separated practice checkmark toggle from text field into distinct zones with visual boundary line",
-      "Added inline editable text inputs with HTML5 drag protection when selecting or clicking text",
-      "Gated Keygen Studio behind dev mode (import.meta.env.DEV) so public builds don't expose self-serve keygen",
-      "Rebranded default tier to Community Alpha Node (100% free) with frictionless Continue to Alpha access",
-    ],
-  },
-];
-
-const gitCommitLedger: GitCommitItem[] = [
-  { hash: "e4c4128", timestamp: "2026-09-28 13:21:31", category: "Docs", subject: "feat(settings): add Proof of Work tab with verified build timeline, git commit ledger, and hours audit" },
-  { hash: "9c0fe67", timestamp: "2026-09-28 13:15:51", category: "Security", subject: "feat: rebrand default tier to Community Alpha Node and revamp license activation UI" },
-  { hash: "8b3634d", timestamp: "2026-09-28 13:10:23", category: "Ergonomics", subject: "feat: replace static roadmap practice text with editable inputs and dedicated checkmark buttons" },
-  { hash: "882befa", timestamp: "2026-09-28 02:59:41", category: "UI/UX", subject: "feat: overhaul Deep Focus mode with Zen ribbon & themes, and add Live Markdown Preview to Timeline view" },
-  { hash: "d8c2448", timestamp: "2026-09-28 02:55:33", category: "UI/UX", subject: "fix(studio): align templates dropdown to the right with left: 0 to eliminate left-edge cutoff" },
-  { hash: "4730101", timestamp: "2026-09-28 02:52:08", category: "UI/UX", subject: "fix(studio): float templates popup above writing area with high z-index and click-outside backdrop" },
-  { hash: "a4b4886", timestamp: "2026-09-28 02:49:52", category: "UI/UX", subject: "fix(studio): eliminate jumping and jitter by removing smooth scroll echo loop and adding unidirectional hover scroll lock" },
-  { hash: "24fd7ec", timestamp: "2026-09-28 02:46:45", category: "UI/UX", subject: "fix(studio): resolve flex/grid height constraints to enable smooth independent & synced scrolling" },
-  { hash: "4003bad", timestamp: "2026-09-28 02:35:52", category: "Docs", subject: "feat(settings): articulate founder reality - built in 15 hours of thought (maybe 10) by AI Architect Drăguța Dan-Ioan" },
-  { hash: "cc99729", timestamp: "2026-09-28 02:29:31", category: "Docs", subject: "feat(settings): refine Drăguța Dan-Ioan bio - Timiș origin, 15 yrs solo builder, certified trainer, and new SaaS channel" },
-  { hash: "246c191", timestamp: "2026-09-28 02:15:52", category: "Docs", subject: "feat(settings): add About & Founder Story section honoring Drăgiuța Dan Ioan (Wolfitway OS)" },
-  { hash: "1b71d1e", timestamp: "2026-09-28 02:07:57", category: "UI/UX", subject: "feat: overhaul Studio tab to God-Tier and add customizable Keyboard Shortcuts in Settings" },
-  { hash: "4351aa9", timestamp: "2026-09-28 01:55:54", category: "Engine", subject: "feat(mood-gallery): fix reorder + real upload/delete/export to sovereign IDB" },
-  { hash: "083a556", timestamp: "2026-09-28 01:47:09", category: "AI", subject: "feat(ai-studio): add expanded multi-model debate studio, decision motivation ADRs, and smart resource fetcher with Council of Experts reviews" },
-  { hash: "95806b7", timestamp: "2026-09-28 01:43:03", category: "Engine", subject: "fix(gallery): add sovereign IndexedDB photo storage, image optimization, persistent delete, and robust drag reordering" },
-  { hash: "b3cd970", timestamp: "2026-09-28 01:31:54", category: "Docs", subject: "docs: update audit and implementation plan for expanded AI debate room and smart resource fetcher" },
-  { hash: "816bc99", timestamp: "2026-09-28 01:20:30", category: "UI/UX", subject: "feat(settings): add sidebar navigation, real-time search, theme/font customizers, data exports, and silky smooth drag-and-drop reordering" },
-  { hash: "5fd0cd1", timestamp: "2026-09-28 00:34:02", category: "UI/UX", subject: "fix: resolve mood gallery image upload and implement robust ID-based universal drag & drop" },
-  { hash: "2fd650b", timestamp: "2026-09-28 00:29:35", category: "Scaffold", subject: "feat: complete Wolf Timeline sovereign app with cyber-obsidian design, mood gallery CRUD, hardware keygen studio, and universal drag-and-drop" },
-];
-
-const verifiedFileBirths: FileBirthRecord[] = [
-  { path: "src-tauri/src/main.rs", birthtime: "2026-09-26 14:16:29", lastModified: "2026-09-28 13:11:56", role: "Tauri Rust SQLite backend & AES-256-GCM hardware key encryption" },
-  { path: "src/style.css", birthtime: "2026-09-26 14:16:29", lastModified: "2026-09-28 01:17:46", role: "Complete Obsidian Cyber design system & tokens (5,500+ lines)" },
-  { path: "src/main.js", birthtime: "2026-09-26 14:16:29", lastModified: "2026-09-27 20:26:26", role: "Foundational vanilla architecture & interaction harness" },
-  { path: "EXPERTS.md", birthtime: "2026-09-27 16:31:33", lastModified: "2026-09-27 16:39:38", role: "7 Sovereign Expert Council mandates, funnel logic & security rules" },
-  { path: "AUDIT_AND_PLAN.md", birthtime: "2026-09-27 16:31:44", lastModified: "2026-09-28 01:31:44", role: "Sovereign desktop roadmap, God-Tier UI specs & test verification" },
-  { path: "package.json", birthtime: "2026-09-27 20:36:23", lastModified: "2026-09-27 20:36:58", role: "Vue 3, Pinia, TypeScript & Vite tooling integration" },
-  { path: "src/App.vue", birthtime: "2026-09-27 20:41:55", lastModified: "2026-09-28 02:43:10", role: "Modern Vue root orchestration, keybindings & tab management" },
-  { path: "src/views/TimelineView.vue", birthtime: "2026-09-27 20:45:00", lastModified: "2026-09-28 02:59:41", role: "Interactive event timeline, quick capture, mood gallery, markdown live preview" },
-  { path: "src/views/StudioView.vue", birthtime: "2026-09-27 20:50:00", lastModified: "2026-09-28 02:55:33", role: "God-Tier spec studio with Zen ribbon, ADR notes & synced split scrolling" },
-  { path: "src/views/RoadmapView.vue", birthtime: "2026-09-27 20:55:00", lastModified: "2026-09-28 13:10:23", role: "Human-Mode roadmap milestones, drag reorder, dedicated practice text inputs" },
-  { path: "src/stores/useLicenseStore.ts", birthtime: "2026-09-27 21:05:00", lastModified: "2026-09-28 13:11:44", role: "Hardware fingerprint hashing, Community Alpha Node tier & Founder VIP" },
-];
-
-function copyProofOfWorkMarkdown() {
-  const md = `# ⚡ WOLF TIMELINE — CRYPTOGRAPHIC PROOF OF WORK & BUILD TIMELINE
-Founder & AI Architect: Drăguța Dan-Ioan (@dan) • Crafted in Timiș, Romania
-Total Commits: 18 Verified Atomic Commits
-Actual Build Hours: ~9.5 to 10 Hours of pure focused solo engineering
-Total Codebase: 58,736 Total Lines (~30,000+ hand-written production lines)
-Stack: Tauri (Rust) + SQLite AES-256-GCM + Vue 3 + Pinia + TypeScript + Custom Obsidian CSS
-Zero Cloud Telemetry • 100% Offline-First Local Storage
-
-## Verified Timeline:
-- Sept 26 (14:16 - 17:15) [~3.0h]: Rust AES-256-GCM engine & hardware fingerprint genesis
-- Sept 27 (16:30 - 19:30) [~2.0h]: Council of Sovereign Experts & creator funnel architecture RFCs
-- Sept 27 (20:30 - 23:30) [~2.5h]: Vue 3 + Pinia modern reactive desktop rewrite & 15/15 Vitest tests
-- Sept 28 (00:20 - 03:05) [~2.75h]: Midnight sprint: 14 commits (AI Debate Room, God-Tier Studio, IDB Gallery)
-- Sept 28 (12:56 - 13:16) [~0.5h]: Human-Mode roadmap practice input isolation & Sovereign VIP Hybrid
-
-Verified by Git log hashes & Linux filesystem birthtimestamps (%w).`;
-
-  navigator.clipboard.writeText(md);
-  uiStore.showToast("Proof of Work & Timeline copied to clipboard ✓");
-}
-
 // Categories definitions for sidebar
-const categories = computed(() => [
-  { id: "proof" as SettingsCategory, label: "Proof of Work & Hours", icon: "⏱️", count: "~10H" },
-  { id: "about" as SettingsCategory, label: "About & Founder Story", icon: "🐺", count: "RO" },
-  { id: "connections" as SettingsCategory, label: "Wolfitway Connections", icon: "⚡", count: WOLFITWAY_PRODUCTS.length },
-  { id: "shortcuts" as SettingsCategory, label: "Keyboard Shortcuts", icon: "⌨️", count: shortcutsStore.shortcuts.length },
-  { id: "export" as SettingsCategory, label: "Data Export & Backup", icon: "📦", count: 4 },
-  { id: "themes" as SettingsCategory, label: "Appearance & Themes", icon: "🎨", count: themesList.length },
-  { id: "fonts" as SettingsCategory, label: "Typography & Fonts", icon: "🔤", count: fontsList.length },
-  { id: "voice" as SettingsCategory, label: "Kokoro Voice & Audio", icon: "💖", count: "ACTIVE" },
-  { id: "license" as SettingsCategory, label: "Hardware & Licensing", icon: "🔐", count: licenseStore.isActivated ? "ACTIVE" : "FREE" },
-  { id: "experts" as SettingsCategory, label: "Council of Experts", icon: "🐺", count: SOVEREIGN_EXPERTS.length },
-  { id: "performance" as SettingsCategory, label: "Reordering & Physics", icon: "🚀", count: "SMOOTH" },
+export interface SettingsCategoryItem {
+  id: SettingsCategory;
+  label: string;
+  icon: IconName;
+  count: string | number;
+}
+
+const categories = computed<SettingsCategoryItem[]>(() => [
+  { id: "themes", label: "Appearance & Themes", icon: "palette", count: themesList.length },
+  { id: "fonts", label: "Typography & Fonts", icon: "font", count: fontsList.length },
+  { id: "shortcuts", label: "Keyboard Shortcuts", icon: "keyboard", count: shortcutsStore.shortcuts.length },
+  { id: "voice", label: "Kokoro Voice & Audio", icon: "voice", count: "ACTIVE" },
+  { id: "export", label: "Data Export & Backup", icon: "export", count: 4 },
+  { id: "license", label: "Hardware & Licensing", icon: "key", count: licenseStore.isActivated ? "ACTIVE" : "FREE" },
+  { id: "performance", label: "Reordering & Physics", icon: "sliders", count: "SMOOTH" },
 ]);
 
 // Filtered categories based on search
@@ -597,13 +405,13 @@ const filteredCategories = computed(() => {
   if (!q) return categories.value;
   return categories.value.filter((cat) => {
     if (cat.label.toLowerCase().includes(q)) return true;
-    if (cat.id === "about" && ("about founder draguta dragiuta dan ioan dan-ioan timis timisoara remetea mare 15 years solo builder certified trainer wolfitway wolfitwayos wolfscentvideo udemy wolfaistory youtube solo builder saas perspective 15 hours 10 hours thought ai architect".includes(q))) return true;
     if (cat.id === "shortcuts" && ("shortcuts keybindings hotkeys keys command".includes(q) || shortcutsStore.shortcuts.some((s) => s.label.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)))) return true;
-    if (cat.id === "connections" && WOLFITWAY_PRODUCTS.some((p) => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))) return true;
-    if (cat.id === "export" && ("json markdown csv backup restore".includes(q))) return true;
+    if (cat.id === "export" && ("json markdown csv backup restore export import".includes(q))) return true;
     if (cat.id === "themes" && themesList.some((t) => t.name.toLowerCase().includes(q))) return true;
     if (cat.id === "fonts" && fontsList.some((f) => f.name.toLowerCase().includes(q))) return true;
-    if (cat.id === "experts" && SOVEREIGN_EXPERTS.some((e) => e.role.toLowerCase().includes(q) || e.handle.toLowerCase().includes(q))) return true;
+    if (cat.id === "voice" && ("voice audio sound kokoro chime speech speech synthesis speech control".includes(q))) return true;
+    if (cat.id === "license" && ("license tier hardware fingerprint machine cryptographic free pro".includes(q))) return true;
+    if (cat.id === "performance" && ("performance reordering physics animation speed drag haptic".includes(q))) return true;
     return false;
   });
 });
@@ -616,65 +424,46 @@ const searchResults = computed(() => {
   if (!q) return [];
   const results: Array<{ categoryId: SettingsCategory; categoryLabel: string; title: string; desc: string }> = [];
 
-  // Proof of work & hours
-  if ("proof of work hours time timeline git commits build duration lines loc benchmarks 8 10 9".includes(q)) {
-    results.push({
-      categoryId: "proof",
-      categoryLabel: "Proof of Work & Hours",
-      title: "Cryptographic Proof of Work • 8-10 Real Hours Logged",
-      desc: "18 verified git commits, Linux stat creation timestamps, and 5 chronological build phases.",
-    });
-  }
+  // 1. Themes
+  themesList.forEach((t) => {
+    if (t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || "themes appearance color".includes(q)) {
+      results.push({ categoryId: "themes", categoryLabel: "Appearance & Themes", title: t.name, desc: t.desc });
+    }
+  });
 
-  // 0. About & Founder
-  if ("about founder draguta dragiuta dan ioan dan-ioan timis timisoara remetea mare 15 years solo builder certified trainer wolfitway wolfitwayos wolfscentvideo udemy wolfaistory youtube solo builder saas perspective 15 hours 10 hours thought ai architect".includes(q)) {
-    results.push({
-      categoryId: "about",
-      categoryLabel: "About & Founder Story",
-      title: "Drăguța Dan-Ioan • AI Architect, 15 Yrs Solo Builder & Certified Trainer",
-      desc: "Built in 15 hours of thought (maybe 10). From Timiș, Romania (near Timișoara). Creator of wolfitway.com, wolfitwayos, wolfscentvideo.com, @wolfaistory on YouTube.",
-    });
-  }
+  // 2. Fonts
+  fontsList.forEach((f) => {
+    if (f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q) || "typography font monospace ligatures".includes(q)) {
+      results.push({ categoryId: "fonts", categoryLabel: "Typography & Fonts", title: f.name, desc: f.type });
+    }
+  });
 
-  // 1. Shortcuts
+  // 3. Shortcuts
   shortcutsStore.shortcuts.forEach((s) => {
     if (s.label.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q) || shortcutsStore.formatShortcut(s.id).toLowerCase().includes(q) || "shortcuts keybindings keys".includes(q)) {
       results.push({ categoryId: "shortcuts", categoryLabel: "Keyboard Shortcuts", title: `${s.label} (${shortcutsStore.formatShortcut(s.id)})`, desc: s.desc });
     }
   });
 
-  // 2. Connections
-  WOLFITWAY_PRODUCTS.forEach((p) => {
-    if (p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.domain.toLowerCase().includes(q)) {
-      results.push({ categoryId: "connections", categoryLabel: "Wolfitway Connections", title: p.name, desc: p.desc });
-    }
-  });
-
-  // 3. Themes
-  themesList.forEach((t) => {
-    if (t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q)) {
-      results.push({ categoryId: "themes", categoryLabel: "Appearance & Themes", title: t.name, desc: t.desc });
-    }
-  });
-
-  // 4. Fonts
-  fontsList.forEach((f) => {
-    if (f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q)) {
-      results.push({ categoryId: "fonts", categoryLabel: "Typography & Fonts", title: f.name, desc: f.type });
-    }
-  });
-
-  // 5. Export
-  if ("export json markdown csv backup data".includes(q)) {
-    results.push({ categoryId: "export", categoryLabel: "Data Export & Backup", title: "JSON & Markdown Vault Export", desc: "Download zero-telemetry offline database backups." });
+  // 4. Voice
+  if ("voice audio sound kokoro chime speech speech synthesis mic".includes(q)) {
+    results.push({ categoryId: "voice", categoryLabel: "Kokoro Voice & Audio", title: "Kokoro Voice & Spoken Chimes", desc: "Procedural audio companion guidance and hands-free voice commands." });
   }
 
-  // 6. Experts
-  SOVEREIGN_EXPERTS.forEach((e) => {
-    if (e.role.toLowerCase().includes(q) || e.handle.toLowerCase().includes(q) || e.mandate.toLowerCase().includes(q)) {
-      results.push({ categoryId: "experts", categoryLabel: "Council of Experts", title: `${e.avatar} ${e.role}`, desc: e.mandate });
-    }
-  });
+  // 5. Export
+  if ("export json markdown csv backup data restore import".includes(q)) {
+    results.push({ categoryId: "export", categoryLabel: "Data Export & Backup", title: "JSON & Markdown Vault Export", desc: "Download zero-telemetry offline database backups and import browser bookmarks." });
+  }
+
+  // 6. License
+  if ("license hardware fingerprint machine tier pro community keygen".includes(q)) {
+    results.push({ categoryId: "license", categoryLabel: "Hardware & Licensing", title: "Hardware Cryptography & Tier", desc: "Local hardware fingerprint derivation and node activation." });
+  }
+
+  // 7. Performance
+  if ("performance physics drag speed animation haptics smooth".includes(q)) {
+    results.push({ categoryId: "performance", categoryLabel: "Reordering & Physics", title: "Reordering Velocity & Physics", desc: "Adjust drag-and-drop animation curves and tactile haptics." });
+  }
 
   return results;
 });
@@ -691,14 +480,14 @@ function jumpToCategory(catId: SettingsCategory) {
     <aside class="settings-sidebar">
       <div class="sidebar-header">
         <div class="sidebar-title-row">
-          <span class="settings-gear-icon">⚙️</span>
+          <WolfIcon name="settings" :size="18" class="settings-gear-icon" />
           <h2 class="sidebar-title">Settings &amp; Vault</h2>
         </div>
         <p class="sidebar-sub">Sovereign workspace configuration</p>
 
         <!-- Search Input -->
         <div class="settings-search-box">
-          <span class="search-icon">🔍</span>
+          <WolfIcon name="search" :size="13" class="search-icon" />
           <input
             v-model="searchQuery"
             type="text"
@@ -719,7 +508,7 @@ function jumpToCategory(catId: SettingsCategory) {
           :class="{ active: activeCategory === cat.id && !isSearching }"
           @click="jumpToCategory(cat.id)"
         >
-          <span class="nav-item-icon">{{ cat.icon }}</span>
+          <WolfIcon :name="cat.icon" :size="15" class="nav-item-icon" />
           <span class="nav-item-label">{{ cat.label }}</span>
           <span class="nav-item-badge">{{ cat.count }}</span>
         </button>
@@ -756,7 +545,7 @@ function jumpToCategory(catId: SettingsCategory) {
         </div>
 
         <div v-if="searchResults.length === 0" class="empty-search">
-          <span class="empty-icon">🔍</span>
+          <WolfIcon name="search" :size="28" class="empty-icon" />
           <p>No settings matched your query. Try searching for "theme", "token", "export", or "font".</p>
         </div>
 
@@ -777,520 +566,16 @@ function jumpToCategory(catId: SettingsCategory) {
         </div>
       </div>
 
-      <!-- Section: Proof of Work & Actual Hours Timeline -->
-      <div v-else-if="activeCategory === 'proof'" class="category-pane">
-        <!-- Hero Proof of Work Card -->
-        <div class="proof-hero-card">
-          <div class="proof-hero-glow"></div>
-          <div class="proof-hero-content">
-            <div class="proof-badge-row">
-              <span class="proof-badge-primary">⏱️ ~9.5h REAL ACTIVE BUILD TIME</span>
-              <span class="proof-badge-commits">📦 18 VERIFIED GIT COMMITS</span>
-              <span class="proof-badge-loc">💻 58,736 TOTAL LINES (30,000+ HAND-CRAFTED)</span>
-              <span class="proof-badge-stack">🦀 TAURI (RUST) + VUE 3 + PINIA</span>
-              <span class="proof-badge-offline">🔒 100% OFFLINE ZERO TELEMETRY</span>
-              <span class="proof-badge-origin">🇷🇴 TIMIȘ FORGE</span>
-            </div>
-
-            <div class="proof-header-row">
-              <div class="proof-avatar-box">
-                <span class="proof-timer-icon">⚡</span>
-                <span class="proof-pulse-ring"></span>
-              </div>
-              <div class="proof-title-col">
-                <h2 class="proof-heading">Cryptographic Proof of Work &amp; Build Timeline</h2>
-                <p class="proof-subheading">
-                  Verifiable git commit logs, filesystem birth timestamps (%w), and chronological time logs confirming an actual build time of 8–10 hours of solo engineering velocity.
-                </p>
-                <div class="proof-action-row">
-                  <button type="button" class="btn-copy-proof" @click="copyProofOfWorkMarkdown">
-                    📋 Copy Full Proof of Work Summary
-                  </button>
-                  <span class="proof-meta-note">Verified against local git SHA &amp; Linux inode birth times</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Metric Cards 6-Grid -->
-        <div class="proof-stats-grid">
-          <div class="proof-stat-card">
-            <span class="stat-card-label">ACTUAL DEV TIME</span>
-            <div class="stat-card-val-row">
-              <span class="stat-card-value text-emerald">~9.5 Hours</span>
-              <span class="stat-card-tag">8–10h NET SESSIONS</span>
-            </div>
-            <p class="stat-card-desc">Calculated across 5 focused coding sprints from initial scaffold to production polish.</p>
-          </div>
-
-          <div class="proof-stat-card">
-            <span class="stat-card-label">GIT COMMITS</span>
-            <div class="stat-card-val-row">
-              <span class="stat-card-value text-cyan">18 Commits</span>
-              <span class="stat-card-tag">CLEAN LINEAR HISTORY</span>
-            </div>
-            <p class="stat-card-desc">Atomic verifiable commits with full audit trail from genesis commit to HEAD.</p>
-          </div>
-
-          <div class="proof-stat-card">
-            <span class="stat-card-label">FIRST FILE CREATION</span>
-            <div class="stat-card-val-row">
-              <span class="stat-card-value text-amber">Sept 26, 14:16</span>
-              <span class="stat-card-tag">LINUX %w BIRTH</span>
-            </div>
-            <p class="stat-card-desc">Filesystem birthtime of Rust backend and Obsidian CSS tokens.</p>
-          </div>
-
-          <div class="proof-stat-card">
-            <span class="stat-card-label">SOURCE CODEBASE</span>
-            <div class="stat-card-val-row">
-              <span class="stat-card-value text-emerald">58,736 Lines</span>
-              <span class="stat-card-tag">30K+ NATIVE CODE</span>
-            </div>
-            <p class="stat-card-desc">Vue 3, Pinia stores, Rust Tauri IPC, AES-256 cipher, and custom Obsidian CSS.</p>
-          </div>
-
-          <div class="proof-stat-card">
-            <span class="stat-card-label">TEST SUITE</span>
-            <div class="stat-card-val-row">
-              <span class="stat-card-value text-emerald">15 / 15 Tests</span>
-              <span class="stat-card-tag">100% PASSING</span>
-            </div>
-            <p class="stat-card-desc">Deterministic crypto hashes, PBKDF2 vault, offline keygen, and shortcut normalization.</p>
-          </div>
-
-          <div class="proof-stat-card">
-            <span class="stat-card-label">CLOUD TELEMETRY</span>
-            <div class="stat-card-val-row">
-              <span class="stat-card-value text-emerald">0 Bytes</span>
-              <span class="stat-card-tag">100% SOVEREIGN</span>
-            </div>
-            <p class="stat-card-desc">Zero tracking, zero analytics, zero external API keys required to run core app.</p>
-          </div>
-        </div>
-
-        <!-- Chronological Build Phases Timeline -->
-        <div class="proof-timeline-container">
-          <div class="proof-section-header">
-            <div class="section-title-wrap">
-              <span class="section-tag-glow">REAL WORK TIMELINE</span>
-              <h3 class="section-title">5 Chronological Development Phases</h3>
-            </div>
-            <span class="section-badge">Verified by Commit Timestamps</span>
-          </div>
-
-          <div class="proof-phases-list">
-            <div v-for="phase in proofPhases" :key="phase.id" class="proof-phase-item">
-              <div class="phase-left-col">
-                <span class="phase-hours-bubble">{{ phase.hours }}</span>
-                <div class="phase-axis-line"></div>
-              </div>
-              <div class="phase-card">
-                <div class="phase-card-top">
-                  <div class="phase-title-group">
-                    <span class="phase-pill-badge">{{ phase.badge }}</span>
-                    <h4 class="phase-card-title">{{ phase.name }}</h4>
-                  </div>
-                  <span class="phase-time-window">{{ phase.timeWindow }}</span>
-                </div>
-
-                <p class="phase-card-summary">{{ phase.summary }}</p>
-
-                <div class="phase-deliverables-box">
-                  <span class="deliverables-heading">VERIFIED SHIPMENTS:</span>
-                  <ul class="deliverables-list">
-                    <li v-for="(item, idx) in phase.deliverables" :key="idx">
-                      <span class="deliv-bullet">✓</span>
-                      <span>{{ item }}</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div class="phase-files-box">
-                  <span class="files-heading">Verified Files:</span>
-                  <div class="files-tag-wrap">
-                    <code v-for="(file, fIdx) in phase.filesVerified" :key="fIdx" class="file-code-tag">
-                      {{ file }}
-                    </code>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Git Commit Ledger -->
-        <div class="proof-ledger-container">
-          <div class="proof-section-header">
-            <div class="section-title-wrap">
-              <span class="section-tag-glow">AUDIT LEDGER</span>
-              <h3 class="section-title">Complete Git Commit History (18 Commits)</h3>
-            </div>
-            <span class="section-badge">git log verified</span>
-          </div>
-
-          <div class="ledger-table-wrap">
-            <table class="ledger-table">
-              <thead>
-                <tr>
-                  <th>HASH</th>
-                  <th>TIMESTAMP (+0300)</th>
-                  <th>SCOPE</th>
-                  <th>COMMIT MESSAGE</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="commit in gitCommitLedger" :key="commit.hash">
-                  <td>
-                    <code class="commit-hash">{{ commit.hash }}</code>
-                  </td>
-                  <td class="commit-time">{{ commit.timestamp }}</td>
-                  <td>
-                    <span class="commit-category-tag" :class="commit.category.toLowerCase().replace(/[^a-z]/g, '')">
-                      {{ commit.category }}
-                    </span>
-                  </td>
-                  <td class="commit-subject">{{ commit.subject }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Filesystem Timestamp Proof (%w) -->
-        <div class="proof-fs-container">
-          <div class="proof-section-header">
-            <div class="section-title-wrap">
-              <span class="section-tag-glow">FILESYSTEM AUDIT</span>
-              <h3 class="section-title">Linux Inode Birthtimes (stat %w)</h3>
-            </div>
-            <span class="section-badge">On-Disk Metadata</span>
-          </div>
-
-          <div class="fs-records-grid">
-            <div v-for="(record, rIdx) in verifiedFileBirths" :key="rIdx" class="fs-record-card">
-              <div class="fs-record-top">
-                <code class="fs-file-path">{{ record.path }}</code>
-                <span class="fs-role-tag">{{ record.role }}</span>
-              </div>
-              <div class="fs-times-row">
-                <span class="fs-time-label">Created (Birth): <code class="fs-time-val">{{ record.birthtime }}</code></span>
-                <span class="fs-time-label">Last Mod: <code class="fs-time-val">{{ record.lastModified }}</code></span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: About & Founder Story -->
-      <div v-else-if="activeCategory === 'about'" class="category-pane">
-        <!-- Hero Founder Card -->
-        <div class="founder-hero-card">
-          <div class="founder-hero-glow"></div>
-          <div class="founder-hero-content">
-            <div class="founder-badge-row">
-              <span class="founder-flag-badge">🇷🇴 TIMIȘ FORGE (NEAR TIMIȘOARA)</span>
-              <span class="founder-speed-badge">⚡ 15 HOURS OF THOUGHT (MAYBE 10)</span>
-              <span class="founder-role-badge">15+ YEARS SOLO BUILDER</span>
-              <span class="founder-cert-badge">🎓 CERTIFIED TRAINER</span>
-              <span class="founder-ai-badge">🧠 AI ARCHITECT</span>
-              <span class="founder-zero-badge">100% OFFLINE-FIRST ZERO TELEMETRY</span>
-            </div>
-
-            <div class="founder-profile-row">
-              <div class="founder-avatar-box">
-                <span class="founder-wolf-emoji">🐺</span>
-                <span class="avatar-pulse-ring"></span>
-              </div>
-              <div class="founder-title-col">
-                <h2 class="founder-name">Drăguța Dan-Ioan</h2>
-                <p class="founder-handle">@dan • AI Architect • 15+ Years Solo Builder • Certified Trainer • wolfitway.com • wolfitwayos • wolfscentvideo.com • @wolfaistory</p>
-                <div class="founder-location-pill">
-                  <span>📍 Crafted line-by-line from Timiș, Romania (near Timișoara)</span>
-                </div>
-              </div>
-            </div>
-
-            <blockquote class="founder-manifesto-quote">
-              "Wolf Timeline was architected and built in a single day — about 15 hours of thought (maybe 10 hahaha). When you combine 15 years of solo building discipline, stepping past being an introvert to teach and lead as a certified trainer, and master AI architecture, you don't need friction. You just think, design, and bring it to life."
-            </blockquote>
-          </div>
-        </div>
-
-        <!-- Founder Ventures & Ecosystem Cards Grid -->
-        <div class="founder-ventures-grid">
-          <a href="https://wolfitway.com" target="_blank" rel="noopener noreferrer" class="venture-card">
-            <div class="venture-card-top">
-              <span class="venture-icon">🐺</span>
-              <span class="venture-link-pill">wolfitway.com ↗</span>
-            </div>
-            <h4 class="venture-title">Wolfitway &amp; Wolfitway OS</h4>
-            <span class="venture-role">Creator &amp; Chief Architect</span>
-            <p class="venture-desc">
-              Decentralized sovereign operating system and maker command center. Replaces 30+ fragmented surveillance SaaS subscriptions with 100% on-device hardware ownership.
-            </p>
-          </a>
-
-          <a href="https://wolfscentvideo.com" target="_blank" rel="noopener noreferrer" class="venture-card">
-            <div class="venture-card-top">
-              <span class="venture-icon">🎬</span>
-              <span class="venture-link-pill">wolfscentvideo.com ↗</span>
-            </div>
-            <h4 class="venture-title">Wolf Scent Video</h4>
-            <span class="venture-role">Builder &amp; Owner</span>
-            <p class="venture-desc">
-              High-impact AI-driven media generation, synthetic production pipelines, and cinematic creative storytelling laboratory.
-            </p>
-          </a>
-
-          <a href="https://youtube.com/@wolfaistory" target="_blank" rel="noopener noreferrer" class="venture-card highlight">
-            <div class="venture-card-top">
-              <span class="venture-icon">📺</span>
-              <span class="venture-link-pill">@wolfaistory ↗</span>
-            </div>
-            <h4 class="venture-title">YouTube: @wolfaistory</h4>
-            <span class="venture-role">Early AI Explorer &amp; Pioneer</span>
-            <p class="venture-desc">
-              The frontier laboratory where Dan tested, pushed, and benchmarked generative AI models and autonomous systems long before the tech mainstream caught on.
-            </p>
-          </a>
-
-          <div class="venture-card highlight-cyan">
-            <div class="venture-card-top">
-              <span class="venture-icon">🎙️</span>
-              <span class="venture-link-pill">Upcoming Channel ✦</span>
-            </div>
-            <h4 class="venture-title">New SaaS &amp; Solo Builder Channel</h4>
-            <span class="venture-role">Founder Perspective &amp; Mentorship</span>
-            <p class="venture-desc">
-              A new channel dedicated to helping entrepreneurs see a different perspective: how an introvert can train themselves to step forward, speak, ship, and thrive.
-            </p>
-          </div>
-
-          <div class="venture-card">
-            <div class="venture-card-top">
-              <span class="venture-icon">🎓</span>
-              <span class="venture-link-pill">Certified Trainer ↗</span>
-            </div>
-            <h4 class="venture-title">Certified Trainer &amp; Udemy</h4>
-            <span class="venture-role">Technical Author &amp; Mentor</span>
-            <p class="venture-desc">
-              Empowering global developers, creators, and operators with hands-on courses in cutting-edge development, system architecture, and AI-assisted workflows.
-            </p>
-          </div>
-        </div>
-
-        <!-- The Romanian Village Origin & AI Pioneer Story -->
-        <div class="story-columns-grid three-col">
-          <div class="story-card">
-            <div class="story-icon-row">
-              <span class="story-icon">⚡</span>
-              <h3 class="story-title">Built in 15 Hours of Thought (Maybe 10)</h3>
-            </div>
-            <p class="story-text">
-              Wolf Timeline was conceived, architected, and brought into existence in a single marathon session—around 15 hours of pure thought (maybe 10 hahaha).
-            </p>
-            <p class="story-text">
-              Operating from Timiș, Romania (near Timișoara), <strong>Drăguța Dan-Ioan</strong> drew upon 15 years of solo builder intuition and cutting-edge AI architecture to construct every subsystem—from native Rust Tauri bindings to in-memory AES-256 PBKDF2 encryption—in a state of unbroken creative flow.
-            </p>
-          </div>
-
-          <div class="story-card">
-            <div class="story-icon-row">
-              <span class="story-icon">🎙️</span>
-              <h3 class="story-title">The Introvert Who Learned to Speak</h3>
-            </div>
-            <p class="story-text">
-              Naturally an introvert, Dan refused to let that become a ceiling. He deliberately trained himself to step forward, stand in front of audiences, and speak—earning accreditation as a <strong>Certified Trainer</strong> and Udemy instructor.
-            </p>
-            <p class="story-text">
-              His upcoming SaaS channel is dedicated to sharing this perspective with solo builders and entrepreneurs: how to find your voice, master your tools, and turn ideas into reality without unnecessary complexity.
-            </p>
-          </div>
-
-          <div class="story-card">
-            <div class="story-icon-row">
-              <span class="story-icon">🧠</span>
-              <h3 class="story-title">Testing AI on @wolfaistory Ahead of the Curve</h3>
-            </div>
-            <p class="story-text">
-              Through his YouTube channel <strong>@wolfaistory</strong>, Dan was already hands-on stress-testing early neural architectures, generative video, and autonomous agent loops when most developers were still treating AI as a curiosity.
-            </p>
-            <p class="story-text">
-              That battle-tested frontline knowledge directly shaped Wolf Timeline's Council of Experts, decision debate room, and lightning-fast local-first execution.
-            </p>
-          </div>
-        </div>
-
-        <!-- Pillar Cards Grid -->
-        <div class="sovereign-pillars-grid">
-          <div class="pillar-card">
-            <span class="pillar-number">01</span>
-            <h4 class="pillar-heading">Zero Cloud Leaks</h4>
-            <p class="pillar-sub">
-              Your keystrokes, strategy notes, and passwords never leave your client machine. In-memory RAM buffer with instant zeroization on lock.
-            </p>
-          </div>
-
-          <div class="pillar-card">
-            <span class="pillar-number">02</span>
-            <h4 class="pillar-heading">Uncompromising Speed</h4>
-            <p class="pillar-sub">
-              Sub-millisecond latency. Built on native Rust &amp; Tauri with a hyper-optimized 298KB frontend. No multi-gigabyte Electron bloat.
-            </p>
-          </div>
-
-          <div class="pillar-card">
-            <span class="pillar-number">03</span>
-            <h4 class="pillar-heading">Offline-First Invariant</h4>
-            <p class="pillar-sub">
-              Whether on a flight, in an air-gapped lab, or off-grid in the Carpathian mountains, every timeline, roadmap, and gallery works at 100%.
-            </p>
-          </div>
-
-          <div class="pillar-card">
-            <span class="pillar-number">04</span>
-            <h4 class="pillar-heading">Hardware Keygen</h4>
-            <p class="pillar-sub">
-              Cryptographic offline node activation using deterministic SHA-256 device hashing. No central license server phone-home checks.
-            </p>
-          </div>
-        </div>
-
-        <!-- Technical Telemetry & Builder Node Box -->
-        <div class="origin-specs-card">
-          <div class="specs-header">
-            <span class="specs-icon">📡</span>
-            <div>
-              <h4 class="specs-title">Origin Node Specification &amp; Telemetry</h4>
-              <p class="specs-sub">Cryptographic provenance and hardware origin details.</p>
-            </div>
-          </div>
-
-          <div class="specs-table-grid">
-            <div class="spec-row">
-              <span class="spec-k">Architect &amp; Solo Maker</span>
-              <span class="spec-v highlight">Drăguța Dan-Ioan (@dan)</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-k">Forge Geographic Origin</span>
-              <span class="spec-v">Timiș County, Romania (Near Timișoara) 🇷🇴</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-k">Track Record &amp; Credentials</span>
-              <span class="spec-v">15+ Years Solo Builder • Certified Professional Trainer • Udemy Author</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-k">Core Ecosystem &amp; Channels</span>
-              <span class="spec-v">wolfitway.com • wolfitwayos • wolfscentvideo.com • @wolfaistory</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-k">Engine Stack</span>
-              <span class="spec-v">Rust (Tauri Core) + Vue 3 + TypeScript + Pinia</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-k">Storage Subsystem</span>
-              <span class="spec-v">Sovereign IndexedDB v2 + Local-First Filesystem Access</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-k">Cryptography Invariants</span>
-              <span class="spec-v">PBKDF2-SHA256 (100k iters) + AES-256-GCM Hardware Lock</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-k">Production Bundle</span>
-              <span class="spec-v">&lt; 300 KB Gzip (Ultra-lightweight)</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-k">Offline Node Signature</span>
-              <span class="spec-v font-mono">WOLF-RO-DEV-BC66-AF84-F7F1</span>
-            </div>
-          </div>
-
-          <div class="specs-footer-links">
-            <div class="footer-links-group">
-              <a href="https://wolfitway.com" target="_blank" rel="noopener noreferrer" class="link-wolfitway">
-                🌐 wolfitway.com
-              </a>
-              <span class="link-sep">•</span>
-              <a href="https://wolfscentvideo.com" target="_blank" rel="noopener noreferrer" class="link-wolfitway">
-                🎬 wolfscentvideo.com
-              </a>
-              <span class="link-sep">•</span>
-              <a href="https://youtube.com/@wolfaistory" target="_blank" rel="noopener noreferrer" class="link-wolfitway">
-                📺 @wolfaistory
-              </a>
-            </div>
-            <button type="button" class="btn-copy-node" @click="copyFounderKey">
-              📋 Copy Drăguța Dan-Ioan Credentials
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Wolfitway Connections -->
-      <div v-else-if="activeCategory === 'connections'" class="category-pane">
-        <div class="pane-header">
-          <div>
-            <h3 class="pane-title">⚡ Wolfitway Ecosystem Connections</h3>
-            <p class="pane-desc">Synchronize sovereign vault nodes with Wolfitway decentralized suite.</p>
-          </div>
-        </div>
-
-        <div class="connections-grid">
-          <div
-            v-for="prod in WOLFITWAY_PRODUCTS"
-            :key="prod.id"
-            class="connection-card"
-            :class="{ active: connections[prod.id]?.connected }"
-          >
-            <div class="conn-card-top">
-              <div class="conn-brand">
-                <span class="conn-icon">{{ prod.icon }}</span>
-                <div class="conn-names">
-                  <span class="conn-title">{{ prod.name }}</span>
-                  <span class="conn-domain">{{ prod.domain }}</span>
-                </div>
-              </div>
-              <span class="conn-status-badge" :class="{ on: connections[prod.id]?.connected }">
-                <span class="dot" :class="connections[prod.id]?.connected ? 'dot-green' : 'dot-gray'"></span>
-                {{ connections[prod.id]?.connected ? "Connected" : "Disconnected" }}
-              </span>
-            </div>
-
-            <p class="conn-desc">{{ prod.desc }}</p>
-
-            <div class="conn-action-row">
-              <input
-                :value="connections[prod.id]?.token || ''"
-                type="password"
-                class="conn-token-input"
-                :placeholder="prod.placeholder"
-                @input="(e) => updateToken(prod.id, (e.target as HTMLInputElement).value)"
-              />
-              <button
-                type="button"
-                class="btn-conn-toggle"
-                :class="{ connected: connections[prod.id]?.connected }"
-                @click="toggleConnection(prod.id)"
-              >
-                {{ connections[prod.id]?.connected ? "Disconnect" : "Connect" }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Section: Keyboard Shortcuts -->
       <div v-else-if="activeCategory === 'shortcuts'" class="category-pane">
         <div class="pane-header">
           <div>
-            <h3 class="pane-title">⌨️ Keyboard Shortcuts &amp; Ergonomics</h3>
+            <h3 class="pane-title"><WolfIcon name="keyboard" :size="18" /> Keyboard Shortcuts &amp; Ergonomics</h3>
             <p class="pane-desc">Customize global application hotkeys, resolve key conflicts, and tailor your sovereign deep-work flow.</p>
           </div>
           <div class="header-action-group">
             <button type="button" class="btn-secondary-action" @click="resetAllShortcuts">
-              ↺ Reset All Defaults
+              <WolfIcon name="reset" :size="12" /> <span>Reset All Defaults</span>
             </button>
           </div>
         </div>
@@ -1298,7 +583,7 @@ function jumpToCategory(catId: SettingsCategory) {
         <!-- Filter bar -->
         <div class="shortcuts-filter-bar">
           <div class="filter-input-wrap">
-            <span class="filter-icon">🔍</span>
+            <WolfIcon name="search" :size="13" class="filter-icon" />
             <input
               v-model="shortcutFilterQuery"
               type="text"
@@ -1324,7 +609,7 @@ function jumpToCategory(catId: SettingsCategory) {
 
           <div class="recorder-prompt-box">
             <p v-if="!recordedCombo" class="prompt-text">
-              ⌨️ Press your desired key combination on your keyboard (e.g. <kbd>{{ shortcutsStore.isMac ? '⌘' : 'Ctrl' }}</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>)
+              <WolfIcon name="keyboard" :size="14" /> Press your desired key combination on your keyboard (e.g. <kbd>{{ shortcutsStore.isMac ? '⌘' : 'Ctrl' }}</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>)
             </p>
             <div v-else class="recorded-keys-display">
               <span class="recorded-label">Detected:</span>
@@ -1336,7 +621,7 @@ function jumpToCategory(catId: SettingsCategory) {
             </div>
 
             <div v-if="conflictWarning" class="conflict-alert-box">
-              <span class="alert-icon">⚠️</span>
+              <WolfIcon name="alert" :size="14" class="alert-icon" />
               <span>{{ conflictWarning }}</span>
             </div>
           </div>
@@ -1390,7 +675,7 @@ function jumpToCategory(catId: SettingsCategory) {
                 :class="{ recording: recordingActionId === item.id }"
                 @click="startRecording(item.id)"
               >
-                {{ recordingActionId === item.id ? 'Recording...' : '✎ Edit' }}
+                <WolfIcon :name="recordingActionId === item.id ? 'clock' : 'write'" :size="11" /> <span>{{ recordingActionId === item.id ? 'Recording...' : 'Edit' }}</span>
               </button>
 
               <button
@@ -1400,7 +685,7 @@ function jumpToCategory(catId: SettingsCategory) {
                 title="Reset to factory default"
                 @click="resetShortcutToDefault(item.id)"
               >
-                ↺
+                <WolfIcon name="reset" :size="11" />
               </button>
             </div>
           </div>
@@ -1409,7 +694,7 @@ function jumpToCategory(catId: SettingsCategory) {
         <!-- Cheatsheet & Sovereign Keyboard Overview -->
         <div class="shortcuts-cheatsheet-card">
           <div class="cheatsheet-header">
-            <span class="cheatsheet-icon">🐺</span>
+            <WolfIcon name="wolf" :size="20" class="cheatsheet-icon" />
             <div>
               <h4 class="cheatsheet-title">Sovereign Keyboard Ergonomics</h4>
               <p class="cheatsheet-sub">All shortcuts are intercepted locally before browser defaults and persisted offline.</p>
@@ -1427,85 +712,85 @@ function jumpToCategory(catId: SettingsCategory) {
       <div v-else-if="activeCategory === 'export'" class="category-pane">
         <div class="pane-header">
           <div>
-            <h3 class="pane-title">📦 Sovereign Data Backup &amp; Portability</h3>
+            <h3 class="pane-title"><WolfIcon name="export" :size="18" /> Sovereign Data Backup &amp; Portability</h3>
             <p class="pane-desc">Download encrypted JSON archives, Markdown documents, or tabular CSV sheets.</p>
           </div>
         </div>
 
         <div class="export-cards-grid">
           <div class="export-feature-card">
-            <div class="export-icon-box">📄</div>
+            <div class="export-icon-box"><WolfIcon name="file-text" :size="22" /></div>
             <div class="export-card-body">
               <h4 class="export-item-title">Wolfitway JSON Vault</h4>
               <p class="export-item-desc">Complete sovereign database snapshot containing all projects, timeline milestones, AI explorations, and roadmap phases.</p>
               <div class="export-actions">
                 <button type="button" class="btn-primary-export" @click="exportJson">
-                  <span>📥</span> Download JSON Vault
+                  <WolfIcon name="download" :size="13" /> <span>Download JSON Vault</span>
                 </button>
               </div>
             </div>
           </div>
 
           <div class="export-feature-card">
-            <div class="export-icon-box">📝</div>
+            <div class="export-icon-box"><WolfIcon name="markdown" :size="22" /></div>
             <div class="export-card-body">
               <h4 class="export-item-title">Markdown Timeline Document</h4>
               <p class="export-item-desc">GitHub-flavored markdown document perfect for publishing to static sites, documentation wikis, or Git commit logs.</p>
               <div class="export-actions">
                 <button type="button" class="btn-primary-export" @click="exportMarkdown">
-                  <span>📥</span> Download .md Document
+                  <WolfIcon name="download" :size="13" /> <span>Download .md Document</span>
                 </button>
               </div>
             </div>
           </div>
 
           <div class="export-feature-card">
-            <div class="export-icon-box">📊</div>
+            <div class="export-icon-box"><WolfIcon name="table" :size="22" /></div>
             <div class="export-card-body">
               <h4 class="export-item-title">CSV Project Matrix Sheet</h4>
               <p class="export-item-desc">Structured tabular spreadsheet with all project statuses, event counts, tags, and timestamps for Excel or Google Sheets.</p>
               <div class="export-actions">
                 <button type="button" class="btn-primary-export" @click="exportCsv">
-                  <span>📥</span> Download CSV Matrix
+                  <WolfIcon name="download" :size="13" /> <span>Download CSV Matrix</span>
                 </button>
               </div>
             </div>
           </div>
 
           <div class="export-feature-card">
-            <div class="export-icon-box">📑</div>
+            <div class="export-icon-box"><WolfIcon name="bookmarks" :size="22" /></div>
             <div class="export-card-body">
               <h4 class="export-item-title">Import Browser Bookmarks (Chrome / Firefox / Safari)</h4>
               <p class="export-item-desc">Import bookmarks from any browser export (.html). Extracted into verified offline web research resources with tag clustering and zero cloud tracking.</p>
               <div class="export-actions">
                 <button type="button" class="btn-primary-export" @click="uiStore.showBookmarkImporter = true">
-                  <span>📂</span> Launch Bookmark Importer
+                  <WolfIcon name="import" :size="13" /> <span>Launch Bookmark Importer</span>
                 </button>
               </div>
             </div>
           </div>
 
           <div class="export-feature-card">
-            <div class="export-icon-box">🔄</div>
+            <div class="export-icon-box"><WolfIcon name="reset" :size="22" /></div>
             <div class="export-card-body">
               <h4 class="export-item-title">Restore / Import Vault</h4>
               <p class="export-item-desc">Load a previously exported Wolfitway JSON file into your local node database without losing offline sovereignty.</p>
               <div class="export-actions">
                 <button type="button" class="btn-secondary-action" @click="triggerImportFile">
-                  <span>📂</span> Select JSON Backup File
+                  <WolfIcon name="folder" :size="13" /> <span>Select JSON Backup File</span>
                 </button>
               </div>
             </div>
           </div>
 
           <div class="export-feature-card danger-feature-card">
-            <div class="export-icon-box">⚠️</div>
+            <div class="export-icon-box"><WolfIcon name="alert" :size="22" /></div>
             <div class="export-card-body">
               <h4 class="export-item-title">Reload Sample Default Workspace</h4>
               <p class="export-item-desc">Revert the active workspace to default sovereign sample projects, roadmap phases, and timeline logs.</p>
               <div class="export-actions">
                 <button type="button" class="btn-danger-action" @click="handleResetWorkspace">
-                  <span>↺</span> Reload Sovereign Defaults
+                  <WolfIcon name="reset" :size="13" /> <span>Reload Sovereign Defaults</span>
                 </button>
               </div>
             </div>
@@ -1517,7 +802,7 @@ function jumpToCategory(catId: SettingsCategory) {
       <div v-else-if="activeCategory === 'themes'" class="category-pane">
         <div class="pane-header">
           <div>
-            <h3 class="pane-title">🎨 Appearance &amp; Cyber Themes</h3>
+            <h3 class="pane-title"><WolfIcon name="palette" :size="18" /> Appearance &amp; Cyber Themes</h3>
             <p class="pane-desc">Choose your visual aesthetic, neon intensity, and glassmorphism levels.</p>
           </div>
         </div>
@@ -1547,7 +832,7 @@ function jumpToCategory(catId: SettingsCategory) {
           <div class="effects-row-grid">
             <div class="toggle-card" @click="toggleGlow">
               <div class="toggle-card-left">
-                <span class="toggle-icon">✨</span>
+                <WolfIcon name="sparkles" :size="16" class="toggle-icon" />
                 <div>
                   <span class="toggle-title">Cyber Neon Glows</span>
                   <span class="toggle-sub">Soft emerald and accent illumination on borders and active cards</span>
@@ -1560,7 +845,7 @@ function jumpToCategory(catId: SettingsCategory) {
 
             <div class="toggle-card" @click="toggleGlass">
               <div class="toggle-card-left">
-                <span class="toggle-icon">💎</span>
+                <WolfIcon name="shield" :size="16" class="toggle-icon" />
                 <div>
                   <span class="toggle-title">Backdrop Glassmorphism</span>
                   <span class="toggle-sub">Hardware-accelerated CSS backdrop-filter blur on modal drawers</span>
@@ -1578,7 +863,7 @@ function jumpToCategory(catId: SettingsCategory) {
       <div v-else-if="activeCategory === 'fonts'" class="category-pane">
         <div class="pane-header">
           <div>
-            <h3 class="pane-title">🔤 Typography &amp; Editor Fonts</h3>
+            <h3 class="pane-title"><WolfIcon name="font" :size="18" /> Typography &amp; Editor Fonts</h3>
             <p class="pane-desc">Customize UI typography, code ligatures, and reading scale.</p>
           </div>
         </div>
@@ -1686,11 +971,11 @@ function jumpToCategory(catId: SettingsCategory) {
       <div v-else-if="activeCategory === 'voice'" class="category-pane">
         <div class="pane-header">
           <div>
-            <h3 class="pane-title">💖 Kokoro Voice Heart &amp; Voice Control Engine</h3>
+            <h3 class="pane-title"><WolfIcon name="voice" :size="18" /> Kokoro Voice Heart &amp; Voice Control Engine</h3>
             <p class="pane-desc">Audio companion guidance, procedural heart chimes, and hands-free voice command system.</p>
           </div>
           <button type="button" class="btn-primary-export" @click="uiStore.showVoiceGuideModal = true">
-            <span>⚙️</span> Open Voice Companion Studio
+            <WolfIcon name="settings" :size="13" /> <span>Open Voice Companion Studio</span>
           </button>
         </div>
 
@@ -1698,7 +983,7 @@ function jumpToCategory(catId: SettingsCategory) {
           <!-- Kokoro Status Card -->
           <div class="voice-feature-card">
             <div class="voice-card-top">
-              <div class="voice-avatar-mini">💖</div>
+              <div class="voice-avatar-mini"><WolfIcon name="voice" :size="20" /></div>
               <div>
                 <h4 class="voice-card-title">Kokoro Voice Heart Presence</h4>
                 <p class="voice-card-sub">Warm spoken confirmations, focus encouragement, and milestone celebrations</p>
@@ -1710,7 +995,7 @@ function jumpToCategory(catId: SettingsCategory) {
                 class="btn-secondary-action"
                 @click="() => { kokoroVoice.playHeartChime('affirm'); kokoroVoice.speak('Kokoro Voice Heart online.'); }"
               >
-                ▶ Test Voice Audio
+                <WolfIcon name="volume" :size="13" /> <span>Test Voice Audio</span>
               </button>
               <button
                 type="button"
@@ -1725,7 +1010,7 @@ function jumpToCategory(catId: SettingsCategory) {
           <!-- Hands-Free Voice Commands Card -->
           <div class="voice-feature-card">
             <div class="voice-card-top">
-              <div class="voice-avatar-mini mic">🎙️</div>
+              <div class="voice-avatar-mini mic"><WolfIcon name="mic" :size="20" /></div>
               <div>
                 <h4 class="voice-card-title">Supported Hands-Free Voice Commands</h4>
                 <p class="voice-card-sub">Speak naturally while writing or ideating to command your workspace</p>
@@ -1769,11 +1054,11 @@ function jumpToCategory(catId: SettingsCategory) {
       <div v-else-if="activeCategory === 'license'" class="category-pane">
         <div class="pane-header">
           <div>
-            <h3 class="pane-title">🔐 Hardware Cryptography &amp; Sovereign Licensing</h3>
+            <h3 class="pane-title"><WolfIcon name="key" :size="18" /> Hardware Cryptography &amp; Sovereign Licensing</h3>
             <p class="pane-desc">Dual-use licensing engine: 100% Free for solo personal projects; paid licenses for commercial &amp; multi-seat teams.</p>
           </div>
           <button type="button" class="btn-primary-export" @click="uiStore.showLicenseModal = true">
-            <span>⚡</span> Switch Tier or Enter Key
+            <WolfIcon name="zap" :size="13" /> <span>Switch Tier or Enter Key</span>
           </button>
         </div>
 
@@ -1817,7 +1102,7 @@ function jumpToCategory(catId: SettingsCategory) {
                 class="btn-open-keygen"
                 @click="uiStore.showLicenseModal = true"
               >
-                <span>🔑</span> Manage Tier &amp; Licenses
+                <WolfIcon name="key" :size="13" /> <span>Manage Tier &amp; Licenses</span>
               </button>
               <button
                 v-if="licenseStore.isPaid"
@@ -1825,37 +1110,9 @@ function jumpToCategory(catId: SettingsCategory) {
                 class="btn-secondary-action"
                 @click="uiStore.showToast('Compliance Certificate generated & verified offline ✓')"
               >
-                📜 Export Compliance Certificate
+                <WolfIcon name="shield-check" :size="13" /> <span>Export Compliance Certificate</span>
               </button>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Council of Sovereign Experts -->
-      <div v-else-if="activeCategory === 'experts'" class="category-pane">
-        <div class="pane-header">
-          <div>
-            <h3 class="pane-title">🐺 The Council of Sovereign Experts</h3>
-            <p class="pane-desc">Specialized engineering and product council governing Wolf Timeline architecture.</p>
-          </div>
-        </div>
-
-        <div class="experts-grid">
-          <div
-            v-for="expert in SOVEREIGN_EXPERTS"
-            :key="expert.handle"
-            class="expert-card"
-          >
-            <div class="expert-top">
-              <span class="expert-avatar">{{ expert.avatar }}</span>
-              <div class="expert-info">
-                <span class="expert-role">{{ expert.role }}</span>
-                <span class="expert-handle">{{ expert.handle }}</span>
-              </div>
-              <span class="expert-status">✅ {{ expert.status }}</span>
-            </div>
-            <p class="expert-mandate">{{ expert.mandate }}</p>
           </div>
         </div>
       </div>
@@ -1864,7 +1121,7 @@ function jumpToCategory(catId: SettingsCategory) {
       <div v-else-if="activeCategory === 'performance'" class="category-pane">
         <div class="pane-header">
           <div>
-            <h3 class="pane-title">🚀 Smooth Reordering &amp; Drag Physics</h3>
+            <h3 class="pane-title"><WolfIcon name="sliders" :size="18" /> Smooth Reordering &amp; Drag Physics</h3>
             <p class="pane-desc">Fine-tune animations, drag elevation physics, and canvas reactivity.</p>
           </div>
         </div>
@@ -1877,7 +1134,7 @@ function jumpToCategory(catId: SettingsCategory) {
               :class="{ active: reorderSpeed === 'fast' }"
               @click="applyReorderSpeed('fast'); uiStore.showToast('Reorder animation set to Ultra Fast 150ms ✓')"
             >
-              <span class="physics-icon">⚡</span>
+              <WolfIcon name="zap" :size="18" class="physics-icon" />
               <span class="physics-name">Ultra Fast</span>
               <span class="physics-sub">150ms cubic-bezier transition</span>
             </div>
@@ -1887,7 +1144,7 @@ function jumpToCategory(catId: SettingsCategory) {
               :class="{ active: reorderSpeed === 'smooth' }"
               @click="applyReorderSpeed('smooth'); uiStore.showToast('Reorder animation set to Smooth Silk 220ms ✓')"
             >
-              <span class="physics-icon">🌊</span>
+              <WolfIcon name="sliders" :size="18" class="physics-icon" />
               <span class="physics-name">Smooth Silk</span>
               <span class="physics-sub">220ms organic easing with elevation</span>
             </div>
@@ -1897,7 +1154,7 @@ function jumpToCategory(catId: SettingsCategory) {
               :class="{ active: reorderSpeed === 'cinematic' }"
               @click="applyReorderSpeed('cinematic'); uiStore.showToast('Reorder animation set to Cinematic 350ms ✓')"
             >
-              <span class="physics-icon">🎬</span>
+              <WolfIcon name="clock" :size="18" class="physics-icon" />
               <span class="physics-name">Cinematic</span>
               <span class="physics-sub">350ms fluid spring curve</span>
             </div>
@@ -1909,7 +1166,7 @@ function jumpToCategory(catId: SettingsCategory) {
           <div class="effects-row-grid">
             <div class="toggle-card" @click="dragHaptics = !dragHaptics; uiStore.showToast(dragHaptics ? 'Drag haptic cues enabled' : 'Drag haptic cues disabled')">
               <div class="toggle-card-left">
-                <span class="toggle-icon">🎯</span>
+                <WolfIcon name="check-square" :size="16" class="toggle-icon" />
                 <div>
                   <span class="toggle-title">Drag Position Snapping Feedback</span>
                   <span class="toggle-sub">Visual scale pulse when hovering over valid dropzones</span>

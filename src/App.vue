@@ -233,8 +233,10 @@ onUnmounted(() => {
 <style scoped>
 .wolf-app-shell {
   display: flex;
+  flex: 1;
   width: 100%;
   height: 100%;
+  min-height: 0;
   max-width: 100vw;
   max-height: 100vh;
   max-height: 100dvh;
@@ -246,6 +248,7 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%;
   height: 100%;
   min-height: 0;
   overflow: hidden;
@@ -254,9 +257,9 @@ onUnmounted(() => {
 .view-container {
   flex: 1;
   display: flex;
+  width: 100%;
   min-height: 0;
-  height: calc(100vh - 56px);
-  max-height: calc(100vh - 56px);
+  height: 100%;
   overflow: hidden;
   background: var(--bg-canvas, #040c08);
 }

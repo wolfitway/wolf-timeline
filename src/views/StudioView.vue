@@ -4,6 +4,7 @@ import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useShortcutsStore } from "@/stores/useShortcutsStore";
 import { renderMarkdown, toggleTaskInMarkdown } from "@/services/markdownRenderer";
+import WolfIcon, { type IconName } from "@/components/common/WolfIcon.vue";
 import type { Note } from "@/types";
 
 const notesStore = useNotesStore();
@@ -347,11 +348,17 @@ function handleDeleteCurrentNote() {
 }
 
 // Sovereign Templates
-const SOVEREIGN_TEMPLATES = [
+const SOVEREIGN_TEMPLATES: Array<{
+  id: string;
+  title: string;
+  icon: IconName;
+  desc: string;
+  body: string;
+}> = [
   {
     id: "rfc",
     title: "Architecture RFC & Data Flow",
-    icon: "🏗️",
+    icon: "code",
     desc: "System context, invariants, proposed interfaces, and trade-off matrix.",
     body: `# [RFC] System Architecture & Sovereign Data Flow
 
@@ -395,7 +402,7 @@ interface SovereignNode {
   {
     id: "security",
     title: "Security & Zero-Telemetry Audit",
-    icon: "🛡️",
+    icon: "shield-check",
     desc: "Cryptographic invariants, threat vectors, and verification checklist.",
     body: `# 🛡️ Sovereign Security & Zero-Telemetry Audit
 
@@ -427,7 +434,7 @@ interface SovereignNode {
   {
     id: "milestone",
     title: "Product Release Milestone",
-    icon: "🚀",
+    icon: "roadmap",
     desc: "Objectives, key deliverables, and production readiness checklist.",
     body: `# 🚀 Release Milestone: Sovereign Studio v2.5
 
@@ -456,7 +463,7 @@ This release delivers full user keyboard customization and a god-tier deep-work 
   {
     id: "ai_prompt",
     title: "AI Prompt & Guardrails Spec",
-    icon: "🧠",
+    icon: "cpu",
     desc: "System prompt framing, negative constraints, and few-shot evaluation cases.",
     body: `# 🧠 AI System Prompt & Cognitive Reasoning Spec
 
@@ -482,7 +489,7 @@ Every feature you touch must be visually stunning, tactile, accessible, and fast
   {
     id: "strategy",
     title: "Strategy & Decision Post-Mortem",
-    icon: "📋",
+    icon: "file-text",
     desc: "Historical motivation, options evaluated, and consensus summary.",
     body: `# 📋 Strategy & Technical Decision Post-Mortem
 
@@ -527,12 +534,13 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
     <aside v-if="showSidebar" class="studio-sidebar">
       <div class="sidebar-header">
         <div class="sidebar-title-row">
-          <span class="studio-icon">📝</span>
+          <WolfIcon name="file-text" :size="16" class="studio-icon" />
           <h2 class="sidebar-title">Documents</h2>
         </div>
         <div class="sidebar-actions-row">
           <button type="button" class="btn-new-doc" title="New Document" @click="handleCreateNewNote">
-            + New Doc
+            <WolfIcon name="plus" :size="12" />
+            <span>New Doc</span>
           </button>
 
           <!-- Template Dropdown Trigger -->
@@ -543,7 +551,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
               title="Apply Sovereign Template"
               @click="showTemplateMenu = !showTemplateMenu"
             >
-              📑 Templates ▾
+              <WolfIcon name="template" :size="12" />
+              <span>Templates</span>
+              <WolfIcon name="chevron-down" :size="10" />
             </button>
 
             <!-- Click Outside Backdrop -->
@@ -562,7 +572,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
                 class="template-menu-item"
                 @click="applyTemplate(tmpl)"
               >
-                <span class="tmpl-icon">{{ tmpl.icon }}</span>
+                <div class="tmpl-icon-box">
+                  <WolfIcon :name="tmpl.icon" :size="15" />
+                </div>
                 <div class="tmpl-info">
                   <span class="tmpl-title">{{ tmpl.title }}</span>
                   <span class="tmpl-desc">{{ tmpl.desc }}</span>
@@ -574,7 +586,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 
         <!-- Search Bar -->
         <div class="sidebar-search-box">
-          <span class="search-icon">🔍</span>
+          <WolfIcon name="search" :size="13" class="search-icon" />
           <input
             v-model="sidebarSearch"
             type="text"
@@ -658,7 +670,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
             title="Back to Documents Navigator"
             aria-label="Back to Documents"
           >
-            ← Docs
+            <WolfIcon name="arrow-left" :size="13" />
+            <span>Docs</span>
           </button>
 
           <!-- Toggle Sidebar Button -->
@@ -668,8 +681,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
             :title="`Toggle Document Navigator (${shortcutsStore.formatShortcut('toggle_studio_sidebar')})`"
             @click="showSidebar = !showSidebar"
           >
-            <span v-if="showSidebar">◀ Hide Sidebar</span>
-            <span v-else>▶ Show Sidebar</span>
+            <WolfIcon :name="showSidebar ? 'chevron-left' : 'chevron-right'" :size="12" />
+            <span>{{ showSidebar ? "Hide Sidebar" : "Show Sidebar" }}</span>
           </button>
 
           <!-- Note Title Input (if note selected) -->
@@ -706,7 +719,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
               title="Split View (Editor + Live Preview)"
               @click="viewMode = 'split'"
             >
-              ◫ Split
+              <WolfIcon name="split" :size="12" />
+              <span>Split</span>
             </button>
             <button
               type="button"
@@ -715,7 +729,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
               title="Editor Only"
               @click="viewMode = 'editor'"
             >
-              ✎ Write
+              <WolfIcon name="write" :size="12" />
+              <span>Write</span>
             </button>
             <button
               type="button"
@@ -724,26 +739,31 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
               title="Preview Only"
               @click="viewMode = 'preview'"
             >
-              👁 Read
+              <WolfIcon name="read" :size="12" />
+              <span>Preview</span>
             </button>
           </div>
 
           <!-- Quick Action Buttons -->
           <div class="action-btn-group">
             <button type="button" class="btn-action-icon" title="Copy Markdown" @click="copyMarkdown">
-              📋 MD
+              <WolfIcon name="copy" :size="13" />
+              <span>MD</span>
             </button>
             <button type="button" class="btn-action-icon" title="Copy HTML" @click="copyHtml">
-              📄 HTML
+              <WolfIcon name="code" :size="13" />
+              <span>HTML</span>
             </button>
             <button type="button" class="btn-action-icon" title="Download .md file" @click="downloadMarkdown">
-              ⬇️ Export
+              <WolfIcon name="download" :size="13" />
+              <span>Export</span>
             </button>
             <button type="button" class="btn-action-icon" title="Duplicate Document" @click="handleDuplicateCurrentNote">
-              ⧉ Copy
+              <WolfIcon name="duplicate" :size="13" />
+              <span>Duplicate</span>
             </button>
             <button type="button" class="btn-action-icon delete" title="Delete Document" @click="handleDeleteCurrentNote">
-              🗑️
+              <WolfIcon name="trash" :size="13" />
             </button>
             <button
               type="button"
@@ -751,7 +771,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
               :title="`Zen Fullscreen Focus Mode (${shortcutsStore.formatShortcut('focus_mode')})`"
               @click="uiStore.showFocusEditor = true"
             >
-              ⤢ Focus
+              <WolfIcon name="maximize" :size="13" />
+              <span>Focus</span>
             </button>
           </div>
         </div>
@@ -784,7 +805,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
             />
           </div>
           <button v-else type="button" class="btn-add-tag-pill" @click="isAddingTag = true">
-            + Tag
+            <WolfIcon name="plus" :size="11" />
+            <span>Tag</span>
           </button>
         </div>
       </div>
@@ -814,30 +836,69 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
         <div class="toolbar-divider"></div>
 
         <div class="toolbar-group">
-          <button type="button" class="btn-tool" title="Bullet List (- item)" @click="insertLinePrefix('- ')">• List</button>
-          <button type="button" class="btn-tool" title="Numbered List (1. item)" @click="insertLinePrefix('1. ')">1. List</button>
-          <button type="button" class="btn-tool" title="Interactive Task List (- [ ] task)" @click="insertLinePrefix('- [ ] ')">☑ Task</button>
-          <button type="button" class="btn-tool" title="Blockquote (> quote)" @click="insertLinePrefix('> ')">❝ Quote</button>
+          <button type="button" class="btn-tool" title="Bullet List (- item)" @click="insertLinePrefix('- ')">
+            <WolfIcon name="list-bullet" :size="13" />
+            <span>List</span>
+          </button>
+          <button type="button" class="btn-tool" title="Numbered List (1. item)" @click="insertLinePrefix('1. ')">
+            <WolfIcon name="list-number" :size="13" />
+            <span>Numbered</span>
+          </button>
+          <button type="button" class="btn-tool" title="Interactive Task List (- [ ] task)" @click="insertLinePrefix('- [ ] ')">
+            <WolfIcon name="check-square" :size="13" />
+            <span>Task</span>
+          </button>
+          <button type="button" class="btn-tool" title="Blockquote (> quote)" @click="insertLinePrefix('> ')">
+            <WolfIcon name="quote" :size="13" />
+            <span>Quote</span>
+          </button>
         </div>
 
         <div class="toolbar-divider"></div>
 
         <div class="toolbar-group">
-          <button type="button" class="btn-tool" title="Inline Code (`code`)" @click="insertFormatting('`', '`', 'code')">`Code`</button>
-          <button type="button" class="btn-tool" title="Code Block (```lang)" @click="insertFormatting('```typescript\n', '\n```', '// code here')">{ } Block</button>
-          <button type="button" class="btn-tool" title="Insert 3-Column Table" @click="insertTable">⊞ Table</button>
-          <button type="button" class="btn-tool" title="Insert Hyperlink" @click="insertLinkPrompt">🔗 Link</button>
-          <button type="button" class="btn-tool" title="Insert Image" @click="insertImagePrompt">🖼️ Image</button>
-          <button type="button" class="btn-tool" title="Insert Timestamp" @click="insertTimestamp">⏱️ Time</button>
+          <button type="button" class="btn-tool" title="Inline Code (`code`)" @click="insertFormatting('`', '`', 'code')">
+            <WolfIcon name="code" :size="13" />
+            <span>Code</span>
+          </button>
+          <button type="button" class="btn-tool" title="Code Block (```lang)" @click="insertFormatting('```typescript\n', '\n```', '// code here')">
+            <WolfIcon name="code-block" :size="13" />
+            <span>Block</span>
+          </button>
+          <button type="button" class="btn-tool" title="Insert 3-Column Table" @click="insertTable">
+            <WolfIcon name="table" :size="13" />
+            <span>Table</span>
+          </button>
+          <button type="button" class="btn-tool" title="Insert Hyperlink" @click="insertLinkPrompt">
+            <WolfIcon name="link" :size="13" />
+            <span>Link</span>
+          </button>
+          <button type="button" class="btn-tool" title="Insert Image" @click="insertImagePrompt">
+            <WolfIcon name="image" :size="13" />
+            <span>Image</span>
+          </button>
+          <button type="button" class="btn-tool" title="Insert Timestamp" @click="insertTimestamp">
+            <WolfIcon name="clock" :size="13" />
+            <span>Time</span>
+          </button>
         </div>
 
         <div class="toolbar-divider"></div>
 
         <!-- Callout Alert Inserts -->
         <div class="toolbar-group">
-          <button type="button" class="btn-tool-callout note" title="Note Alert" @click="insertCallout('NOTE')">ℹ️ Note</button>
-          <button type="button" class="btn-tool-callout tip" title="Tip Alert" @click="insertCallout('TIP')">💡 Tip</button>
-          <button type="button" class="btn-tool-callout warn" title="Warning Alert" @click="insertCallout('WARNING')">⚠️ Warn</button>
+          <button type="button" class="btn-tool-callout note" title="Note Alert" @click="insertCallout('NOTE')">
+            <WolfIcon name="info" :size="12" />
+            <span>Note</span>
+          </button>
+          <button type="button" class="btn-tool-callout tip" title="Tip Alert" @click="insertCallout('TIP')">
+            <WolfIcon name="lightbulb" :size="12" />
+            <span>Tip</span>
+          </button>
+          <button type="button" class="btn-tool-callout warn" title="Warning Alert" @click="insertCallout('WARNING')">
+            <WolfIcon name="alert" :size="12" />
+            <span>Warn</span>
+          </button>
         </div>
       </div>
 
@@ -883,7 +944,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
                 :title="isSyncScrollEnabled ? 'Synchronized scrolling active (click to decouple)' : 'Independent scrolling active (click to sync)'"
                 @click="isSyncScrollEnabled = !isSyncScrollEnabled"
               >
-                <span>{{ isSyncScrollEnabled ? '🔗 Sync Scroll On' : '🔓 Independent' }}</span>
+                <WolfIcon :name="isSyncScrollEnabled ? 'link' : 'unlock'" :size="12" />
+                <span>{{ isSyncScrollEnabled ? 'Sync Scroll' : 'Independent' }}</span>
               </button>
               <span class="pane-sync">Interactive Checklists Enabled ✓</span>
             </div>
@@ -901,7 +963,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
       <!-- Empty State / Welcome Screen when no note selected -->
       <div v-else class="studio-welcome-screen">
         <div class="welcome-box">
-          <div class="welcome-icon">🐺</div>
+          <div class="welcome-icon">
+            <WolfIcon name="wolf" :size="48" />
+          </div>
           <h2 class="welcome-title">Sovereign Markdown Studio</h2>
           <p class="welcome-sub">
             Ultra-fast, distraction-free technical writing suite with zero telemetry, local RAM encryption, and interactive previews.
@@ -909,7 +973,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 
           <div class="welcome-actions">
             <button type="button" class="btn-welcome-primary" @click="handleCreateNewNote">
-              ✨ Create Blank Document
+              <WolfIcon name="plus" :size="14" />
+              <span>Create Blank Document</span>
             </button>
           </div>
 
@@ -920,7 +985,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
               class="tmpl-card"
               @click="applyTemplate(tmpl)"
             >
-              <span class="card-icon">{{ tmpl.icon }}</span>
+              <div class="card-icon-box">
+                <WolfIcon :name="tmpl.icon" :size="20" />
+              </div>
               <h3 class="card-title">{{ tmpl.title }}</h3>
               <p class="card-desc">{{ tmpl.desc }}</p>
               <span class="card-action">Use Template →</span>
@@ -935,14 +1002,23 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
           <span class="metric-item"><strong>{{ wordCount }}</strong> words</span>
           <span class="metric-item"><strong>{{ charCount }}</strong> characters</span>
           <span class="metric-item"><strong>{{ lineCount }}</strong> lines</span>
-          <span class="metric-item">⏱ <strong>{{ readTime }}</strong> min read</span>
-          <span class="metric-item">🗣 <strong>{{ speakTime }}</strong> min speak</span>
-          <span class="metric-item complexity">📊 {{ readabilityScore }}</span>
+          <span class="metric-item">
+            <WolfIcon name="clock" :size="12" />
+            <span><strong>{{ readTime }}</strong> min read</span>
+          </span>
+          <span class="metric-item">
+            <WolfIcon name="voice" :size="12" />
+            <span><strong>{{ speakTime }}</strong> min speak</span>
+          </span>
+          <span class="metric-item complexity">
+            <WolfIcon name="sliders" :size="11" />
+            <span>{{ readabilityScore }}</span>
+          </span>
         </div>
 
         <div class="footer-security">
-          <span class="security-dot"></span>
-          <span class="security-text">🔒 AES-256 In-Memory RAM Buffer • Zero-Telemetry Guaranteed</span>
+          <WolfIcon name="shield-check" :size="13" class="security-shield-icon" />
+          <span class="security-text">AES-256 In-Memory RAM Buffer • Zero-Telemetry Guaranteed</span>
         </div>
       </footer>
     </main>
@@ -1375,14 +1451,18 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 }
 
 .btn-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: transparent;
   border: none;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, #94a3b8);
   font-size: 11.5px;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 4px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .btn-mode.active {
@@ -1397,12 +1477,15 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 }
 
 .btn-action-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: var(--bg-card, #0a1610);
   border: 1px solid var(--border-card, #173223);
-  color: var(--text-secondary, #9ca3af);
+  color: var(--text-secondary, #94a3b8);
   font-size: 11.5px;
   font-weight: 700;
-  padding: 6px 9px;
+  padding: 5px 9px;
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1411,6 +1494,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 .btn-action-icon:hover {
   background: var(--bg-card-hover, #11281e);
   color: var(--text-white, #fff);
+  border-color: var(--emerald-main, #10b981);
 }
 
 .btn-action-icon.delete:hover {
@@ -1420,19 +1504,24 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 }
 
 .btn-focus-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: var(--emerald-pill-bg, #10241b);
   border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.4));
   border-radius: 6px;
-  padding: 6px 12px;
+  padding: 5px 12px;
   color: var(--emerald-bright, #34d399);
   font-size: 11.5px;
   font-weight: 800;
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
 .btn-focus-trigger:hover {
   background: var(--bg-card-hover, #173829);
+  box-shadow: 0 0 12px var(--border-glow, rgba(16, 185, 129, 0.3));
 }
 
 /* Tag Management Strip */
@@ -1537,10 +1626,13 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 }
 
 .btn-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 4px;
-  color: var(--text-secondary, #9ca3af);
+  color: var(--text-secondary, #94a3b8);
   font-size: 11.5px;
   font-weight: 700;
   padding: 4px 8px;
@@ -1556,11 +1648,15 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 }
 
 .btn-tool-callout {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 7px;
+  padding: 3px 8px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .btn-tool-callout.note {
@@ -1585,9 +1681,11 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
    DUAL PANES: EDITOR & LIVE PREVIEW
    ======================================================== */
 .studio-panes {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
+  height: 100%;
   display: grid;
+  grid-template-rows: 1fr;
   overflow: hidden;
 }
 

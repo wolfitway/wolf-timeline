@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { useUiStore, type ActiveTab } from "@/stores/useUiStore";
+import WolfIcon, { type IconName } from "@/components/common/WolfIcon.vue";
 
 const uiStore = useUiStore();
 
 interface NavItem {
   id: ActiveTab;
   label: string;
-  icon: string;
+  icon: IconName;
 }
 
 const navItems: NavItem[] = [
-  { id: "timeline", label: "Timeline", icon: "🕒" },
-  { id: "studio", label: "Studio", icon: "📝" },
-  { id: "roadmap", label: "Roadmap", icon: "🗺️" },
-  { id: "bookmarks", label: "Bookmarks", icon: "📑" },
-  { id: "secrets", label: "Vault", icon: "🔐" },
-  { id: "settings", label: "Settings", icon: "⚙️" },
+  { id: "timeline", label: "Timeline", icon: "timeline" },
+  { id: "studio", label: "Studio", icon: "studio" },
+  { id: "roadmap", label: "Roadmap", icon: "roadmap" },
+  { id: "bookmarks", label: "Bookmarks", icon: "bookmarks" },
+  { id: "secrets", label: "Vault", icon: "vault" },
+  { id: "settings", label: "Settings", icon: "settings" },
 ];
 
 function handleTabClick(id: ActiveTab) {
@@ -39,7 +40,9 @@ function handleTabClick(id: ActiveTab) {
         :aria-label="item.label"
         :aria-current="uiStore.activeTab === item.id ? 'page' : undefined"
       >
-        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-icon">
+          <WolfIcon :name="item.icon" :size="20" />
+        </span>
         <span class="nav-label">{{ item.label }}</span>
         <span v-if="uiStore.activeTab === item.id" class="active-indicator-dot"></span>
       </button>
