@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WolfIcon from "@/components/common/WolfIcon.vue";
 import { ref, computed, onMounted } from "vue";
 import { useBookmarksStore } from "@/stores/useBookmarksStore";
 import { useNotesStore } from "@/stores/useNotesStore";
@@ -225,7 +226,7 @@ onMounted(() => {
       <div class="header-left">
         <div class="header-title-row">
           <div class="bookmarks-icon-badge">
-            <span class="icon-emoji">🔖</span>
+            <WolfIcon name="bookmarks" :size="20" class="icon-emoji" />
             <span class="pulse-indicator"></span>
           </div>
           <div>
@@ -243,7 +244,7 @@ onMounted(() => {
           class="btn-action-emerald"
           @click="openAddModal"
         >
-          <span class="btn-icon">✚</span>
+          <WolfIcon name="plus" :size="12" class="btn-icon" />
           <span>New Bookmark</span>
         </button>
 
@@ -254,7 +255,7 @@ onMounted(() => {
           @click="runBatchAutoClassifier"
           title="Analyze all bookmarks and automatically assign category tags"
         >
-          <span class="btn-icon">⚡</span>
+          <WolfIcon name="sparkles" :size="12" class="btn-icon" />
           <span>Auto-Classify All</span>
         </button>
 
@@ -264,7 +265,7 @@ onMounted(() => {
           @click="uiStore.showBookmarkImporter = true"
           title="Import Netscape HTML bookmarks export from Chrome, Brave, Safari, Firefox"
         >
-          <span class="btn-icon">📥</span>
+          <WolfIcon name="import" :size="12" class="btn-icon" />
           <span>Import HTML</span>
         </button>
       </div>
@@ -273,7 +274,7 @@ onMounted(() => {
     <!-- Search & Filter Ribbon -->
     <div class="filter-ribbon-card">
       <div class="search-input-wrap">
-        <span class="search-icon">🔍</span>
+        <WolfIcon name="search" :size="13" class="search-icon" />
         <input
           v-model="bookmarksStore.searchQuery"
           type="text"
@@ -371,7 +372,7 @@ onMounted(() => {
                 title="Kokoro Neural Audio Readout"
                 @click="speakBookmark(bm)"
               >
-                {{ isSpeakingId === bm.id ? '🔊' : '🗣️' }}
+                <WolfIcon :name="isSpeakingId === bm.id ? 'volume' : 'voice'" :size="13" />
               </button>
               <button
                 type="button"
@@ -379,7 +380,7 @@ onMounted(() => {
                 title="Edit bookmark"
                 @click="openEditModal(bm)"
               >
-                ✏️
+                <WolfIcon name="write" :size="12" />
               </button>
               <button
                 type="button"
@@ -439,7 +440,7 @@ onMounted(() => {
                 @click="sendToTimeline(bm)"
                 title="Send and embed this bookmark into the project timeline as an event"
               >
-                <span class="action-icon">📌</span>
+                <WolfIcon name="link" :size="12" class="action-icon" />
                 <span>Add to Timeline</span>
               </button>
               <button
@@ -448,7 +449,7 @@ onMounted(() => {
                 @click="openSendToRoadmap(bm)"
                 title="Send and link this bookmark to a Roadmap Phase as a key practice"
               >
-                <span class="action-icon">🗺️</span>
+                <WolfIcon name="roadmap" :size="12" class="action-icon" />
                 <span>Add to Roadmap</span>
               </button>
             </div>
@@ -457,7 +458,7 @@ onMounted(() => {
           <!-- Card Footer with Parent Project Info -->
           <div class="card-footer-bar">
             <span class="project-pill" :title="`Stored in ${bm.projectTitle}`">
-              📁 {{ bm.projectTitle }}
+              <WolfIcon name="folder" :size="11" /> <span>{{ bm.projectTitle }}</span>
             </span>
             <span class="date-text">{{ bm.date }}</span>
           </div>
@@ -466,7 +467,7 @@ onMounted(() => {
 
       <!-- Empty State -->
       <div v-else class="empty-bookmarks-state">
-        <div class="empty-icon-wrap">📑</div>
+        <div class="empty-icon-wrap"><WolfIcon name="bookmarks" :size="32" /></div>
         <h3 class="empty-title">No bookmarks found</h3>
         <p class="empty-desc">
           {{ bookmarksStore.searchQuery ? `No bookmarks match "${bookmarksStore.searchQuery}".` : 'Start organizing your sovereign research by adding or importing bookmarks into the database.' }}
@@ -497,7 +498,7 @@ onMounted(() => {
       <div class="modal-dialog sm">
         <div class="modal-header">
           <h3 class="modal-title">
-            🗺️ Link Bookmark to Roadmap
+            <WolfIcon name="roadmap" :size="16" /> <span>Link Bookmark to Roadmap</span>
           </h3>
           <button type="button" class="btn-close" @click="showRoadmapPickerModal = false">✕</button>
         </div>
@@ -560,7 +561,7 @@ onMounted(() => {
                 @click="triggerAutoClassifyForm"
                 title="Classify and suggest smart tags"
               >
-                ⚡ Auto-Tag
+                <WolfIcon name="sparkles" :size="12" /> <span>Auto-Tag</span>
               </button>
             </div>
             <span v-if="autoClassifyStatus" class="classify-feedback-text">{{ autoClassifyStatus }}</span>
