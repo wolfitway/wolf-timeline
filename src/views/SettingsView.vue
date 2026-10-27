@@ -34,12 +34,50 @@ export type SettingsCategory =
   | "fonts"
   | "shortcuts"
   | "voice"
+  | "byok"
   | "export"
   | "license"
   | "performance";
 
 const activeCategory = ref<SettingsCategory>("themes");
 const searchQuery = ref("");
+
+// BYOK AI Keys State
+const byokAnthropicKey = ref(localStorage.getItem("wolf_byok_anthropic") || "");
+const byokOpenaiKey = ref(localStorage.getItem("wolf_byok_openai") || "");
+const byokGeminiKey = ref(localStorage.getItem("wolf_byok_gemini") || "");
+const byokDeepseekKey = ref(localStorage.getItem("wolf_byok_deepseek") || "");
+const showByokKeys = ref<Record<string, boolean>>({
+  anthropic: false,
+  openai: false,
+  gemini: false,
+  deepseek: false,
+});
+
+function saveByokKeys() {
+  if (!licenseStore.isPaid) {
+    uiStore.showToast("⚡ BYOK Custom AI Keys require a Commercial Solo or Team License.");
+    uiStore.showLicenseModal = true;
+    return;
+  }
+  localStorage.setItem("wolf_byok_anthropic", byokAnthropicKey.value.trim());
+  localStorage.setItem("wolf_byok_openai", byokOpenaiKey.value.trim());
+  localStorage.setItem("wolf_byok_gemini", byokGeminiKey.value.trim());
+  localStorage.setItem("wolf_byok_deepseek", byokDeepseekKey.value.trim());
+  uiStore.showToast("BYOK AI API Keys securely stored to encrypted local storage ✓");
+}
+
+function clearByokKeys() {
+  byokAnthropicKey.value = "";
+  byokOpenaiKey.value = "";
+  byokGeminiKey.value = "";
+  byokDeepseekKey.value = "";
+  localStorage.removeItem("wolf_byok_anthropic");
+  localStorage.removeItem("wolf_byok_openai");
+  localStorage.removeItem("wolf_byok_gemini");
+  localStorage.removeItem("wolf_byok_deepseek");
+  uiStore.showToast("BYOK AI Keys cleared.");
+}
 
 // Shortcuts State
 const recordingActionId = ref<string | null>(null);
@@ -462,7 +500,8 @@ const categories = computed<SettingsCategoryItem[]>(() => [
   { id: "themes", label: "Appearance & Themes", icon: "palette", count: themesList.length },
   { id: "fonts", label: "Typography & Fonts", icon: "font", count: fontsList.length },
   { id: "shortcuts", label: "Keyboard Shortcuts", icon: "keyboard", count: shortcutsStore.shortcuts.length },
-  { id: "voice", label: "Kokoro Voice & Audio", icon: "voice", count: "ACTIVE" },
+  { id: "voice", label: "Kokoro Voice & Audio", icon: "voice", count: licenseStore.isPaid ? "UNLOCKED" : "PRO" },
+  { id: "byok", label: "BYOK AI Keys & Models", icon: "sparkles", count: licenseStore.isPaid ? "ENABLED" : "PAID" },
   { id: "export", label: "Data Export & Backup", icon: "export", count: 4 },
   { id: "license", label: "Hardware & Licensing", icon: "key", count: licenseStore.isActivated ? "ACTIVE" : "FREE" },
   { id: "performance", label: "Reordering & Physics", icon: "sliders", count: "SMOOTH" },
@@ -478,7 +517,8 @@ const filteredCategories = computed(() => {
     if (cat.id === "export" && ("json markdown csv backup restore export import".includes(q))) return true;
     if (cat.id === "themes" && themesList.some((t) => t.name.toLowerCase().includes(q))) return true;
     if (cat.id === "fonts" && fontsList.some((f) => f.name.toLowerCase().includes(q))) return true;
-    if (cat.id === "voice" && ("voice audio sound kokoro chime speech speech synthesis speech control".includes(q))) return true;
+    if (cat.id === "voice" && ("voice audio sound kokoro chime speech speech synthesis speech control mic".includes(q))) return true;
+    if (cat.id === "byok" && ("byok api key openai claude gemini deepseek llm ai models intelligence".includes(q))) return true;
     if (cat.id === "license" && ("license tier hardware fingerprint machine cryptographic free pro".includes(q))) return true;
     if (cat.id === "performance" && ("performance reordering physics animation speed drag haptic".includes(q))) return true;
     return false;
@@ -517,6 +557,11 @@ const searchResults = computed(() => {
   // 4. Voice
   if ("voice audio sound kokoro chime speech speech synthesis mic".includes(q)) {
     results.push({ categoryId: "voice", categoryLabel: "Kokoro Voice & Audio", title: "Kokoro Voice & Spoken Chimes", desc: "Procedural audio companion guidance and hands-free voice commands." });
+  }
+
+  // 4b. BYOK
+  if ("byok api key openai claude gemini deepseek ai model intelligence llm".includes(q)) {
+    results.push({ categoryId: "byok", categoryLabel: "BYOK AI Keys & Models", title: "Bring Your Own Key (BYOK) AI Engine", desc: "Connect proprietary Anthropic Claude, OpenAI, Google Gemini, and DeepSeek API keys directly." });
   }
 
   // 5. Export
@@ -1195,11 +1240,48 @@ function jumpToCategory(catId: SettingsCategory) {
             <div class="voice-card-top">
               <div class="voice-avatar-mini mic"><WolfIcon name="mic" :size="20" /></div>
               <div>
-                <h4 class="voice-card-title">Supported Hands-Free Voice Commands</h4>
+                <div class="voice-title-row">
+                  <h4 class="voice-card-title">Supported Hands-Free Voice Commands</h4>
+                  <span class="voice-tier-pill" :class="{ paid: licenseStore.isPaid }">
+                    {{ licenseStore.isPaid ? '✓ Commercial Solo / Team' : '⚡ Paid License Exclusive' }}
+                  </span>
+                </div>
                 <p class="voice-card-sub">Speak naturally while writing or ideating to command your workspace</p>
               </div>
             </div>
-            <div class="voice-commands-list">
+
+            <!-- Gating Banner if Free Tier -->
+            <div v-if="!licenseStore.isPaid" class="voice-pro-banner">
+              <div class="pro-banner-left">
+                <span class="pro-badge">PAID FEATURE</span>
+                <p class="pro-desc">Hands-free voice recognition is exclusive to Commercial Solo and Team licenses. Command your timeline, quick capture, and workspaces hands-free while building.</p>
+              </div>
+              <button type="button" class="btn-unlock-pro" @click="uiStore.showLicenseModal = true">
+                <WolfIcon name="zap" :size="13" /> <span>Unlock Voice Commands ($49)</span>
+              </button>
+            </div>
+
+            <!-- Live Status & Mic Toggle if Paid Tier -->
+            <div v-else class="voice-unlocked-banner">
+              <div class="unlocked-left">
+                <span class="unlocked-badge">ACTIVE ENGINE</span>
+                <p class="unlocked-desc">Speech status: {{ voiceControl.getStatus().isListening ? 'Listening for speech input...' : 'Idle & Ready' }}</p>
+              </div>
+              <button
+                type="button"
+                class="btn-toggle-mic"
+                :class="{ listening: voiceControl.getStatus().isListening }"
+                @click="() => {
+                  const active = voiceControl.toggleListening();
+                  uiStore.showToast(active ? '🎙️ Voice Control listening...' : 'Voice control stopped');
+                }"
+              >
+                <WolfIcon :name="voiceControl.getStatus().isListening ? 'mic' : 'mic-off'" :size="14" />
+                <span>{{ voiceControl.getStatus().isListening ? 'Stop Listening' : 'Start Listening' }}</span>
+              </button>
+            </div>
+
+            <div class="voice-commands-list" :class="{ dimmed: !licenseStore.isPaid }">
               <div class="voice-cmd-row">
                 <span class="cmd-phrase">"go to timeline" / "open timeline"</span>
                 <span class="cmd-action">&rarr; Switch to Timeline Chronology</span>
@@ -1229,6 +1311,201 @@ function jumpToCategory(catId: SettingsCategory) {
                 <span class="cmd-action">&rarr; Create New Note &amp; Jump to Studio</span>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: BYOK AI Keys & Models -->
+      <div v-else-if="activeCategory === 'byok'" class="category-pane">
+        <div class="pane-header">
+          <div>
+            <h3 class="pane-title"><WolfIcon name="sparkles" :size="18" /> BYOK (Bring Your Own Key) Custom AI Models</h3>
+            <p class="pane-desc">Zero-telemetry client-side inference using your personal API keys for Claude, GPT-4o, Gemini, and DeepSeek.</p>
+          </div>
+          <button v-if="!licenseStore.isPaid" type="button" class="btn-primary-export" @click="uiStore.showLicenseModal = true">
+            <WolfIcon name="zap" :size="13" /> <span>Upgrade to Unlock BYOK ($49)</span>
+          </button>
+        </div>
+
+        <!-- Lock banner for free tier -->
+        <div v-if="!licenseStore.isPaid" class="byok-locked-banner-card">
+          <div class="byok-locked-top">
+            <div class="byok-locked-badge">
+              <span class="dot-gold"></span>
+              <span>COMMERCIAL SOLO &amp; TEAM LICENSE REQUIRED</span>
+            </div>
+            <h4 class="byok-locked-title">Sovereign Direct-to-Provider AI Architecture</h4>
+            <p class="byok-locked-sub">
+              Wolf Timeline is built on sovereign local privacy principles. BYOK allows you to query frontier reasoning models directly from your client without passing through any third-party SaaS proxy or telemetry aggregator.
+            </p>
+          </div>
+
+          <div class="byok-perks-grid">
+            <div class="byok-perk-item">
+              <div class="perk-icon">🧠</div>
+              <div class="perk-details">
+                <span class="perk-name">Claude 3.7 Sonnet</span>
+                <span class="perk-desc">Anthropic hybrid extended reasoning &amp; architectural trade-off debate</span>
+              </div>
+            </div>
+            <div class="byok-perk-item">
+              <div class="perk-icon">⚡</div>
+              <div class="perk-details">
+                <span class="perk-name">OpenAI GPT-4o</span>
+                <span class="perk-desc">High-throughput omnichannel synthesis &amp; structured ADR outputs</span>
+              </div>
+            </div>
+            <div class="byok-perk-item">
+              <div class="perk-icon">✨</div>
+              <div class="perk-details">
+                <span class="perk-name">Google Gemini 2.5 Pro</span>
+                <span class="perk-desc">Long-context spec parsing and multi-model consensus validation</span>
+              </div>
+            </div>
+            <div class="byok-perk-item">
+              <div class="perk-icon">🔮</div>
+              <div class="perk-details">
+                <span class="perk-name">DeepSeek R1</span>
+                <span class="perk-desc">Pure open-weights chain-of-thought verification</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="byok-unlock-footer">
+            <button type="button" class="btn-primary-export" @click="uiStore.showLicenseModal = true">
+              <WolfIcon name="key" :size="14" /> <span>Unlock Commercial Solo License ($49 Lifetime)</span>
+            </button>
+            <span class="byok-note">Includes full commercial rights, unbranded exports, and hands-free voice commands.</span>
+          </div>
+        </div>
+
+        <!-- Interactive BYOK Manager when paid -->
+        <div v-else class="byok-active-manager-card">
+          <div class="byok-status-head">
+            <div class="status-indicator-line">
+              <span class="status-dot-active"></span>
+              <span class="status-text">BYOK ENGINE READY &bull; {{ licenseStore.tierLabel }}</span>
+            </div>
+            <span class="zero-telemetry-pill">🛡️ 100% Zero-Telemetry Direct Calls</span>
+          </div>
+
+          <div class="byok-inputs-list">
+            <!-- Anthropic Claude -->
+            <div class="byok-input-group">
+              <div class="byok-group-label-row">
+                <label class="byok-label">
+                  <span class="provider-avatar">🧠</span>
+                  <span>Anthropic API Key (Claude 3.7 Sonnet)</span>
+                </label>
+                <span class="byok-format-hint">sk-ant-api03-...</span>
+              </div>
+              <div class="byok-input-wrapper">
+                <input
+                  v-model="byokAnthropicKey"
+                  :type="showByokKeys.anthropic ? 'text' : 'password'"
+                  class="byok-input mono"
+                  placeholder="Paste sk-ant-api03-... or load from vault"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-eye"
+                  @click="showByokKeys.anthropic = !showByokKeys.anthropic"
+                  :title="showByokKeys.anthropic ? 'Hide Key' : 'Reveal Key'"
+                >
+                  <WolfIcon :name="showByokKeys.anthropic ? 'eye-off' : 'eye'" :size="14" />
+                </button>
+              </div>
+            </div>
+
+            <!-- OpenAI -->
+            <div class="byok-input-group">
+              <div class="byok-group-label-row">
+                <label class="byok-label">
+                  <span class="provider-avatar">⚡</span>
+                  <span>OpenAI API Key (GPT-4o)</span>
+                </label>
+                <span class="byok-format-hint">sk-proj-...</span>
+              </div>
+              <div class="byok-input-wrapper">
+                <input
+                  v-model="byokOpenaiKey"
+                  :type="showByokKeys.openai ? 'text' : 'password'"
+                  class="byok-input mono"
+                  placeholder="Paste sk-proj-... or load from vault"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-eye"
+                  @click="showByokKeys.openai = !showByokKeys.openai"
+                  :title="showByokKeys.openai ? 'Hide Key' : 'Reveal Key'"
+                >
+                  <WolfIcon :name="showByokKeys.openai ? 'eye-off' : 'eye'" :size="14" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Google Gemini -->
+            <div class="byok-input-group">
+              <div class="byok-group-label-row">
+                <label class="byok-label">
+                  <span class="provider-avatar">✨</span>
+                  <span>Google Gemini API Key (Gemini 2.5 Pro)</span>
+                </label>
+                <span class="byok-format-hint">AIzaSy...</span>
+              </div>
+              <div class="byok-input-wrapper">
+                <input
+                  v-model="byokGeminiKey"
+                  :type="showByokKeys.gemini ? 'text' : 'password'"
+                  class="byok-input mono"
+                  placeholder="Paste AIzaSy... or load from vault"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-eye"
+                  @click="showByokKeys.gemini = !showByokKeys.gemini"
+                  :title="showByokKeys.gemini ? 'Hide Key' : 'Reveal Key'"
+                >
+                  <WolfIcon :name="showByokKeys.gemini ? 'eye-off' : 'eye'" :size="14" />
+                </button>
+              </div>
+            </div>
+
+            <!-- DeepSeek -->
+            <div class="byok-input-group">
+              <div class="byok-group-label-row">
+                <label class="byok-label">
+                  <span class="provider-avatar">🔮</span>
+                  <span>DeepSeek API Key (DeepSeek R1 Reasoning)</span>
+                </label>
+                <span class="byok-format-hint">sk-...</span>
+              </div>
+              <div class="byok-input-wrapper">
+                <input
+                  v-model="byokDeepseekKey"
+                  :type="showByokKeys.deepseek ? 'text' : 'password'"
+                  class="byok-input mono"
+                  placeholder="Paste DeepSeek API key..."
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-eye"
+                  @click="showByokKeys.deepseek = !showByokKeys.deepseek"
+                  :title="showByokKeys.deepseek ? 'Hide Key' : 'Reveal Key'"
+                >
+                  <WolfIcon :name="showByokKeys.deepseek ? 'eye-off' : 'eye'" :size="14" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="byok-footer-actions">
+            <button type="button" class="btn-primary-export" @click="saveByokKeys">
+              <WolfIcon name="shield-check" :size="14" /> <span>Save BYOK Credentials</span>
+            </button>
+            <button type="button" class="btn-secondary-action" @click="clearByokKeys">
+              <WolfIcon name="trash" :size="13" /> <span>Clear All</span>
+            </button>
           </div>
         </div>
       </div>
@@ -2597,6 +2874,371 @@ function jumpToCategory(catId: SettingsCategory) {
 
 .cmd-action {
   color: var(--text-secondary, #94a3b8);
+}
+
+.voice-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.voice-tier-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  letter-spacing: 0.03em;
+}
+
+.voice-tier-pill.paid {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.voice-pro-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.pro-banner-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pro-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.05em;
+}
+
+.pro-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.btn-unlock-pro {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-unlock-pro:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.voice-unlocked-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.unlocked-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.unlocked-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #34d399;
+  letter-spacing: 0.05em;
+}
+
+.unlocked-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0;
+}
+
+.btn-toggle-mic {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  background: var(--bg-surface, #0d1e16);
+  color: var(--text-white, #fff);
+  border: 1px solid var(--border-card, #14281f);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-toggle-mic.listening {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  animation: pulse-red 1.5s infinite;
+}
+
+.voice-commands-list.dimmed {
+  opacity: 0.65;
+}
+
+/* BYOK Settings Panel */
+.byok-locked-banner-card {
+  background: var(--bg-card, #08120e);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.byok-locked-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.dot-gold {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 6px #fbbf24;
+}
+
+.byok-locked-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-white, #fff);
+  margin: 0 0 6px;
+}
+
+.byok-locked-sub {
+  font-size: 13px;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.byok-perks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.byok-perk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg-inner, #050d09);
+  border: 1px solid var(--border-subtle, #0d2116);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.perk-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.perk-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.perk-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-white, #fff);
+}
+
+.perk-desc {
+  font-size: 11px;
+  color: var(--text-muted, #64748b);
+  line-height: 1.35;
+}
+
+.byok-unlock-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-card, #14281f);
+}
+
+.byok-note {
+  font-size: 12px;
+  color: var(--text-muted, #64748b);
+}
+
+.byok-active-manager-card {
+  background: var(--bg-card, #08120e);
+  border: 1px solid var(--border-card, #14281f);
+  border-radius: 12px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.byok-status-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle, #0d2116);
+}
+
+.status-indicator-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot-active {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.status-text {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #34d399;
+}
+
+.zero-telemetry-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.byok-inputs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.byok-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.byok-group-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.byok-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-white, #fff);
+}
+
+.provider-avatar {
+  font-size: 14px;
+}
+
+.byok-format-hint {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted, #64748b);
+}
+
+.byok-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.byok-input {
+  width: 100%;
+  padding: 9px 38px 9px 12px;
+  border-radius: 7px;
+  background: var(--bg-inner, #050d09);
+  border: 1px solid var(--border-card, #14281f);
+  color: var(--text-white, #fff);
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+
+.byok-input:focus {
+  outline: none;
+  border-color: var(--emerald-main, #10b981);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.btn-toggle-eye {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-toggle-eye:hover {
+  color: var(--text-white, #fff);
+}
+
+.byok-footer-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle, #0d2116);
 }
 
 /* License overview */

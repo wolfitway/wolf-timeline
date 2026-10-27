@@ -111,4 +111,76 @@ describe("Competitor Benchmark & Multi-View Horizon Engine Suite", () => {
     store.viewMode = "track";
     expect(store.viewMode).toBe("track");
   });
+
+  describe("Competitor Intelligence & TCO Engine", () => {
+    it("provides complete benchmarks for all 11 market competitors", async () => {
+      const { COMPETITORS } = await import("@/services/competitorData");
+      expect(COMPETITORS.length).toBe(11);
+
+      const expectedIds = [
+        "linear",
+        "productplan",
+        "aha",
+        "notion",
+        "markwhen",
+        "obsidian",
+        "aeon",
+        "clickup",
+        "heptabase",
+        "anytype",
+        "officetimeline",
+      ];
+
+      expectedIds.forEach((id) => {
+        const comp = COMPETITORS.find((c) => c.id === id);
+        expect(comp).toBeDefined();
+        expect(comp?.name).toBeTruthy();
+        expect(comp?.category).toBeTruthy();
+        expect(comp?.pricing).toBeTruthy();
+        expect(comp?.fatalFlaws.length).toBeGreaterThan(0);
+        expect(comp?.wolfAdvantage).toBeTruthy();
+        expect(comp?.primaryPros.length).toBeGreaterThan(0);
+      });
+    });
+
+    it("calculates TCO savings accurately for high-ticket cloud roadmaps", async () => {
+      const { COMPETITORS, calculateTcoSavings } = await import("@/services/competitorData");
+      const productPlan = COMPETITORS.find((c) => c.id === "productplan")!;
+      expect(productPlan).toBeDefined();
+
+      const savings = calculateTcoSavings(productPlan, 5, 3);
+      // 5 seats * 1188/yr * 3 yrs = 17,820 USD
+      expect(savings.competitorTotalUsd).toBe(17820);
+      expect(savings.wolfTimelineUsd).toBe(190);
+      expect(savings.savingsUsd).toBe(17630);
+      expect(savings.savingsPercentage).toBe(99);
+    });
+
+    it("generates structured executive intelligence briefs", async () => {
+      const { COMPETITORS, generateExecutiveBriefMarkdown } = await import(
+        "@/services/competitorData"
+      );
+      const linear = COMPETITORS.find((c) => c.id === "linear")!;
+      const brief = generateExecutiveBriefMarkdown(linear, 10, 3);
+
+      expect(brief).toContain("# Executive Intelligence Brief: Wolf Timeline vs Linear Roadmaps");
+      expect(brief).toContain("100% Air-Gapped (Zero Cloud Exfiltration):");
+      expect(brief).toContain("Wolf Timeline [YES]");
+      expect(brief).toContain("Linear Roadmaps [NO]");
+      expect(brief).toContain("Capital Saved");
+    });
+
+    it("generates valid Markwhen (.mw) export from roadmap phases", async () => {
+      const { generateMarkwhenExport } = await import("@/services/competitorData");
+      const store = useRoadmapStore();
+      await store.loadRoadmap();
+
+      const mwExport = generateMarkwhenExport(store.phases);
+      expect(mwExport).toContain("title: Strategic Roadmap (Wolf Timeline)");
+      expect(mwExport).toContain("section");
+      expect(mwExport).toContain("practices:");
+      expect(mwExport).toContain("- [");
+    });
+  });
 });
+

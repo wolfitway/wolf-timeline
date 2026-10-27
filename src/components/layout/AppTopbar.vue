@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
-import { useUiStore, type ActiveTab } from "@/stores/useUiStore";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useUiStore, type ActiveTab, type FocusLens } from "@/stores/useUiStore";
 import { useVaultStore } from "@/stores/useVaultStore";
 import { useShortcutsStore } from "@/stores/useShortcutsStore";
 import { useLicenseStore } from "@/stores/useLicenseStore";
@@ -15,7 +15,7 @@ const shortcutsStore = useShortcutsStore();
 const licenseStore = useLicenseStore();
 const notesStore = useNotesStore();
 
-// 5 Core Workspace Navigation Tabs (Settings belongs in Control Center / User menu)
+// 5 Core Workspace Navigation Tabs
 const navItems: { id: ActiveTab; label: string; icon: IconName }[] = [
   { id: "timeline", label: "Timeline", icon: "timeline" },
   { id: "studio", label: "Studio", icon: "studio" },
@@ -23,6 +23,42 @@ const navItems: { id: ActiveTab; label: string; icon: IconName }[] = [
   { id: "bookmarks", label: "Bookmarks", icon: "bookmarks" },
   { id: "secrets", label: "Secret Vault", icon: "vault" },
 ];
+
+export interface FocusLensItem {
+  id: FocusLens;
+  label: string;
+  shortLabel: string;
+  emoji: string;
+  title: string;
+}
+
+const focusLenses: FocusLensItem[] = [
+  { id: "all", label: "Full Suite", shortLabel: "All", emoji: "🐺", title: "Complete Creator Funnel (All Tabs)" },
+  { id: "notes", label: "Notes App", shortLabel: "Notes", emoji: "✍️", title: "Notes & Writing Studio (Timeline + Markdown Studio)" },
+  { id: "roadmap", label: "Roadmap App", shortLabel: "Roadmap", emoji: "🗺️", title: "Roadmap Canvas (Horizons & Execution Milestones)" },
+  { id: "vault", label: "Vault & Research", shortLabel: "Vault", emoji: "🔐", title: "Encrypted Secrets & Smart Research Bookmarks" },
+];
+
+const visibleNavItems = computed(() => {
+  if (uiStore.activeLens === "notes") {
+    return navItems.filter((i) => i.id === "timeline" || i.id === "studio");
+  }
+  if (uiStore.activeLens === "roadmap") {
+    return navItems.filter((i) => i.id === "roadmap");
+  }
+  if (uiStore.activeLens === "vault") {
+    return navItems.filter((i) => i.id === "secrets" || i.id === "bookmarks");
+  }
+  return navItems;
+});
+
+function handleSelectLens(lens: FocusLens) {
+  uiStore.setLens(lens);
+  kokoroVoice.playHeartChime("affirm");
+  const match = focusLenses.find((l) => l.id === lens);
+  const msg = match ? `${match.emoji} Switched to ${match.label} lens` : "Switched workspace lens";
+  uiStore.showToast(msg);
+}
 
 // Voice control status
 const voiceStatus = ref<VoiceControlStatus>(voiceControl.getStatus());
@@ -197,6 +233,38 @@ onMounted(() => {
         kokoroVoice.speak("Search palette open.");
       },
     },
+    {
+      phrase: "notes app",
+      description: "Switch to Notes App lens",
+      action: () => {
+        handleSelectLens("notes");
+        kokoroVoice.speak("Notes and writing studio lens active.");
+      },
+    },
+    {
+      phrase: "roadmap app",
+      description: "Switch to Roadmap App lens",
+      action: () => {
+        handleSelectLens("roadmap");
+        kokoroVoice.speak("Roadmap planning lens active.");
+      },
+    },
+    {
+      phrase: "vault app",
+      description: "Switch to Vault & Bookmarks lens",
+      action: () => {
+        handleSelectLens("vault");
+        kokoroVoice.speak("Vault and research lens active.");
+      },
+    },
+    {
+      phrase: "all apps",
+      description: "Switch to Full Suite lens",
+      action: () => {
+        handleSelectLens("all");
+        kokoroVoice.speak("All workspaces active.");
+      },
+    },
   ]);
 
   voiceControl.onStatusChange((status) => {
@@ -210,6 +278,13 @@ onUnmounted(() => {
 });
 
 function toggleVoiceControl() {
+  if (!licenseStore.isPaid) {
+    kokoroVoice.playHeartChime("notice");
+    uiStore.showToast("⚡ Hands-Free Voice Commands are exclusive to Commercial Solo & Team tiers. Upgrade to unlock!");
+    uiStore.showLicenseModal = true;
+    return;
+  }
+
   if (!voiceStatus.value.isSupported) {
     kokoroVoice.playHeartChime("notice");
     kokoroVoice.speak("Voice guidance and audio chimes are active. Hands-free speech recognition requires a Chromium or Edge environment.");
@@ -251,35 +326,52 @@ function toggleTheme() {
 
 <template>
   <header class="app-topbar">
-    <!-- Left: Brand Logo, Title & Local Node Pill -->
-    <div class="topbar-brand" @click="uiStore.setTab('timeline')">
-      <div class="brand-icon-wrapper">
-        <svg
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="wolf-icon"
-        >
-          <polygon points="4,4 7,11 4,15 9,16 12,20 15,16 20,15 17,11 20,4 14,7 12,5 10,7" />
-          <polyline points="8.5,11.5 10,13 12,11.5 14,13 15.5,11.5" />
-          <circle cx="9" cy="9.5" r="0.75" fill="currentColor" />
-          <circle cx="15" cy="9.5" r="0.75" fill="currentColor" />
-        </svg>
+    <!-- Left: Brand Logo, Title & Focus Lens Switcher -->
+    <div class="topbar-left-cluster">
+      <div class="topbar-brand" @click="uiStore.setTab('timeline')" title="Wolf Timeline Sovereign Node">
+        <div class="brand-icon-wrapper">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="wolf-icon"
+          >
+            <polygon points="4,4 7,11 4,15 9,16 12,20 15,16 20,15 17,11 20,4 14,7 12,5 10,7" />
+            <polyline points="8.5,11.5 10,13 12,11.5 14,13 15.5,11.5" />
+            <circle cx="9" cy="9.5" r="0.75" fill="currentColor" />
+            <circle cx="15" cy="9.5" r="0.75" fill="currentColor" />
+          </svg>
+        </div>
+        <span class="brand-title">Wolf Timeline</span>
       </div>
-      <span class="brand-title">Wolf Timeline</span>
-      <span class="brand-version-pill">Local Vault</span>
+
+      <!-- Council Recommended Focus Lens Switcher -->
+      <div class="lens-switcher-wrap" role="radiogroup" aria-label="Workspace Focus Lens">
+        <button
+          v-for="l in focusLenses"
+          :key="l.id"
+          type="button"
+          class="lens-switch-btn"
+          :class="{ active: uiStore.activeLens === l.id }"
+          @click="handleSelectLens(l.id)"
+          :title="l.title"
+        >
+          <span class="lens-btn-emoji">{{ l.emoji }}</span>
+          <span class="lens-btn-text">{{ l.shortLabel }}</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Center: Segmented Navigation Pill Group (5 Core Workspaces) -->
+    <!-- Center: Segmented Navigation Pill Group (Filtered to Current Lens) -->
     <nav class="topbar-nav" aria-label="Main Navigation">
       <div class="nav-pill-group">
         <button
-          v-for="item in navItems"
+          v-for="item in visibleNavItems"
           :key="item.id"
           type="button"
           class="nav-tab-pill"
@@ -372,18 +464,18 @@ function toggleTheme() {
               <button
                 type="button"
                 class="toggle-card"
-                :class="{ active: voiceStatus.isListening }"
+                :class="{ active: voiceStatus.isListening && licenseStore.isPaid, locked: !licenseStore.isPaid }"
                 @click="toggleVoiceControl"
               >
                 <div class="toggle-card-top">
-                  <WolfIcon :name="voiceStatus.isListening ? 'mic' : 'mic-off'" :size="16" />
-                  <span class="toggle-pill" :class="{ on: voiceStatus.isListening }">
-                    {{ voiceStatus.isListening ? 'Active' : 'Off' }}
+                  <WolfIcon :name="!licenseStore.isPaid ? 'key' : (voiceStatus.isListening ? 'mic' : 'mic-off')" :size="16" />
+                  <span class="toggle-pill" :class="{ on: voiceStatus.isListening && licenseStore.isPaid, pro: !licenseStore.isPaid }">
+                    {{ !licenseStore.isPaid ? 'PRO' : (voiceStatus.isListening ? 'Active' : 'Off') }}
                   </span>
                 </div>
                 <div class="toggle-card-info">
                   <span class="toggle-card-title">Voice Control</span>
-                  <span class="toggle-card-sub">{{ voiceStatus.isListening ? 'Listening...' : 'Hands-free' }}</span>
+                  <span class="toggle-card-sub">{{ !licenseStore.isPaid ? 'Commercial Tier' : (voiceStatus.isListening ? 'Listening...' : 'Hands-free') }}</span>
                 </div>
               </button>
 
@@ -497,7 +589,14 @@ function toggleTheme() {
   border-bottom: 1px solid var(--border-subtle, #1a140b);
 }
 
-/* Left Brand */
+/* Left Brand & Focus Lens Switcher */
+.topbar-left-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
 .topbar-brand {
   display: flex;
   align-items: center;
@@ -531,15 +630,56 @@ function toggleTheme() {
   letter-spacing: -0.01em;
 }
 
-.brand-version-pill {
-  font-size: 10px;
+.lens-switcher-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface, #100b05);
+  border: 1px solid var(--border-card, #261908);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.lens-switch-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11.5px;
   font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 9999px;
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.lens-switch-btn:hover {
+  color: var(--text-primary, #ffffff);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lens-switch-btn.active {
   background: var(--emerald-pill-bg, #281b05);
+  border-color: var(--border-selected, #f59e0b);
   color: var(--emerald-bright, #fbbf24);
-  border: 1px solid var(--border-card, #33220a);
-  letter-spacing: 0.02em;
+  box-shadow: 0 0 8px var(--border-glow, rgba(245, 158, 11, 0.2));
+}
+
+.lens-btn-emoji {
+  font-size: 11px;
+}
+
+.lens-btn-text {
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 960px) {
+  .lens-btn-text {
+    display: none;
+  }
 }
 
 /* Center Navigation */
@@ -854,6 +994,16 @@ function toggleTheme() {
 .toggle-pill.on {
   background: rgba(245, 158, 11, 0.2);
   color: var(--emerald-bright, #fbbf24);
+}
+
+.toggle-pill.pro {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.toggle-card.locked {
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
 .toggle-card-info {

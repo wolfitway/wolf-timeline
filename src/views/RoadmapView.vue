@@ -5,6 +5,7 @@ import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
 import type { RoadmapPhase, KeyPractice } from "@/types";
+import { COMPETITORS, generateMarkwhenExport } from "@/services/competitorData";
 
 const roadmapStore = useRoadmapStore();
 const notesStore = useNotesStore();
@@ -28,6 +29,13 @@ function restoreVersion(sourceKey: string) {
   if (success) {
     uiStore.showToast("Roadmap version restored ✓");
   }
+}
+
+function handleExportMarkwhen() {
+  const mw = generateMarkwhenExport(roadmapStore.phases);
+  navigator.clipboard.writeText(mw).then(() => {
+    uiStore.showToast("Copied Markwhen (.mw) timeline to clipboard ✓");
+  });
 }
 
 const newPracticeText = ref("");
@@ -343,15 +351,26 @@ function getPhaseProgress(phase: RoadmapPhase): number {
       </div>
 
       <div class="header-right">
-        <!-- 7-Competitor Intelligence Trigger Button -->
+        <!-- Markwhen & Text Timeline Export Button -->
+        <button
+          type="button"
+          class="btn-markwhen-export"
+          @click="handleExportMarkwhen"
+          title="Export roadmap as text-to-timeline Markwhen (.mw) syntax"
+        >
+          <WolfIcon name="copy" :size="12" />
+          <span>Export .mw</span>
+        </button>
+
+        <!-- Competitor Intelligence Trigger Button -->
         <button
           type="button"
           class="btn-competitor-benchmark"
           @click="uiStore.openCompetitorAuditModal"
-          title="Compare Wolf Timeline against Linear, ProductPlan, Obsidian, Aeon..."
+          :title="`Compare Wolf Timeline against ${COMPETITORS.length} market competitors...`"
         >
           <span class="benchmark-spark">⚡</span>
-          <span>vs 7 Competitors</span>
+          <span>vs {{ COMPETITORS.length }} Competitors</span>
         </button>
 
         <div class="wolf-brand-wrap">
@@ -2200,6 +2219,28 @@ function getPhaseProgress(phase: RoadmapPhase): number {
   color: #fbbf24;
   font-weight: 700;
   box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+}
+
+/* Markwhen Export Button */
+.btn-markwhen-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d1d5db;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-markwhen-export:hover {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
 }
 
 /* Competitor Benchmark Button */

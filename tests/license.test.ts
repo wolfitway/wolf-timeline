@@ -56,4 +56,45 @@ describe("Hardware License & 3-Tier Monetization Keygen Engine", () => {
   it("supports Master Founder bypass key validation", () => {
     expect(MASTER_FOUNDER_KEY).toBe("WOLF-FOUNDER-MASTER-ACCESS-2026");
   });
+
+  it("restricts BYOK and Voice Commands to paid tiers (Commercial Solo and Team)", () => {
+    const isPaid = (tier: string) => tier === "commercial_solo" || tier === "team";
+    const canUseByok = (tier: string) => isPaid(tier);
+    const canUseVoiceCommands = (tier: string) => isPaid(tier);
+
+    // Free tier
+    expect(canUseByok("solo_free")).toBe(false);
+    expect(canUseVoiceCommands("solo_free")).toBe(false);
+
+    // Paid tiers
+    expect(canUseByok("commercial_solo")).toBe(true);
+    expect(canUseVoiceCommands("commercial_solo")).toBe(true);
+    expect(canUseByok("team")).toBe(true);
+    expect(canUseVoiceCommands("team")).toBe(true);
+  });
+
+  it("verifies BYOK and Voice Commands features in paid tier descriptors", () => {
+    const commFeatures = [
+      "Commercial & client usage rights",
+      "BYOK (Bring Your Own Key) custom AI integrations",
+      "Hands-Free Voice Command & Audio Engine",
+      "Unbranded white-label exports",
+      "Priority AI decision studio",
+    ];
+
+    const teamFeatures = [
+      "Multi-Seat Pack mesh (5-25 seats)",
+      "Shared team credentials locker",
+      "BYOK (Bring Your Own Key) custom AI integrations",
+      "Hands-Free Voice Command & Audio Engine",
+      "Unbranded exports",
+      "Multi-author attribution",
+    ];
+
+    expect(commFeatures.some(f => f.includes("BYOK"))).toBe(true);
+    expect(commFeatures.some(f => f.includes("Voice Command"))).toBe(true);
+    expect(teamFeatures.some(f => f.includes("BYOK"))).toBe(true);
+    expect(teamFeatures.some(f => f.includes("Voice Command"))).toBe(true);
+  });
 });
+

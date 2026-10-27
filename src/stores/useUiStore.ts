@@ -2,9 +2,15 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 
 export type ActiveTab = "timeline" | "studio" | "roadmap" | "bookmarks" | "secrets" | "settings";
+export type FocusLens = "all" | "notes" | "roadmap" | "vault";
 
 export const useUiStore = defineStore("ui", () => {
   const activeTab = ref<ActiveTab>("timeline");
+  const activeLens = ref<FocusLens>(
+    typeof localStorage !== "undefined"
+      ? ((localStorage.getItem("wolf_active_lens") as FocusLens) || "all")
+      : "all"
+  );
 
   // Modal states
   const showQuickCapture = ref<boolean>(false);
@@ -49,6 +55,26 @@ export const useUiStore = defineStore("ui", () => {
 
   function setTab(tab: ActiveTab) {
     activeTab.value = tab;
+  }
+
+  function setLens(lens: FocusLens) {
+    activeLens.value = lens;
+    try {
+      localStorage.setItem("wolf_active_lens", lens);
+    } catch {}
+
+    // Smart auto-navigation based on active lens
+    if (lens === "notes") {
+      if (activeTab.value !== "timeline" && activeTab.value !== "studio") {
+        activeTab.value = "timeline";
+      }
+    } else if (lens === "roadmap") {
+      activeTab.value = "roadmap";
+    } else if (lens === "vault") {
+      if (activeTab.value !== "secrets" && activeTab.value !== "bookmarks") {
+        activeTab.value = "secrets";
+      }
+    }
   }
 
   function openLightbox(url: string, caption: string = "", tags: string[] = []) {
@@ -108,6 +134,8 @@ export const useUiStore = defineStore("ui", () => {
 
   return {
     activeTab,
+    activeLens,
+    setLens,
     showQuickCapture,
     showCommandPalette,
     showFocusEditor,

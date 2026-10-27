@@ -2,15 +2,37 @@
 import { ref, computed, watch } from "vue";
 import { useUiStore } from "@/stores/useUiStore";
 import { useNotesStore } from "@/stores/useNotesStore";
+import { useLicenseStore } from "@/stores/useLicenseStore";
 import type { AiExploration, AiDebateTurn } from "@/types";
 
 const uiStore = useUiStore();
 const notesStore = useNotesStore();
+const licenseStore = useLicenseStore();
 
 // View Modes
-type TabMode = "debate" | "transcript" | "decision" | "links";
+type TabMode = "debate" | "transcript" | "decision" | "links" | "byok";
 const activeTab = ref<TabMode>("debate");
 const isFullscreen = ref(false);
+
+// BYOK State in Modal
+const byokAnthropic = ref(localStorage.getItem("wolf_byok_anthropic") || "");
+const byokOpenai = ref(localStorage.getItem("wolf_byok_openai") || "");
+const byokGemini = ref(localStorage.getItem("wolf_byok_gemini") || "");
+const byokDeepseek = ref(localStorage.getItem("wolf_byok_deepseek") || "");
+const showKey = ref<Record<string, boolean>>({});
+
+function saveModalByokKeys() {
+  if (!licenseStore.isPaid) {
+    uiStore.showToast("⚡ BYOK Custom AI Keys require a Commercial Solo or Team License.");
+    uiStore.showLicenseModal = true;
+    return;
+  }
+  localStorage.setItem("wolf_byok_anthropic", byokAnthropic.value.trim());
+  localStorage.setItem("wolf_byok_openai", byokOpenai.value.trim());
+  localStorage.setItem("wolf_byok_gemini", byokGemini.value.trim());
+  localStorage.setItem("wolf_byok_deepseek", byokDeepseek.value.trim());
+  uiStore.showToast("BYOK credentials saved to local storage ✓");
+}
 
 // Form Fields
 const expTitle = ref("");
@@ -312,6 +334,22 @@ function handleDeleteCurrent() {
           </select>
         </div>
 
+        <div class="meta-item">
+          <span class="meta-label">BYOK Status:</span>
+          <button
+            v-if="!licenseStore.isPaid"
+            type="button"
+            class="byok-meta-pill locked"
+            @click="uiStore.showLicenseModal = true"
+            title="Unlock BYOK Keys with Commercial License"
+          >
+            🔒 Paid Tier Only
+          </button>
+          <span v-else class="byok-meta-pill active">
+            ✓ Active BYOK
+          </span>
+        </div>
+
         <div class="meta-item flex-1">
           <span class="meta-label">Tags:</span>
           <input v-model="expTags" type="text" class="meta-input" placeholder="ai, consensus, cache, architecture..." />
@@ -351,6 +389,14 @@ function handleDeleteCurrent() {
           @click="activeTab = 'links'"
         >
           <span>🔗 Links &amp; Artifacts</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'byok' }"
+          @click="activeTab = 'byok'"
+        >
+          <span>🔑 BYOK Keys {{ !licenseStore.isPaid ? '🔒' : '' }}</span>
         </button>
       </div>
 
@@ -540,6 +586,107 @@ function handleDeleteCurrent() {
           <div class="link-preview-box" v-if="expUrl">
             <span class="preview-title">🔗 Target Reference:</span>
             <a :href="expUrl" target="_blank" rel="noopener" class="preview-url-link">{{ expUrl }}</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 5: BYOK Keys Configuration -->
+      <div v-else-if="activeTab === 'byok'" class="modal-body-scrollable">
+        <div class="byok-modal-container">
+          <!-- Gated for free tier -->
+          <div v-if="!licenseStore.isPaid" class="byok-modal-locked-card">
+            <div class="lock-icon-large">🔒</div>
+            <h4 class="lock-title">Bring Your Own Key (BYOK) — Paid License Feature</h4>
+            <p class="lock-desc">
+              Connect direct, zero-telemetry API keys for Anthropic Claude 3.7 Sonnet, OpenAI GPT-4o, Google Gemini 2.5 Pro, and DeepSeek R1 to run live multi-model debates and automated architectural trade-offs.
+            </p>
+            <div class="lock-perks-list">
+              <div>★ Direct client-side calls using your personal API quotas</div>
+              <div>★ Zero cloud intermediaries or telemetry harvesting</div>
+              <div>★ Encrypted in your local sovereign vault</div>
+            </div>
+            <button type="button" class="btn-unlock-byok-modal" @click="uiStore.showLicenseModal = true">
+              ⚡ Upgrade to Commercial Solo ($49 Lifetime)
+            </button>
+          </div>
+
+          <!-- Unlocked when paid -->
+          <div v-else class="byok-modal-unlocked-card">
+            <div class="unlocked-header-row">
+              <div>
+                <h4 class="unlocked-title">Configured BYOK Frontier Keys</h4>
+                <p class="unlocked-sub">Direct zero-telemetry connections saved to this device's encrypted vault.</p>
+              </div>
+              <span class="badge-unlocked-tag">✓ {{ licenseStore.tierLabel }}</span>
+            </div>
+
+            <div class="byok-form-grid">
+              <div class="byok-field">
+                <label class="field-lbl">🧠 Anthropic Claude API Key:</label>
+                <div class="field-input-box">
+                  <input
+                    v-model="byokAnthropic"
+                    :type="showKey.anthropic ? 'text' : 'password'"
+                    class="key-text-input mono"
+                    placeholder="sk-ant-api03-..."
+                  />
+                  <button type="button" class="btn-eye" @click="showKey.anthropic = !showKey.anthropic">
+                    {{ showKey.anthropic ? '👁️' : '🔒' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="byok-field">
+                <label class="field-lbl">⚡ OpenAI API Key:</label>
+                <div class="field-input-box">
+                  <input
+                    v-model="byokOpenai"
+                    :type="showKey.openai ? 'text' : 'password'"
+                    class="key-text-input mono"
+                    placeholder="sk-proj-..."
+                  />
+                  <button type="button" class="btn-eye" @click="showKey.openai = !showKey.openai">
+                    {{ showKey.openai ? '👁️' : '🔒' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="byok-field">
+                <label class="field-lbl">✨ Google Gemini API Key:</label>
+                <div class="field-input-box">
+                  <input
+                    v-model="byokGemini"
+                    :type="showKey.gemini ? 'text' : 'password'"
+                    class="key-text-input mono"
+                    placeholder="AIzaSy..."
+                  />
+                  <button type="button" class="btn-eye" @click="showKey.gemini = !showKey.gemini">
+                    {{ showKey.gemini ? '👁️' : '🔒' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="byok-field">
+                <label class="field-lbl">🔮 DeepSeek API Key:</label>
+                <div class="field-input-box">
+                  <input
+                    v-model="byokDeepseek"
+                    :type="showKey.deepseek ? 'text' : 'password'"
+                    class="key-text-input mono"
+                    placeholder="sk-..."
+                  />
+                  <button type="button" class="btn-eye" @click="showKey.deepseek = !showKey.deepseek">
+                    {{ showKey.deepseek ? '👁️' : '🔒' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="byok-modal-actions">
+              <button type="button" class="btn-save-byok" @click="saveModalByokKeys">
+                💾 Save Keys to Sovereign Storage
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1403,5 +1550,210 @@ function handleDeleteCurrent() {
   .btn-footer-cancel {
     min-height: 42px;
   }
+}
+
+/* BYOK Status & Tabs */
+.byok-meta-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+}
+
+.byok-meta-pill.locked {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.byok-meta-pill.locked:hover {
+  filter: brightness(1.15);
+}
+
+.byok-meta-pill.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  cursor: default;
+}
+
+.byok-modal-container {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.byok-modal-locked-card {
+  background: var(--bg-card, #08120e);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.lock-icon-large {
+  font-size: 32px;
+}
+
+.lock-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-white, #fff);
+  margin: 0;
+}
+
+.lock-desc {
+  font-size: 13px;
+  color: var(--text-secondary, #94a3b8);
+  max-width: 540px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.lock-perks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #fbbf24;
+  margin: 8px 0;
+}
+
+.btn-unlock-byok-modal {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.btn-unlock-byok-modal:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.byok-modal-unlocked-card {
+  background: var(--bg-card, #08120e);
+  border: 1px solid var(--border-card, #14281f);
+  border-radius: 12px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.unlocked-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.unlocked-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-white, #fff);
+  margin: 0 0 4px;
+}
+
+.unlocked-sub {
+  font-size: 12px;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0;
+}
+
+.badge-unlocked-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.byok-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.byok-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-lbl {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.field-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.key-text-input {
+  width: 100%;
+  padding: 8px 34px 8px 10px;
+  border-radius: 6px;
+  background: var(--bg-inner, #050d09);
+  border: 1px solid var(--border-card, #14281f);
+  color: var(--text-white, #fff);
+  font-size: 12.5px;
+  transition: all 0.15s ease;
+}
+
+.key-text-input:focus {
+  outline: none;
+  border-color: var(--emerald-main, #10b981);
+}
+
+.btn-eye {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  font-size: 12px;
+}
+
+.byok-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+}
+
+.btn-save-byok {
+  background: var(--emerald-main, #10b981);
+  color: #fff;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-save-byok:hover {
+  filter: brightness(1.1);
 }
 </style>

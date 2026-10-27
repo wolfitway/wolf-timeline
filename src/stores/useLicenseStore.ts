@@ -33,6 +33,8 @@ export const useLicenseStore = defineStore("license", () => {
   const isCommercialSolo = computed(() => tier.value === "commercial_solo");
   const isTeam = computed(() => tier.value === "team");
   const isPaid = computed(() => isCommercialSolo.value || isTeam.value);
+  const canUseByok = computed(() => isPaid.value);
+  const canUseVoiceCommands = computed(() => isPaid.value);
 
   async function computeFallbackDeviceId(): Promise<string> {
     let raw = localStorage.getItem("wolf_browser_device_seed");
@@ -212,8 +214,21 @@ export const useLicenseStore = defineStore("license", () => {
     seats.value = resolvedSeats;
     activatedAt.value = new Date().toISOString();
     features.value = resolvedTier === "team"
-      ? ["Multi-Seat Pack mesh", "Shared team credentials locker", "Unbranded exports", "Multi-author attribution"]
-      : ["Commercial & client usage rights", "Unbranded white-label exports", "Priority AI decision studio"];
+      ? [
+          "Multi-Seat Pack mesh (5-25 seats)",
+          "Shared team credentials locker",
+          "BYOK (Bring Your Own Key) custom AI integrations",
+          "Hands-Free Voice Command & Audio Engine",
+          "Unbranded exports",
+          "Multi-author attribution",
+        ]
+      : [
+          "Commercial & client usage rights",
+          "BYOK (Bring Your Own Key) custom AI integrations",
+          "Hands-Free Voice Command & Audio Engine",
+          "Unbranded white-label exports",
+          "Priority AI decision studio",
+        ];
 
     localStorage.setItem(
       LOCAL_LICENSE_KEY,
@@ -292,6 +307,8 @@ export const useLicenseStore = defineStore("license", () => {
     isCommercialSolo,
     isTeam,
     isPaid,
+    canUseByok,
+    canUseVoiceCommands,
     MASTER_FOUNDER_KEY,
     checkLicense,
     activate,

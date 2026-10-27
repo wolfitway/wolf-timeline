@@ -166,6 +166,8 @@ async function handleDeactivate() {
                 <li>✓ Full offline AES-256 SQLite vault</li>
                 <li>✓ Studio focus &amp; deep spec editor</li>
                 <li>✓ Standard JSON/MD export</li>
+                <li class="disabled-feature">✗ BYOK custom AI keys (Claude, OpenAI, Gemini)</li>
+                <li class="disabled-feature">✗ Hands-free voice speech commands</li>
                 <li class="disabled-feature">✗ Commercial client projects</li>
                 <li class="disabled-feature">✗ Unbranded white-label exports</li>
               </ul>
@@ -191,6 +193,8 @@ async function handleDeactivate() {
               </div>
               <ul class="tier-features">
                 <li>★ <strong>Full Commercial &amp; Client Rights</strong></li>
+                <li>★ <strong>BYOK Custom AI Keys</strong> (Claude, OpenAI, Gemini)</li>
+                <li>★ <strong>Hands-Free Voice Command Engine</strong></li>
                 <li>★ Unbranded white-label exports</li>
                 <li>★ Priority AI Decision Studio ADRs</li>
                 <li>★ Cryptographic Proof-of-License</li>
@@ -218,6 +222,8 @@ async function handleDeactivate() {
               </div>
               <ul class="tier-features">
                 <li>★ <strong>5 to 25 Seat Mesh Licenses</strong></li>
+                <li>★ <strong>Shared Team BYOK Key Pool &amp; Secrets</strong></li>
+                <li>★ <strong>Full Voice Commands &amp; Companion Engine</strong></li>
                 <li>★ Shared Team Secret Locker</li>
                 <li>★ Git-backed repo auto-sync</li>
                 <li>★ Multi-author attribution &amp; ADRs</li>

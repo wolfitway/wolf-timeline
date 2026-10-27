@@ -124,6 +124,9 @@ export interface CompetitorProfile {
   name: string;
   category: string;
   pricing: string;
+  annualPerSeatUsd?: number;
+  categoryGroup?: "roadmaps" | "pkm" | "timelines" | "all";
+  tagline?: string;
   airGapped: boolean;
   zeroKnowledgeVault: boolean;
   clientDossierSealed: boolean;
