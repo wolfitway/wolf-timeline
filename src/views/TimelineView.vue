@@ -817,7 +817,11 @@ function handleAddToVault() {
 }
 
 function handleOpenInStudio() {
+  if (notesStore.selectedNote) {
+    notesStore.selectedNoteId = notesStore.selectedNote.id;
+  }
   uiStore.setTab("studio");
+  uiStore.showToast("Opened document in Studio ✓");
 }
 
 function handleDeleteSelectedNote() {
@@ -1837,10 +1841,7 @@ function toggleMoodTag(tag: string) {
         <!-- Bottom Actions Row -->
         <div class="detail-actions-row">
           <button type="button" class="btn-panel-action" @click="handlePushToRoadmap">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 20h9"></path>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-            </svg>
+            <WolfIcon name="roadmap" :size="13" class="action-icon" />
             <span>Push to Roadmap</span>
           </button>
 
@@ -1850,10 +1851,7 @@ function toggleMoodTag(tag: string) {
           </button>
 
           <button type="button" class="btn-panel-action" @click="handleOpenInStudio">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
+            <WolfIcon name="studio" :size="13" class="action-icon" />
             <span>Open in Studio</span>
           </button>
         </div>

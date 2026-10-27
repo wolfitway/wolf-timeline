@@ -7,9 +7,12 @@ import { renderMarkdown, toggleTaskInMarkdown } from "@/services/markdownRendere
 import WolfIcon, { type IconName } from "@/components/common/WolfIcon.vue";
 import type { Note } from "@/types";
 
+import { useRoadmapStore } from "@/stores/useRoadmapStore";
+
 const notesStore = useNotesStore();
 const uiStore = useUiStore();
 const shortcutsStore = useShortcutsStore();
+const roadmapStore = useRoadmapStore();
 
 // Textarea and preview references for scrolling & cursor
 const editorTextarea = ref<HTMLTextAreaElement | null>(null);
@@ -337,6 +340,26 @@ function handleDuplicateCurrentNote() {
   if (!notesStore.selectedNote) return;
   notesStore.duplicateNote(notesStore.selectedNote.id);
   uiStore.showToast("Document duplicated ✓");
+}
+
+function handleJumpToTimeline() {
+  if (notesStore.selectedNote) {
+    notesStore.selectedNoteId = notesStore.selectedNote.id;
+  }
+  uiStore.setTab("timeline");
+  uiStore.showToast("Navigated to Timeline View ✓");
+}
+
+function handleSendToRoadmap() {
+  if (!notesStore.selectedNote) return;
+  const title = notesStore.selectedNote.title || "Untitled Document";
+  if (roadmapStore.activePhase) {
+    roadmapStore.addPractice(roadmapStore.activePhase.id, title);
+    uiStore.showToast(`Linked "${title}" to Roadmap Phase ✓`);
+  } else {
+    roadmapStore.addPhase(title);
+    uiStore.showToast(`Created Roadmap Phase for "${title}" ✓`);
+  }
 }
 
 function handleDeleteCurrentNote() {
@@ -685,6 +708,17 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
             <span>{{ showSidebar ? "Hide Sidebar" : "Show Sidebar" }}</span>
           </button>
 
+          <!-- Jump to Timeline Button -->
+          <button
+            type="button"
+            class="btn-studio-timeline-jump"
+            title="View this note in Timeline Feed"
+            @click="handleJumpToTimeline"
+          >
+            <WolfIcon name="timeline" :size="13" />
+            <span>Timeline</span>
+          </button>
+
           <!-- Note Title Input (if note selected) -->
           <input
             v-if="notesStore.selectedNote"
@@ -761,6 +795,10 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
             <button type="button" class="btn-action-icon" title="Duplicate Document" @click="handleDuplicateCurrentNote">
               <WolfIcon name="duplicate" :size="13" />
               <span>Duplicate</span>
+            </button>
+            <button type="button" class="btn-action-icon" title="Link to Roadmap Milestone" @click="handleSendToRoadmap">
+              <WolfIcon name="roadmap" :size="13" />
+              <span>Roadmap</span>
             </button>
             <button type="button" class="btn-action-icon delete" title="Delete Document" @click="handleDeleteCurrentNote">
               <WolfIcon name="trash" :size="13" />
@@ -1399,6 +1437,28 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 .btn-toggle-sidebar:hover {
   background: var(--bg-card-hover, #132d21);
   color: var(--text-white, #fff);
+}
+
+.btn-studio-timeline-jump {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card, #0d1e16);
+  border: 1px solid var(--border-card, #1a3c2d);
+  color: var(--emerald-bright, #fbbf24);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btn-studio-timeline-jump:hover {
+  background: var(--bg-card-hover, #132d21);
+  border-color: var(--border-focus, #fbbf24);
+  transform: translateY(-1px);
 }
 
 .studio-title-input {

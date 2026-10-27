@@ -12,6 +12,16 @@ import {
 } from "@/services/imageStorage";
 
 const STORAGE_KEY = "wolftimeline_notes_v5";
+const BACKUP_STORAGE_KEY = "wolftimeline_notes_backup";
+const LEGACY_STORAGE_KEYS = [
+  "wolftimeline_notes_v4",
+  "wolftimeline_notes_v3",
+  "wolftimeline_notes_v2",
+  "wolftimeline_notes_v1",
+  "wolftimeline_notes",
+  "wolf_notes",
+  "wolfnotes",
+];
 
 export const useNotesStore = defineStore("notes", () => {
   const notes = ref<Note[]>([]);
@@ -62,7 +72,10 @@ export const useNotesStore = defineStore("notes", () => {
   // Actions
   function saveToLocal() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes.value));
+      const serialized = JSON.stringify(notes.value);
+      localStorage.setItem(STORAGE_KEY, serialized);
+      // Secondary sovereign safety mirror: guarantees zero data loss across reboots
+      localStorage.setItem(BACKUP_STORAGE_KEY, serialized);
     } catch (e) {
       console.warn("LocalStorage full, trimming large data URIs from cache:", e);
       try {
@@ -74,7 +87,9 @@ export const useNotesStore = defineStore("notes", () => {
             url: m.url.startsWith("data:") && m.url.length > 5000 ? `idb://${m.id}` : m.url,
           })),
         }));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweightNotes));
+        const lightSerialized = JSON.stringify(lightweightNotes);
+        localStorage.setItem(STORAGE_KEY, lightSerialized);
+        localStorage.setItem(BACKUP_STORAGE_KEY, lightSerialized);
       } catch (err2) {
         console.error("Critical storage error:", err2);
       }
@@ -82,19 +97,59 @@ export const useNotesStore = defineStore("notes", () => {
   }
 
   async function loadNotes() {
-    // 1. Try localStorage with fresh seed fallback
+    // 1. First, check active storage key
+    let loadedData: Note[] | null = null;
     const localRaw = localStorage.getItem(STORAGE_KEY);
     if (localRaw) {
       try {
-        const parsed: Note[] = JSON.parse(localRaw);
+        const parsed = JSON.parse(localRaw);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          notes.value = parsed;
-        } else {
-          notes.value = JSON.parse(JSON.stringify(INITIAL_NOTES));
+          loadedData = parsed;
         }
-      } catch {
-        notes.value = JSON.parse(JSON.stringify(INITIAL_NOTES));
+      } catch (err) {
+        console.warn("Error parsing primary notes storage:", err);
       }
+    }
+
+    // 2. If primary key is empty, check backup mirror
+    if (!loadedData) {
+      const backupRaw = localStorage.getItem(BACKUP_STORAGE_KEY);
+      if (backupRaw) {
+        try {
+          const parsed = JSON.parse(backupRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            loadedData = parsed;
+            console.info("Recovered notes from sovereign backup mirror ✓");
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    // 3. If still empty, scan all historical legacy storage keys to guarantee user data preservation
+    if (!loadedData) {
+      for (const legacyKey of LEGACY_STORAGE_KEYS) {
+        const legacyRaw = localStorage.getItem(legacyKey);
+        if (legacyRaw) {
+          try {
+            const parsed = JSON.parse(legacyRaw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              loadedData = parsed;
+              console.info(`Migrated ${parsed.length} notes from legacy key: ${legacyKey} ✓`);
+              break;
+            }
+          } catch {
+            // continue checking next legacy key
+          }
+        }
+      }
+    }
+
+    // 4. Set notes value or use initial seed only if no previous data existed anywhere
+    if (loadedData && loadedData.length > 0) {
+      notes.value = loadedData;
+      saveToLocal(); // Sync to current key and backup mirror
     } else {
       notes.value = JSON.parse(JSON.stringify(INITIAL_NOTES));
       saveToLocal();

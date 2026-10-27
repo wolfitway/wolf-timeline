@@ -4,6 +4,13 @@ import type { RoadmapPhase, KeyPractice } from "@/types";
 import { INITIAL_ROADMAP } from "@/services/seedData";
 
 const STORAGE_KEY = "wolftimeline_roadmap_v3";
+const BACKUP_STORAGE_KEY = "wolftimeline_roadmap_backup";
+const LEGACY_STORAGE_KEYS = [
+  "wolftimeline_roadmap_v2",
+  "wolftimeline_roadmap_v1",
+  "wolftimeline_roadmap",
+  "wolf_roadmap",
+];
 
 export const useRoadmapStore = defineStore("roadmap", () => {
   const phases = ref<RoadmapPhase[]>([]);
@@ -30,20 +37,62 @@ export const useRoadmapStore = defineStore("roadmap", () => {
   // Actions
   function saveToLocal() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(phases.value));
+      const serialized = JSON.stringify(phases.value);
+      localStorage.setItem(STORAGE_KEY, serialized);
+      localStorage.setItem(BACKUP_STORAGE_KEY, serialized);
     } catch (e) {
       console.error("Failed to save roadmap to localStorage:", e);
     }
   }
 
   function loadRoadmap() {
+    let loaded: RoadmapPhase[] | null = null;
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       try {
-        phases.value = JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          loaded = parsed;
+        }
       } catch {
-        phases.value = [...INITIAL_ROADMAP];
+        // ignore
       }
+    }
+
+    if (!loaded) {
+      const backupRaw = localStorage.getItem(BACKUP_STORAGE_KEY);
+      if (backupRaw) {
+        try {
+          const parsed = JSON.parse(backupRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            loaded = parsed;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    if (!loaded) {
+      for (const legacyKey of LEGACY_STORAGE_KEYS) {
+        const legacyRaw = localStorage.getItem(legacyKey);
+        if (legacyRaw) {
+          try {
+            const parsed = JSON.parse(legacyRaw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              loaded = parsed;
+              break;
+            }
+          } catch {
+            // continue
+          }
+        }
+      }
+    }
+
+    if (loaded && loaded.length > 0) {
+      phases.value = loaded;
+      saveToLocal();
     } else {
       phases.value = [...INITIAL_ROADMAP];
       saveToLocal();
@@ -101,15 +150,16 @@ export const useRoadmapStore = defineStore("roadmap", () => {
     }
   }
 
-  function addPhase(title: string = "New Milestone Phase") {
+  function addPhase(title: string = "New Milestone Phase", description?: string) {
     const num = phases.value.length + 1;
+    const cleanTitle = title.startsWith("Phase") ? title : `Phase ${num}: ${title}`;
     const newPhase: RoadmapPhase = {
       id: `phase_${Date.now()}`,
       number: num,
-      title: `Phase ${num}: ${title}`,
+      title: cleanTitle,
       subtitle: "Strategic Focus & Delivery",
       status: "Planned",
-      description: "Define key deliverables and architectural goals for this milestone phase.",
+      description: description || "Define key deliverables and architectural goals for this milestone phase.",
       focus: "Milestone Execution",
       outcome: "Measurable high-leverage outcomes delivered.",
       collapsed: false,
@@ -118,6 +168,7 @@ export const useRoadmapStore = defineStore("roadmap", () => {
     phases.value.push(newPhase);
     activePhaseId.value = newPhase.id;
     saveToLocal();
+    return newPhase;
   }
 
   function deletePhase(phaseId: string) {

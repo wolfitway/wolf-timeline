@@ -4,11 +4,14 @@ import { useUiStore } from "@/stores/useUiStore";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useVaultStore } from "@/stores/useVaultStore";
+import { useBookmarksStore } from "@/stores/useBookmarksStore";
+import WolfIcon, { type IconName } from "@/components/common/WolfIcon.vue";
 
 const uiStore = useUiStore();
 const notesStore = useNotesStore();
 const roadmapStore = useRoadmapStore();
 const vaultStore = useVaultStore();
+const bookmarksStore = useBookmarksStore();
 
 const query = ref("");
 const selectedIndex = ref(0);
@@ -27,10 +30,10 @@ watch(
 
 interface PaletteItem {
   id: string;
-  type: "note" | "roadmap" | "secret" | "action";
+  type: "note" | "roadmap" | "secret" | "bookmark" | "action";
   title: string;
   subtitle: string;
-  icon: string;
+  icon: IconName;
   badge?: string;
   action: () => void;
 }
@@ -45,7 +48,7 @@ const results = computed<PaletteItem[]>(() => {
     type: "action",
     title: "Quick Capture New Idea / Note",
     subtitle: "Trigger instant ⌘+Enter capture modal",
-    icon: "⚡",
+    icon: "zap",
     badge: "Action",
     action: () => {
       uiStore.showCommandPalette = false;
@@ -56,9 +59,9 @@ const results = computed<PaletteItem[]>(() => {
   list.push({
     id: "act-scan-secrets",
     type: "action",
-    title: "Scan .txt / .env for Credentials",
-    subtitle: "Extract API keys and passwords non-destructively",
-    icon: "📂",
+    title: "Scan Notes & .env for Credentials",
+    subtitle: "Extract and auto-redact API keys into Secret Vault",
+    icon: "shield",
     badge: "Scanner",
     action: () => {
       uiStore.showCommandPalette = false;
@@ -72,7 +75,7 @@ const results = computed<PaletteItem[]>(() => {
     type: "action",
     title: "Switch to Markdown Studio",
     subtitle: "Distraction-free focus writing view",
-    icon: "📝",
+    icon: "studio",
     badge: "View",
     action: () => {
       uiStore.showCommandPalette = false;
@@ -85,7 +88,7 @@ const results = computed<PaletteItem[]>(() => {
     type: "action",
     title: "Switch to Roadmap Canvas",
     subtitle: "Milestones, phases and key practices",
-    icon: "🗺️",
+    icon: "roadmap",
     badge: "View",
     action: () => {
       uiStore.showCommandPalette = false;
@@ -98,7 +101,7 @@ const results = computed<PaletteItem[]>(() => {
     type: "action",
     title: "Switch to Bookmarks Hub",
     subtitle: "Search, filter and auto-classify saved links & research",
-    icon: "📑",
+    icon: "bookmarks",
     badge: "View",
     action: () => {
       uiStore.showCommandPalette = false;
@@ -113,7 +116,7 @@ const results = computed<PaletteItem[]>(() => {
       type: "note",
       title: n.title,
       subtitle: n.body.replace(/\n/g, " ").substring(0, 70) + "...",
-      icon: n.kind === "milestone" ? "🗺️" : n.kind === "post" ? "📝" : "💡",
+      icon: n.kind === "milestone" ? "roadmap" : n.kind === "post" ? "write" : "lightbulb",
       badge: n.status.toUpperCase(),
       action: () => {
         uiStore.showCommandPalette = false;
@@ -130,12 +133,29 @@ const results = computed<PaletteItem[]>(() => {
       type: "roadmap",
       title: p.title,
       subtitle: p.description,
-      icon: "🎯",
+      icon: "check-square",
       badge: p.status,
       action: () => {
         uiStore.showCommandPalette = false;
         roadmapStore.activePhaseId = p.id;
         uiStore.setTab("roadmap");
+      },
+    });
+  });
+
+  // Bookmarks
+  bookmarksStore.bookmarks.forEach((bm) => {
+    const tagsDisplay = bm.tags && Array.isArray(bm.tags) ? bm.tags.slice(0, 3).map((t) => "#" + t).join(" ") : "";
+    list.push({
+      id: `bm-${bm.id}`,
+      type: "bookmark",
+      title: bm.title || bm.url,
+      subtitle: `${bm.domain || "web"}${tagsDisplay ? " • " + tagsDisplay : ""}`,
+      icon: "bookmark",
+      badge: "Bookmark",
+      action: () => {
+        uiStore.showCommandPalette = false;
+        uiStore.setTab("bookmarks");
       },
     });
   });
@@ -148,7 +168,7 @@ const results = computed<PaletteItem[]>(() => {
         type: "secret",
         title: s.service,
         subtitle: `${s.category.toUpperCase()} • ${s.username || "Stored credential"}`,
-        icon: "🔐",
+        icon: "lock",
         badge: "Secret",
         action: () => {
           uiStore.showCommandPalette = false;
@@ -202,7 +222,7 @@ function handleKeyDown(e: KeyboardEvent) {
           v-model="query"
           type="text"
           class="palette-input"
-          placeholder="Type to search notes, roadmaps, secrets or execute action..."
+          placeholder="Type to search notes, roadmaps, bookmarks, secrets..."
           spellcheck="false"
         />
         <kbd class="palette-esc-badge" @click="uiStore.showCommandPalette = false">Esc</kbd>
@@ -218,7 +238,9 @@ function handleKeyDown(e: KeyboardEvent) {
           @click="item.action()"
           @mouseenter="selectedIndex = idx"
         >
-          <span class="item-icon">{{ item.icon }}</span>
+          <span class="item-icon">
+            <WolfIcon :name="item.icon" :size="15" />
+          </span>
           <div class="item-text-col">
             <span class="item-title">{{ item.title }}</span>
             <span class="item-subtitle">{{ item.subtitle }}</span>
@@ -227,7 +249,7 @@ function handleKeyDown(e: KeyboardEvent) {
         </div>
 
         <div v-if="results.length === 0" class="palette-empty">
-          <span>No matching notes, roadmaps or actions found.</span>
+          <span>No matching notes, roadmaps, bookmarks or actions found.</span>
         </div>
       </div>
 

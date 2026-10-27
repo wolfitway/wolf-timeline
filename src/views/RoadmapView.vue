@@ -2,13 +2,19 @@
 import WolfIcon from "@/components/common/WolfIcon.vue";
 import { ref, computed } from "vue";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
+import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
 import type { RoadmapPhase, KeyPractice } from "@/types";
 
 const roadmapStore = useRoadmapStore();
+const notesStore = useNotesStore();
 const uiStore = useUiStore();
 
 const newPracticeText = ref("");
+const isAddingPhase = ref(false);
+const newPhaseTitle = ref("");
+const newPhaseDescription = ref("");
+const isConfirmingDeletePhase = ref(false);
 
 // Drag & Drop tracking
 const draggedPhaseId = ref<string | null>(null);
@@ -54,19 +60,75 @@ function handleDeletePractice(phaseId: string, practiceId: string) {
   uiStore.showToast("Key practice removed ✓");
 }
 
-function handleAddPhasePrompt() {
-  const title = prompt("Enter new milestone phase title:", "Architecture Refactor");
-  if (title) {
-    roadmapStore.addPhase(title);
-    uiStore.showToast("New milestone phase created on canvas ✓");
+function toggleAddPhase() {
+  isAddingPhase.value = !isAddingPhase.value;
+  if (!isAddingPhase.value) {
+    newPhaseTitle.value = "";
+    newPhaseDescription.value = "";
   }
+}
+
+function submitNewPhase() {
+  if (!newPhaseTitle.value.trim()) return;
+  const created = roadmapStore.addPhase(newPhaseTitle.value.trim(), newPhaseDescription.value.trim());
+  newPhaseTitle.value = "";
+  newPhaseDescription.value = "";
+  isAddingPhase.value = false;
+  uiStore.showToast(`Milestone created: "${created.title}" ✓`);
+}
+
+function cancelNewPhase() {
+  isAddingPhase.value = false;
+  newPhaseTitle.value = "";
+  newPhaseDescription.value = "";
 }
 
 function handleDeleteActivePhase() {
   if (!roadmapStore.activePhase) return;
-  if (confirm(`Delete milestone "${roadmapStore.activePhase.title}"?`)) {
-    roadmapStore.deletePhase(roadmapStore.activePhase.id);
-    uiStore.showToast("Phase removed from roadmap ✓");
+  if (!isConfirmingDeletePhase.value) {
+    isConfirmingDeletePhase.value = true;
+    uiStore.showToast("Click Delete again to confirm removal");
+    setTimeout(() => {
+      isConfirmingDeletePhase.value = false;
+    }, 4000);
+    return;
+  }
+  const deletedTitle = roadmapStore.activePhase.title;
+  roadmapStore.deletePhase(roadmapStore.activePhase.id);
+  isConfirmingDeletePhase.value = false;
+  uiStore.showToast(`Removed "${deletedTitle}" from roadmap ✓`);
+}
+
+function handleOpenPhaseInStudio() {
+  if (!roadmapStore.activePhase) return;
+  const phase = roadmapStore.activePhase;
+  const existingNote = notesStore.notes.find(
+    (n) => n.title.toLowerCase().trim() === phase.title.toLowerCase().trim()
+  );
+
+  if (existingNote) {
+    notesStore.selectNote(existingNote.id);
+    uiStore.setTab("studio");
+    uiStore.showToast(`Opened "${existingNote.title}" in Studio ✓`);
+  } else {
+    const practicesList = phase.practices
+      .map((p) => `- [${p.completed ? "x" : " "}] ${p.text}`)
+      .join("\n");
+    const bodyContent = `# ${phase.title}\n\n**Focus:** ${phase.focus || "Strategic Delivery"}\n**Outcome:** ${phase.outcome || "Measurable Value"}\n\n## Description\n${phase.description}\n\n## Key Practices & Deliverables\n${practicesList}\n`;
+
+    notesStore
+      .addNote({
+        title: phase.title,
+        body: bodyContent,
+        tags: ["milestone", "roadmap"],
+        kind: "milestone",
+        status: phase.status === "In Progress" ? "in_progress" : phase.status === "Live" ? "live" : "ideation",
+      })
+      .then((created: any) => {
+        if (created?.id) notesStore.selectNote(created.id);
+        uiStore.setTab("studio");
+        uiStore.showToast(`Created document & opened "${phase.title}" in Studio ✓`);
+      });
   }
 }
 
@@ -260,14 +322,43 @@ function selectPhaseMobile(phaseId: string) {
             <button
               type="button"
               class="btn-add-phase-quick"
-              @click="handleAddPhasePrompt"
+              @click="toggleAddPhase"
               title="Add New Milestone Phase"
             >
-              + Add Phase
+              {{ isAddingPhase ? '✕ Close' : '+ Add Phase' }}
             </button>
           </div>
 
           <div class="phases-connected-list">
+            <!-- Inline New Phase Form -->
+            <div v-if="isAddingPhase" class="new-phase-inline-card">
+              <div class="new-phase-header">
+                <WolfIcon name="plus" :size="13" />
+                <span>Create Milestone Phase</span>
+              </div>
+              <input
+                v-model="newPhaseTitle"
+                type="text"
+                class="new-phase-input"
+                placeholder="Phase Title (e.g. Sovereign Crypto Engine)..."
+                @keydown.enter="submitNewPhase"
+                @keydown.esc="cancelNewPhase"
+                autofocus
+              />
+              <input
+                v-model="newPhaseDescription"
+                type="text"
+                class="new-phase-input sub"
+                placeholder="Strategic Deliverables & Focus..."
+                @keydown.enter="submitNewPhase"
+                @keydown.esc="cancelNewPhase"
+              />
+              <div class="new-phase-actions">
+                <button type="button" class="btn-create-phase" @click="submitNewPhase">Create Phase</button>
+                <button type="button" class="btn-cancel-phase" @click="cancelNewPhase">Cancel</button>
+              </div>
+            </div>
+
             <div
               v-for="(phase, index) in roadmapStore.phases"
               :key="phase.id"
@@ -377,11 +468,20 @@ function selectPhaseMobile(phaseId: string) {
                 </div>
                 <button
                   type="button"
+                  class="btn-open-in-studio"
+                  @click="handleOpenPhaseInStudio"
+                  title="Open or draft strategy document in Studio"
+                >
+                  <WolfIcon name="studio" :size="12" /> <span>Open in Studio</span>
+                </button>
+                <button
+                  type="button"
                   class="btn-delete-phase"
+                  :class="{ 'confirming-delete': isConfirmingDeletePhase }"
                   @click="handleDeleteActivePhase"
                   title="Delete Milestone Phase"
                 >
-                  <WolfIcon name="trash" :size="12" /> <span>Delete Phase</span>
+                  <WolfIcon name="trash" :size="12" /> <span>{{ isConfirmingDeletePhase ? 'Click to Confirm Delete' : 'Delete Phase' }}</span>
                 </button>
               </div>
             </div>
@@ -958,19 +1058,148 @@ function selectPhaseMobile(phaseId: string) {
   border-color: var(--border-selected, #10b981);
 }
 
-.btn-delete-phase {
-  background: transparent;
+.new-phase-inline-card {
+  background: var(--bg-surface, #181208);
+  border: 1px solid var(--emerald-deep, #d97706);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.new-phase-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--emerald-bright, #fbbf24);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.new-phase-input {
+  width: 100%;
+  background: var(--bg-card, #120e06);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text-primary, #fffbeb);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.new-phase-input:focus {
+  border-color: var(--border-focus, #fbbf24);
+}
+
+.new-phase-input.sub {
+  font-size: 12px;
+  color: var(--text-secondary, #fcd34d);
+}
+
+.new-phase-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-create-phase {
+  background: var(--emerald-main, #f59e0b);
+  color: var(--btn-primary-text, #080501);
   border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-create-phase:hover {
+  background: var(--emerald-bright, #fbbf24);
+  transform: translateY(-1px);
+}
+
+.btn-cancel-phase {
+  background: transparent;
+  color: var(--text-muted, #d4a373);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-cancel-phase:hover {
+  color: var(--text-primary, #fffbeb);
+  border-color: var(--border-subtle);
+}
+
+.btn-open-in-studio {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-card, #120e06);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--emerald-bright, #fbbf24);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-open-in-studio:hover {
+  background: var(--bg-surface, #181208);
+  border-color: var(--border-focus, #fbbf24);
+  transform: translateY(-1px);
+}
+
+.btn-delete-phase {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid transparent;
   color: #ef4444;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
 }
 
 .btn-delete-phase:hover {
   background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-delete-phase.confirming-delete {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fca5a5;
+  font-weight: 700;
+  animation: pulseDelete 1s infinite alternate;
+}
+
+@keyframes pulseDelete {
+  from { opacity: 0.8; }
+  to { opacity: 1; }
 }
 
 .dot-green {

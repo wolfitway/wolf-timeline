@@ -2,6 +2,7 @@
 import { ref, watch, nextTick } from "vue";
 import { useUiStore } from "@/stores/useUiStore";
 import { useNotesStore } from "@/stores/useNotesStore";
+import WolfIcon from "@/components/common/WolfIcon.vue";
 
 const uiStore = useUiStore();
 const notesStore = useNotesStore();
@@ -31,7 +32,7 @@ watch(
   }
 );
 
-async function handleSave() {
+async function handleSave(destination: "vault" | "studio" | "timeline" = "vault") {
   if (!title.value.trim()) return;
 
   const tagList = tags.value
@@ -49,7 +50,7 @@ async function handleSave() {
 
   const finalBody = body.value.trim() || title.value.trim();
 
-  await notesStore.addNote({
+  const created = await notesStore.addNote({
     title: title.value.trim(),
     body: finalBody,
     tags: tagList.length ? tagList : [selectedCategory.value.toLowerCase()],
@@ -59,13 +60,28 @@ async function handleSave() {
   });
 
   uiStore.showQuickCapture = false;
-  uiStore.showToast("Saved to Encrypted Vault ✓");
+
+  if (destination === "studio") {
+    if (created?.id) notesStore.selectNote(created.id);
+    uiStore.setTab("studio");
+    uiStore.showToast("Captured & opened in Studio ✓");
+  } else if (destination === "timeline") {
+    if (created?.id) notesStore.selectNote(created.id);
+    uiStore.setTab("timeline");
+    uiStore.showToast("Captured & focused on Timeline ✓");
+  } else {
+    uiStore.showToast("Saved to Encrypted Vault ✓");
+  }
 }
 
 function handleKeyDown(e: KeyboardEvent) {
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
     e.preventDefault();
-    handleSave();
+    if (e.shiftKey) {
+      handleSave("studio");
+    } else {
+      handleSave("vault");
+    }
   } else if (e.key === "Escape") {
     uiStore.showQuickCapture = false;
   }
@@ -98,7 +114,7 @@ function handleKeyDown(e: KeyboardEvent) {
       </div>
 
       <!-- Form Inputs -->
-      <form class="modal-form" @submit.prevent="handleSave">
+      <form class="modal-form" @submit.prevent="handleSave('vault')">
         <!-- Title / Hook -->
         <div class="form-group">
           <label for="captureTitle" class="form-label">Title / Hook</label>
@@ -178,14 +194,20 @@ function handleKeyDown(e: KeyboardEvent) {
           ></textarea>
         </div>
 
-        <!-- Action Button -->
-        <button type="submit" class="btn-save-vault">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-          <span>Save to Encrypted Vault</span>
-        </button>
+        <!-- Action Buttons -->
+        <div class="capture-actions-row">
+          <button type="submit" class="btn-save-vault">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Save to Vault</span>
+          </button>
+          <button type="button" class="btn-save-studio" @click="handleSave('studio')">
+            <WolfIcon name="write" :size="14" />
+            <span>Open in Studio</span>
+          </button>
+        </div>
 
         <!-- Sub Links -->
         <div class="modal-footer-links">
@@ -196,7 +218,10 @@ function handleKeyDown(e: KeyboardEvent) {
           >
             {{ showDetails ? "– Hide details" : "+ Add more details" }}
           </button>
-          <span class="save-shortcut-hint">⌘ + Enter to save</span>
+          <div class="hints-group">
+            <span class="save-shortcut-hint">↵ Save</span>
+            <span class="save-shortcut-hint">⇧↵ Studio</span>
+          </div>
         </div>
       </form>
     </div>
@@ -365,15 +390,22 @@ function handleKeyDown(e: KeyboardEvent) {
   border-color: var(--emerald-bright, #10b981);
 }
 
+.capture-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  margin-top: 6px;
+}
+
 .btn-save-vault {
   width: 100%;
-  height: 46px;
-  margin-top: 6px;
-  background: var(--emerald-main, #10b981);
+  height: 44px;
+  background: var(--emerald-main, #f59e0b);
   border: none;
   border-radius: 10px;
-  color: #03120a;
-  font-size: 13.5px;
+  color: var(--btn-primary-text, #080501);
+  font-size: 13px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -381,13 +413,49 @@ function handleKeyDown(e: KeyboardEvent) {
   gap: 8px;
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 15px var(--border-glow, rgba(245, 158, 11, 0.35));
 }
 
 .btn-save-vault:hover {
-  background: var(--emerald-bright, #34d399);
+  background: var(--emerald-bright, #fbbf24);
   transform: translateY(-1px);
-  box-shadow: 0 0 25px rgba(16, 185, 129, 0.55);
+  box-shadow: 0 0 22px var(--border-glow, rgba(245, 158, 11, 0.5));
+}
+
+.btn-save-studio {
+  width: 100%;
+  height: 44px;
+  background: var(--bg-surface, #181208);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 10px;
+  color: var(--text-primary, #fffbeb);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-save-studio:hover {
+  background: var(--bg-card-hover, #241c0c);
+  border-color: var(--border-focus, #fbbf24);
+  color: var(--emerald-bright, #fbbf24);
+  transform: translateY(-1px);
+}
+
+.hints-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .capture-actions-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .modal-footer-links {

@@ -12,6 +12,12 @@ import { autoClassifyBookmark } from "@/services/bookmarkClassifier";
 import { useNotesStore } from "@/stores/useNotesStore";
 
 const STORAGE_BACKUP_KEY = "wolftimeline_bookmarks_db_v1";
+const SECONDARY_BACKUP_KEY = "wolftimeline_bookmarks_backup";
+const LEGACY_BOOKMARK_KEYS = [
+  "wolftimeline_bookmarks_v1",
+  "wolftimeline_bookmarks",
+  "wolf_bookmarks",
+];
 
 export const useBookmarksStore = defineStore("bookmarks", () => {
   const bookmarks = ref<WebBookmark[]>([]);
@@ -25,7 +31,9 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   // Save current in-memory bookmarks to localStorage backup
   function syncToLocalStorage() {
     try {
-      localStorage.setItem(STORAGE_BACKUP_KEY, JSON.stringify(bookmarks.value));
+      const serialized = JSON.stringify(bookmarks.value);
+      localStorage.setItem(STORAGE_BACKUP_KEY, serialized);
+      localStorage.setItem(SECONDARY_BACKUP_KEY, serialized);
     } catch (e) {
       console.warn("LocalStorage bookmarks backup error:", e);
     }
@@ -56,11 +64,28 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
           bookmarks.value = extracted;
           await dbSaveBookmarksBatch(extracted);
         } else {
-          // Check localStorage fallback
-          const raw = localStorage.getItem(STORAGE_BACKUP_KEY);
+          // Check primary localStorage fallback
+          let raw = localStorage.getItem(STORAGE_BACKUP_KEY);
+          if (!raw) {
+            raw = localStorage.getItem(SECONDARY_BACKUP_KEY);
+          }
+          if (!raw) {
+            for (const lk of LEGACY_BOOKMARK_KEYS) {
+              const leg = localStorage.getItem(lk);
+              if (leg) {
+                raw = leg;
+                break;
+              }
+            }
+          }
+
           if (raw) {
             try {
-              bookmarks.value = JSON.parse(raw);
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                bookmarks.value = parsed;
+                await dbSaveBookmarksBatch(parsed);
+              }
             } catch {
               bookmarks.value = [];
             }

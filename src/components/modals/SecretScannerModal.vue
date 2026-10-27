@@ -2,22 +2,47 @@
 import { ref } from "vue";
 import { useUiStore } from "@/stores/useUiStore";
 import { useVaultStore } from "@/stores/useVaultStore";
+import { useNotesStore } from "@/stores/useNotesStore";
 import { scanTextForCredentials } from "@/services/scanner";
+import WolfIcon from "@/components/common/WolfIcon.vue";
 import type { ScannedCredentialCandidate } from "@/types";
 
 const uiStore = useUiStore();
 const vaultStore = useVaultStore();
+const notesStore = useNotesStore();
 
 const rawText = ref("");
 const scannedItems = ref<ScannedCredentialCandidate[]>([]);
 const hasScanned = ref(false);
 const isDragOver = ref(false);
+const autoRedactNotes = ref(true);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
 function handleDetect() {
   if (!rawText.value.trim()) return;
   scannedItems.value = scanTextForCredentials(rawText.value);
   hasScanned.value = true;
+}
+
+function scanAllProjectNotes() {
+  const combined = notesStore.notes
+    .map((n) => `--- NOTE: ${n.title} ---\n${n.body}`)
+    .join("\n\n");
+  rawText.value = combined;
+  scannedItems.value = scanTextForCredentials(combined);
+  hasScanned.value = true;
+  uiStore.showToast(`Scanned ${notesStore.notes.length} notes: found ${scannedItems.value.length} potential secrets`);
+}
+
+function scanActiveProjectNote() {
+  if (!notesStore.selectedNote) {
+    uiStore.showToast("No active note selected");
+    return;
+  }
+  rawText.value = `--- NOTE: ${notesStore.selectedNote.title} ---\n${notesStore.selectedNote.body}`;
+  scannedItems.value = scanTextForCredentials(notesStore.selectedNote.body);
+  hasScanned.value = true;
+  uiStore.showToast(`Scanned "${notesStore.selectedNote.title}": found ${scannedItems.value.length} potential secrets`);
 }
 
 function handleFileDrop(e: DragEvent) {
@@ -57,7 +82,7 @@ function toggleSelectAll() {
 async function handleSaveSelected() {
   const selected = scannedItems.value.filter((s) => s.selected);
   if (selected.length === 0) {
-    alert("Please select at least one credential to encrypt.");
+    uiStore.showToast("Please select at least one credential to encrypt.");
     return;
   }
 
@@ -70,10 +95,22 @@ async function handleSaveSelected() {
       host: s.host,
       notes: s.notes,
     });
+
+    // Optionally auto-redact plaintext credentials from project notes
+    if (autoRedactNotes.value && s.password && s.password.length > 4) {
+      for (const note of notesStore.notes) {
+        if (note.body && note.body.includes(s.password)) {
+          const updatedBody = note.body.replaceAll(s.password, `[ENCRYPTED_VAULT_SECRET]`);
+          notesStore.updateNote(note.id, { body: updatedBody });
+        }
+      }
+    }
   }
 
   uiStore.showSecretScanner = false;
-  uiStore.showToast(`Successfully encrypted ${selected.length} credentials into Secret Vault ✓`);
+  uiStore.showToast(
+    `Successfully encrypted ${selected.length} credentials into Secret Vault${autoRedactNotes.value ? " & redacted notes" : ""} ✓`
+  );
 }
 </script>
 
@@ -94,6 +131,18 @@ async function handleSaveSelected() {
 
       <!-- Scanner Body -->
       <div class="scanner-body">
+        <!-- Fast Project Notes Scan Actions -->
+        <div class="scanner-quick-actions">
+          <button type="button" class="btn-quick-scan" @click="scanAllProjectNotes">
+            <WolfIcon name="search" :size="13" />
+            <span>Scan All Project Notes ({{ notesStore.notes.length }})</span>
+          </button>
+          <button v-if="notesStore.selectedNote" type="button" class="btn-quick-scan" @click="scanActiveProjectNote">
+            <WolfIcon name="file-text" :size="13" />
+            <span>Scan Current Note ("{{ notesStore.selectedNote.title }}")</span>
+          </button>
+        </div>
+
         <!-- Dropzone -->
         <div
           class="scanner-dropzone"
@@ -103,7 +152,9 @@ async function handleSaveSelected() {
           @drop.prevent="handleFileDrop"
           @click="fileInputRef?.click()"
         >
-          <div class="drop-icon">📂</div>
+          <div class="drop-icon">
+            <WolfIcon name="folder" :size="26" />
+          </div>
           <div class="drop-text">
             <strong>Drag &amp; drop your .txt or .env file here</strong>, or <span class="browse-link">browse file</span>
           </div>
@@ -162,8 +213,13 @@ async function handleSaveSelected() {
           </div>
 
           <div v-if="scannedItems.length > 0" class="results-footer">
+            <label class="redact-checkbox-label">
+              <input v-model="autoRedactNotes" type="checkbox" />
+              <span>Auto-redact leaked secrets from project notes when encrypted</span>
+            </label>
             <button type="button" class="btn-encrypt-selected" @click="handleSaveSelected">
-              🔒 Encrypt Selected to Secret Vault
+              <WolfIcon name="lock" :size="14" />
+              <span>Encrypt Selected to Secret Vault</span>
             </button>
           </div>
         </div>
@@ -251,6 +307,50 @@ async function handleSaveSelected() {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.scanner-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-quick-scan {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface, #181208);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald-bright, #fbbf24);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-quick-scan:hover {
+  background: var(--bg-card-hover, #241c0c);
+  border-color: var(--border-focus, #fbbf24);
+  transform: translateY(-1px);
+}
+
+.redact-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #fcd34d);
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.redact-checkbox-label input {
+  accent-color: var(--emerald-main, #f59e0b);
+  cursor: pointer;
 }
 
 .scanner-dropzone {

@@ -17,6 +17,8 @@ import {
 } from "@/services/tauriIpc";
 
 const LOCAL_SECRETS_KEY = "wolf_vault_secrets_v2";
+const BACKUP_SECRETS_KEY = "wolf_vault_secrets_backup";
+const LEGACY_SECRETS_KEYS = ["wolf_vault_secrets_v1", "wolf_vault_secrets"];
 
 export const useVaultStore = defineStore("vault", () => {
   const isUnlocked = ref<boolean>(false);
@@ -146,7 +148,19 @@ export const useVaultStore = defineStore("vault", () => {
         if (rawDbSecrets && rawDbSecrets.length > 0) {
           encryptedRows = rawDbSecrets;
         } else {
-          const localRaw = localStorage.getItem(LOCAL_SECRETS_KEY);
+          let localRaw = localStorage.getItem(LOCAL_SECRETS_KEY);
+          if (!localRaw) {
+            localRaw = localStorage.getItem(BACKUP_SECRETS_KEY);
+          }
+          if (!localRaw) {
+            for (const lk of LEGACY_SECRETS_KEYS) {
+              const leg = localStorage.getItem(lk);
+              if (leg) {
+                localRaw = leg;
+                break;
+              }
+            }
+          }
           if (localRaw) {
             try {
               encryptedRows = JSON.parse(localRaw);
@@ -230,12 +244,14 @@ export const useVaultStore = defineStore("vault", () => {
     // Save to LocalStorage fallback
     try {
       let list: VaultSecretItem[] = [];
-      const raw = localStorage.getItem(LOCAL_SECRETS_KEY);
+      const raw = localStorage.getItem(LOCAL_SECRETS_KEY) || localStorage.getItem(BACKUP_SECRETS_KEY);
       if (raw) list = JSON.parse(raw);
       const idx = list.findIndex((x) => x.id === id);
       if (idx >= 0) list[idx] = secretRow;
       else list.unshift(secretRow);
-      localStorage.setItem(LOCAL_SECRETS_KEY, JSON.stringify(list));
+      const serialized = JSON.stringify(list);
+      localStorage.setItem(LOCAL_SECRETS_KEY, serialized);
+      localStorage.setItem(BACKUP_SECRETS_KEY, serialized);
     } catch {}
 
     // Update in-memory decrypted secrets
@@ -262,10 +278,12 @@ export const useVaultStore = defineStore("vault", () => {
 
     try {
       let list: VaultSecretItem[] = [];
-      const raw = localStorage.getItem(LOCAL_SECRETS_KEY);
+      const raw = localStorage.getItem(LOCAL_SECRETS_KEY) || localStorage.getItem(BACKUP_SECRETS_KEY);
       if (raw) list = JSON.parse(raw);
       list = list.filter((x) => x.id !== id);
-      localStorage.setItem(LOCAL_SECRETS_KEY, JSON.stringify(list));
+      const serialized = JSON.stringify(list);
+      localStorage.setItem(LOCAL_SECRETS_KEY, serialized);
+      localStorage.setItem(BACKUP_SECRETS_KEY, serialized);
     } catch {}
   }
 
