@@ -175,6 +175,14 @@ const activePhaseProgress = computed(() => {
   const completed = roadmapStore.activePhase.practices.filter((p) => p.completed).length;
   return Math.round((completed / roadmapStore.activePhase.practices.length) * 100);
 });
+
+// Mobile Segment Switcher (<860px)
+const mobileRoadmapTab = ref<"phases" | "details">("phases");
+
+function selectPhaseMobile(phaseId: string) {
+  roadmapStore.activePhaseId = phaseId;
+  mobileRoadmapTab.value = "details";
+}
 </script>
 
 <template>
@@ -212,10 +220,34 @@ const activePhaseProgress = computed(() => {
       </div>
     </div>
 
+    <!-- Mobile Segment Switcher (<860px) -->
+    <div class="roadmap-mobile-tabs" role="tablist" aria-label="Roadmap View Switcher">
+      <button
+        type="button"
+        role="tab"
+        class="roadmap-tab-btn"
+        :class="{ active: mobileRoadmapTab === 'phases' }"
+        :aria-selected="mobileRoadmapTab === 'phases'"
+        @click="mobileRoadmapTab = 'phases'"
+      >
+        <span>📍 Phases ({{ roadmapStore.phases.length }})</span>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="roadmap-tab-btn"
+        :class="{ active: mobileRoadmapTab === 'details' }"
+        :aria-selected="mobileRoadmapTab === 'details'"
+        @click="mobileRoadmapTab = 'details'"
+      >
+        <span>🎯 {{ roadmapStore.activePhase ? roadmapStore.activePhase.title : 'Milestone Details' }}</span>
+      </button>
+    </div>
+
     <!-- Main 2-Column Body -->
     <div class="roadmap-body">
       <!-- Left Column: ROADMAP Phases Track -->
-      <div class="roadmap-column-left">
+      <div class="roadmap-column-left" :class="{ 'mobile-hidden': mobileRoadmapTab !== 'phases' }">
         <div class="roadmap-track-card">
           <div class="track-header">
             <div class="track-header-left">
@@ -250,7 +282,7 @@ const activePhaseProgress = computed(() => {
               @dragleave="onPhaseDragLeave(phase.id)"
               @drop="onPhaseDrop($event, phase.id)"
               @dragend="onPhaseDragEnd"
-              @click="roadmapStore.activePhaseId = phase.id"
+              @click="selectPhaseMobile(phase.id)"
             >
               <!-- Timeline Axis -->
               <div class="node-axis">
@@ -294,7 +326,16 @@ const activePhaseProgress = computed(() => {
       </div>
 
       <!-- Right Column: Phase Detail Inspector -->
-      <div v-if="roadmapStore.activePhase" class="roadmap-column-right">
+      <div v-if="roadmapStore.activePhase" class="roadmap-column-right" :class="{ 'mobile-hidden': mobileRoadmapTab !== 'details' }">
+        <button
+          type="button"
+          class="roadmap-mobile-back-btn"
+          @click="mobileRoadmapTab = 'phases'"
+          title="Back to Roadmap Phases"
+        >
+          ← Back to Roadmap Phases
+        </button>
+
         <div class="phase-detail-card">
           <!-- Detail Card Header -->
           <div class="detail-top-row">
@@ -1259,60 +1300,126 @@ const activePhaseProgress = computed(() => {
   scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
 }
 
+/* Default desktop styles for mobile helpers */
+.roadmap-mobile-tabs {
+  display: none;
+}
+
+.roadmap-mobile-back-btn {
+  display: none;
+}
+
 /* =========================================================================
    SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (RoadmapView)
    ========================================================================= */
 @media (max-width: 860px) {
   .roadmap-view {
-    padding: 12px 14px 24px 14px;
-    gap: 14px;
+    padding: 10px 12px calc(80px + env(safe-area-inset-bottom, 0px)) 12px;
+    gap: 12px;
     overflow-y: auto;
   }
 
-  .roadmap-header-hero {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+  .roadmap-top-header {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 8px 10px;
   }
 
-  .header-actions {
+  .roadmap-mobile-tabs {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-card, #120e06);
+    border: 1px solid var(--border-card, #33220a);
+    border-radius: 10px;
+    padding: 4px;
     width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
+  }
+
+  .roadmap-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-muted, #d4a373);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .roadmap-tab-btn.active {
+    background: var(--emerald-glow, rgba(245, 158, 11, 0.15));
+    color: var(--emerald-bright, #fbbf24);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+  }
+
+  .roadmap-mobile-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 14px;
+    background: var(--bg-surface, #181208);
+    border: 1px solid var(--border-card, #33220a);
+    border-radius: 8px;
+    color: var(--emerald-bright, #fbbf24);
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: all 0.15s ease;
+  }
+
+  .roadmap-mobile-back-btn:active {
+    transform: scale(0.98);
   }
 
   .roadmap-body {
     display: flex;
     flex-direction: column;
     overflow: visible;
-    gap: 18px;
+    gap: 14px;
     height: auto;
   }
 
-  .roadmap-column-left {
-    height: auto;
-    overflow: visible;
-  }
-
+  .roadmap-column-left,
   .roadmap-column-right {
+    width: 100%;
     height: auto;
     overflow: visible;
   }
 
-  .milestones-grid {
-    grid-template-columns: 1fr;
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .btn-add-phase-quick {
+    min-height: 44px;
+    padding: 8px 14px;
+  }
+
+  .btn-edit-inline,
+  .btn-delete-phase,
+  .phase-badge-inline {
+    min-height: 44px;
+  }
+
+  .practice-check-btn {
+    min-width: 32px;
+    min-height: 32px;
   }
 
   .btn-mode-pill {
-    min-height: 40px;
+    min-height: 44px;
     padding: 8px 14px;
     font-size: 13px;
-  }
-
-  .btn-quick-milestone {
-    min-height: 44px;
-    width: 100%;
-    justify-content: center;
   }
 }
 </style>

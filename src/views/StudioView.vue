@@ -42,11 +42,17 @@ function onPreviewScroll() {
 type ViewMode = "split" | "editor" | "preview";
 const viewMode = ref<ViewMode>("split");
 const showSidebar = ref<boolean>(true);
+const mobileStudioMode = ref<"list" | "editor">(notesStore.selectedNote ? "editor" : "list");
 const sidebarSearch = ref<string>("");
 const sidebarFilter = ref<string>("all");
 const showTemplateMenu = ref<boolean>(false);
 const newTagInput = ref<string>("");
 const isAddingTag = ref<boolean>(false);
+
+function selectStudioNote(id: number) {
+  notesStore.selectNote(id);
+  mobileStudioMode.value = "editor";
+}
 
 // Filtered notes list for Studio Navigator
 const studioNotes = computed(() => {
@@ -319,7 +325,10 @@ function handleCreateNewNote() {
     })
     .then((created: any) => {
       uiStore.showToast("Created new document ✓");
-      if (created?.id) notesStore.selectNote(created.id);
+      if (created?.id) {
+        notesStore.selectNote(created.id);
+        mobileStudioMode.value = "editor";
+      }
     });
 }
 
@@ -513,7 +522,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 </script>
 
 <template>
-  <div class="studio-view-layout">
+  <div class="studio-view-layout" :class="`mobile-mode-${mobileStudioMode}`">
     <!-- Left Collapsible Document Navigator -->
     <aside v-if="showSidebar" class="studio-sidebar">
       <div class="sidebar-header">
@@ -619,7 +628,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
           :key="n.id"
           class="doc-list-item"
           :class="{ active: notesStore.selectedNote?.id === n.id }"
-          @click="notesStore.selectNote(n.id)"
+          @click="selectStudioNote(n.id)"
         >
           <div class="doc-item-top">
             <span class="doc-title">{{ n.title || "Untitled Document" }}</span>
@@ -641,6 +650,17 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
       <!-- Top Control Bar -->
       <div class="studio-topbar">
         <div class="topbar-left">
+          <!-- Mobile Return to Docs List Button -->
+          <button
+            type="button"
+            class="btn-mobile-docs"
+            @click="mobileStudioMode = 'list'"
+            title="Back to Documents Navigator"
+            aria-label="Back to Documents"
+          >
+            ← Docs
+          </button>
+
           <!-- Toggle Sidebar Button -->
           <button
             type="button"
@@ -2167,25 +2187,81 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 /* =========================================================================
    SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (StudioView)
    ========================================================================= */
+.btn-mobile-docs {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .studio-view-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* In mobile list mode: show sidebar full-width, hide editor */
+  .studio-view-layout.mobile-mode-list .studio-sidebar {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    height: 100% !important;
+    border-right: none;
+    padding-bottom: 74px;
+  }
+  .studio-view-layout.mobile-mode-list .studio-main-workspace {
+    display: none !important;
+  }
+
+  /* In mobile editor mode: hide sidebar, show editor full-width */
+  .studio-view-layout.mobile-mode-editor .studio-sidebar {
+    display: none !important;
+  }
+  .studio-view-layout.mobile-mode-editor .studio-main-workspace {
+    display: flex !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding-bottom: 74px;
+  }
+
+  .btn-mobile-docs {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg-surface, #181208);
+    border: 1px solid var(--border-card, #33220a);
+    color: var(--emerald-bright, #fbbf24);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    min-height: 38px;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+
+  .btn-toggle-sidebar {
+    display: none !important;
+  }
+
   .studio-panes.split {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr;
   }
 
-  .studio-top-bar {
+  .studio-topbar {
     flex-wrap: wrap;
     gap: 8px;
     padding: 10px 14px;
     min-height: auto;
   }
 
-  .top-left-identity {
+  .topbar-left {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
-  .top-right-controls {
+  .topbar-right {
     width: 100%;
     justify-content: space-between;
     overflow-x: auto;
@@ -2205,8 +2281,8 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   }
 
   .btn-mode {
-    min-height: 40px;
-    padding: 8px 12px;
+    min-height: 38px;
+    padding: 6px 12px;
     font-size: 12px;
   }
 
@@ -2227,6 +2303,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
 
   .studio-footer-status {
     padding: 6px 12px;
+    margin-bottom: 8px;
   }
 
   .footer-left {

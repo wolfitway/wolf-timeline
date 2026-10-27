@@ -4723,12 +4723,16 @@ function jumpToCategory(catId: SettingsCategory) {
     padding: 12px 14px 8px;
   }
 
+  .sidebar-footer {
+    display: none;
+  }
+
   .settings-nav {
     display: flex;
     flex-direction: row;
     overflow-x: auto;
     padding: 6px 12px 10px;
-    gap: 6px;
+    gap: 8px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
@@ -4737,15 +4741,16 @@ function jumpToCategory(catId: SettingsCategory) {
     display: none;
   }
 
-  .nav-item {
+  .nav-item-btn {
     white-space: nowrap;
-    min-height: 40px;
+    min-height: 44px;
     padding: 8px 14px;
     flex-shrink: 0;
+    font-size: 13px;
   }
 
   .settings-main-pane {
-    padding: 14px 14px 30px;
+    padding: 14px 14px calc(80px + env(safe-area-inset-bottom, 0px));
     height: auto;
     overflow: visible;
   }

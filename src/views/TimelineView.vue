@@ -19,6 +19,7 @@ const showMoodGallery = ref(true);
 
 // Mobile responsive master-detail toggle state
 const mobileShowDetail = ref(false);
+const activeMobileSection = ref<"notes" | "timeline" | "ai" | "docs" | "mood">("notes");
 
 // Timeline Notes Live Preview mode
 const timelineNotesViewMode = ref<"preview" | "edit">("preview");
@@ -1161,8 +1162,44 @@ function toggleMoodTag(tag: string) {
           </div>
         </div>
 
+        <!-- Mobile Section Navigation Strip (Switch seamlessly on phones) -->
+        <div class="mobile-detail-nav-strip">
+          <button
+            type="button"
+            class="mobile-nav-chip"
+            :class="{ active: activeMobileSection === 'notes' }"
+            @click="activeMobileSection = 'notes'"
+          >
+            📝 Notes &amp; Specs
+          </button>
+          <button
+            type="button"
+            class="mobile-nav-chip"
+            :class="{ active: activeMobileSection === 'timeline' }"
+            @click="activeMobileSection = 'timeline'"
+          >
+            ⏱️ Timeline ({{ filteredEvents.length }})
+          </button>
+          <button
+            type="button"
+            class="mobile-nav-chip"
+            :class="{ active: activeMobileSection === 'ai' }"
+            @click="activeMobileSection = 'ai'"
+          >
+            🤖 AI Debates ({{ filteredAiExplorations.length }})
+          </button>
+          <button
+            type="button"
+            class="mobile-nav-chip"
+            :class="{ active: activeMobileSection === 'mood' }"
+            @click="activeMobileSection = 'mood'"
+          >
+            🖼️ Mood ({{ filteredMoodGallery.length }})
+          </button>
+        </div>
+
         <!-- Notes Section with Live Markdown Preview & Deep Focus Trigger -->
-        <div class="detail-section timeline-notes-section">
+        <div class="detail-section timeline-notes-section" :class="{ 'mobile-hidden': activeMobileSection !== 'notes' }">
           <div class="section-title-row">
             <div class="notes-title-left">
               <h2 class="section-title">Notes &amp; Specs</h2>
@@ -1244,7 +1281,7 @@ function toggleMoodTag(tag: string) {
         </div>
 
         <!-- 1. Timeline Section with Drag & Drop Reordering and Full CRUD -->
-        <div class="detail-section timeline-section">
+        <div class="detail-section timeline-section" :class="{ 'mobile-hidden': activeMobileSection !== 'timeline' }">
           <div class="section-title-row">
             <h2 class="section-title">Timeline ({{ filteredEvents.length }})</h2>
             <span class="section-reorder-hint">Drag items to reorder</span>
@@ -1371,7 +1408,7 @@ function toggleMoodTag(tag: string) {
         </div>
 
         <!-- 2. Collapsible AI Explorations Section with Decision Studio & Multi-Model Debates -->
-        <div class="collapsible-section">
+        <div class="collapsible-section" :class="{ 'mobile-hidden': activeMobileSection !== 'ai' }">
           <button
             type="button"
             class="collapsible-header"
@@ -1472,7 +1509,7 @@ function toggleMoodTag(tag: string) {
         </div>
 
         <!-- 3. Sovereign Bookmarks Hub Quick-Link (Separated into Dedicated Discovery Tab) -->
-        <div class="collapsible-section bookmarks-hub-shortcut-card">
+        <div class="collapsible-section bookmarks-hub-shortcut-card" :class="{ 'mobile-hidden': activeMobileSection !== 'mood' }">
           <div class="bookmarks-shortcut-inner">
             <div class="bookmarks-shortcut-left">
               <div class="shortcut-icon-badge">🔖</div>
@@ -1500,7 +1537,7 @@ function toggleMoodTag(tag: string) {
         <!-- 4. Refactored Mood Gallery Section with Drag & Drop Reorder, Instant Upload Dropzone -->
         <div
           class="collapsible-section mood-gallery-section"
-          :class="{ 'gallery-drop-active': isGalleryDraggingFiles }"
+          :class="{ 'gallery-drop-active': isGalleryDraggingFiles, 'mobile-hidden': activeMobileSection !== 'mood' }"
           @dragover.prevent="isGalleryDraggingFiles = true"
           @dragleave.prevent="isGalleryDraggingFiles = false"
           @drop.prevent="onGalleryDropFiles"
@@ -4020,6 +4057,56 @@ select.adder-input:focus {
   .btn-quick-capture-hero {
     min-height: 46px;
     font-size: 14px;
+  }
+
+  /* Mobile Section Switcher Strip */
+  .mobile-detail-nav-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px 0 12px;
+    margin-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--border-subtle, #261a07);
+    flex-shrink: 0;
+  }
+
+  .mobile-detail-nav-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-nav-chip {
+    flex-shrink: 0;
+    padding: 7px 13px;
+    border-radius: 20px;
+    background: var(--bg-surface, #181208);
+    border: 1px solid var(--border-card, #33220a);
+    color: var(--text-secondary, #fcd34d);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 38px;
+    transition: all 0.15s ease;
+  }
+
+  .mobile-nav-chip.active {
+    background: var(--emerald-main, #f59e0b);
+    color: var(--bg-canvas, #000000);
+    border-color: var(--emerald-main, #f59e0b);
+    box-shadow: 0 0 10px var(--border-glow, rgba(245, 158, 11, 0.3));
+  }
+
+  /* Single Section Display on Phone */
+  .detail-section.mobile-hidden,
+  .collapsible-section.mobile-hidden {
+    display: none !important;
+  }
+
+  /* Safe scrolling clearance for mobile bottom bar */
+  .cards-feed-list,
+  .detail-card-panel {
+    padding-bottom: 76px !important;
   }
 }
 </style>

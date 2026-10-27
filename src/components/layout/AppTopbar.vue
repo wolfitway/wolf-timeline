@@ -348,7 +348,8 @@ function toggleTheme() {
         title="Quick Capture (⌘+Enter)"
         aria-label="Quick Capture"
       >
-        <span>+</span>
+        <span class="qc-plus">+</span>
+        <span class="qc-label">Capture</span>
       </button>
 
       <!-- Security / Encryption Status Badge -->
@@ -714,15 +715,15 @@ function toggleTheme() {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
+  gap: 4px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 12px;
   background: var(--emerald-main, #f59e0b);
   color: var(--bg-canvas, #000000);
   border: none;
   border-radius: 8px;
-  font-size: 20px;
+  font-size: 13px;
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 0 12px var(--border-glow, rgba(245, 158, 11, 0.35));
@@ -730,7 +731,18 @@ function toggleTheme() {
 }
 
 .topbar-mobile-qc-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.95);
+}
+
+.qc-plus {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.qc-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 /* Responsive Breakpoints & Mobile Optimization */
@@ -742,9 +754,11 @@ function toggleTheme() {
 
 @media (max-width: 768px) {
   .app-topbar {
-    height: 52px;
-    min-height: 52px;
-    padding: 0 12px;
+    height: 54px;
+    min-height: 54px;
+    padding: 0 14px;
+    background: var(--bg-card, #120e06);
+    border-bottom: 1px solid var(--border-card, #33220a);
   }
 
   /* Defer navigation tabs to MobileBottomNav */
@@ -753,11 +767,13 @@ function toggleTheme() {
   }
 
   .brand-title {
-    font-size: 13.5px;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text-primary);
   }
 
   .topbar-right {
-    gap: 6px;
+    gap: 8px;
   }
 
   /* Show mobile quick capture */
@@ -770,20 +786,16 @@ function toggleTheme() {
   .topbar-kokoro-btn,
   .topbar-voice-control-btn,
   .topbar-license-btn,
-  .security-pill-badge span {
-    display: none;
-  }
-
   .security-pill-badge {
-    padding: 8px 10px;
-    min-height: 40px;
-    min-width: 40px;
-    justify-content: center;
+    display: none !important;
   }
 
   .topbar-search-btn {
     padding: 8px 10px;
-    min-height: 40px;
+    min-height: 38px;
+    background: var(--bg-surface, #181208);
+    border: 1px solid var(--border-card, #33220a);
+    border-radius: 8px;
   }
 
   .topbar-search-btn kbd {
@@ -791,15 +803,15 @@ function toggleTheme() {
   }
 
   .topbar-theme-toggle-btn {
-    min-height: 40px;
-    min-width: 40px;
-    padding: 8px 10px;
+    min-height: 38px;
+    min-width: 38px;
+    padding: 6px 10px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 420px) {
   .brand-title {
-    display: none;
+    font-size: 13px;
   }
 
   .topbar-search-btn span {
@@ -807,7 +819,8 @@ function toggleTheme() {
   }
 
   .topbar-search-btn {
-    min-width: 40px;
+    min-width: 38px;
+    padding: 8px;
     justify-content: center;
   }
 }

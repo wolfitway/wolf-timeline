@@ -1031,4 +1031,24 @@ select option:checked {
   letter-spacing: 0.02em;
 }
 
+/* =========================================================================
+   GLOBAL MOBILE-FIRST ERGONOMICS & TOUCH OPTIMIZATION
+   ========================================================================= */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
+  }
+
+  button,
+  a,
+  [role="button"],
+  .clickable {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+
 
