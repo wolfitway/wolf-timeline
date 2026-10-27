@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WolfIcon from "@/components/common/WolfIcon.vue";
 import { ref, computed } from "vue";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useUiStore } from "@/stores/useUiStore";
@@ -230,7 +231,7 @@ function selectPhaseMobile(phaseId: string) {
         :aria-selected="mobileRoadmapTab === 'phases'"
         @click="mobileRoadmapTab = 'phases'"
       >
-        <span>📍 Phases ({{ roadmapStore.phases.length }})</span>
+        <span class="tab-flex"><WolfIcon name="roadmap" :size="13" /> <span>Phases ({{ roadmapStore.phases.length }})</span></span>
       </button>
       <button
         type="button"
@@ -240,7 +241,7 @@ function selectPhaseMobile(phaseId: string) {
         :aria-selected="mobileRoadmapTab === 'details'"
         @click="mobileRoadmapTab = 'details'"
       >
-        <span>🎯 {{ roadmapStore.activePhase ? roadmapStore.activePhase.title : 'Milestone Details' }}</span>
+        <span class="tab-flex"><WolfIcon name="check-square" :size="13" /> <span>{{ roadmapStore.activePhase ? roadmapStore.activePhase.title : 'Milestone Details' }}</span></span>
       </button>
     </div>
 
@@ -354,7 +355,7 @@ function selectPhaseMobile(phaseId: string) {
             <div class="phase-header-info">
               <div v-if="!isEditingPhaseTitle" class="phase-heading-row" @dblclick="startEditingPhaseTitle">
                 <h2 class="phase-heading">{{ roadmapStore.activePhase.title }}</h2>
-                <button type="button" class="btn-edit-inline" @click="startEditingPhaseTitle" title="Edit phase title">✏️</button>
+                <button type="button" class="btn-edit-inline" @click="startEditingPhaseTitle" title="Edit phase title"><WolfIcon name="write" :size="12" /></button>
               </div>
               <div v-else class="phase-heading-edit-row">
                 <input
@@ -380,7 +381,7 @@ function selectPhaseMobile(phaseId: string) {
                   @click="handleDeleteActivePhase"
                   title="Delete Milestone Phase"
                 >
-                  🗑️ Delete Phase
+                  <WolfIcon name="trash" :size="12" /> <span>Delete Phase</span>
                 </button>
               </div>
             </div>

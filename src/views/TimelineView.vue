@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WolfIcon from "@/components/common/WolfIcon.vue";
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
@@ -1170,7 +1171,7 @@ function toggleMoodTag(tag: string) {
             :class="{ active: activeMobileSection === 'notes' }"
             @click="activeMobileSection = 'notes'"
           >
-            📝 Notes &amp; Specs
+            <WolfIcon name="file-text" :size="12" /> <span>Notes &amp; Specs</span>
           </button>
           <button
             type="button"
@@ -1178,7 +1179,7 @@ function toggleMoodTag(tag: string) {
             :class="{ active: activeMobileSection === 'timeline' }"
             @click="activeMobileSection = 'timeline'"
           >
-            ⏱️ Timeline ({{ filteredEvents.length }})
+            <WolfIcon name="clock" :size="12" /> <span>Timeline ({{ filteredEvents.length }})</span>
           </button>
           <button
             type="button"
@@ -1186,7 +1187,7 @@ function toggleMoodTag(tag: string) {
             :class="{ active: activeMobileSection === 'ai' }"
             @click="activeMobileSection = 'ai'"
           >
-            🤖 AI Debates ({{ filteredAiExplorations.length }})
+            <WolfIcon name="cpu" :size="12" /> <span>AI Debates ({{ filteredAiExplorations.length }})</span>
           </button>
           <button
             type="button"
@@ -1194,7 +1195,7 @@ function toggleMoodTag(tag: string) {
             :class="{ active: activeMobileSection === 'mood' }"
             @click="activeMobileSection = 'mood'"
           >
-            🖼️ Mood ({{ filteredMoodGallery.length }})
+            <WolfIcon name="image" :size="12" /> <span>Mood ({{ filteredMoodGallery.length }})</span>
           </button>
         </div>
 
@@ -1210,7 +1211,7 @@ function toggleMoodTag(tag: string) {
                   :class="{ active: timelineNotesViewMode === 'preview' }"
                   @click="timelineNotesViewMode = 'preview'"
                 >
-                  👁 Live Preview
+                  <WolfIcon name="read" :size="12" /> <span>Live Preview</span>
                 </button>
                 <button
                   type="button"
@@ -1218,7 +1219,7 @@ function toggleMoodTag(tag: string) {
                   :class="{ active: timelineNotesViewMode === 'edit' }"
                   @click="timelineNotesViewMode = 'edit'"
                 >
-                  ✎ Edit Source
+                  <WolfIcon name="write" :size="12" /> <span>Edit Source</span>
                 </button>
               </div>
             </div>
@@ -1316,8 +1317,8 @@ function toggleMoodTag(tag: string) {
                   </div>
                   <div class="timeline-item-actions">
                     <span class="timeline-event-time">{{ ev.time }}</span>
-                    <button type="button" class="btn-item-icon" @click="startEditEvent(ev)" title="Edit Event">✏️</button>
-                    <button type="button" class="btn-item-icon danger" @click="handleDeleteEvent(ev.id)" title="Delete Event">✕</button>
+                    <button type="button" class="btn-item-icon" @click="startEditEvent(ev)" title="Edit Event"><WolfIcon name="write" :size="12" /></button>
+                    <button type="button" class="btn-item-icon danger" @click="handleDeleteEvent(ev.id)" title="Delete Event"><WolfIcon name="trash" :size="12" /></button>
                   </div>
                 </div>
                 <p class="timeline-event-desc">{{ ev.desc }}</p>
@@ -1425,7 +1426,7 @@ function toggleMoodTag(tag: string) {
                 @click.stop="uiStore.openAiExplorationModal()"
                 title="Launch full AI debate studio"
               >
-                <span>⚔️ Open Debate Studio</span>
+                <span class="flex-inline-btn"><WolfIcon name="cpu" :size="12" /> <span>Open Debate Studio</span></span>
               </button>
               <span class="collapsible-count-pill">{{ filteredAiExplorations.length }}</span>
             </div>
@@ -1456,13 +1457,13 @@ function toggleMoodTag(tag: string) {
                       <span class="ai-banner-title">{{ ai.title }}</span>
                       <span class="ai-banner-model-pill">{{ ai.model }}</span>
                       <span v-if="ai.debate_turns?.length" class="ai-debates-count-pill">
-                        ⚔️ {{ ai.debate_turns.length }} Model Debates
+                        <WolfIcon name="cpu" :size="11" /> <span>{{ ai.debate_turns.length }} Model Debates</span>
                       </span>
                       <span class="ai-banner-meta">• {{ ai.date }}</span>
                     </div>
 
                     <p v-if="ai.decision_outcome || ai.rationale" class="ai-inline-rationale">
-                      <strong class="rationale-lead">🎯 Consensus: </strong>{{ ai.decision_outcome || ai.rationale }}
+                      <strong class="rationale-lead">Consensus: </strong>{{ ai.decision_outcome || ai.rationale }}
                     </p>
 
                     <div v-if="ai.key_takeaways?.length" class="ai-mini-takeaways">
@@ -1512,7 +1513,7 @@ function toggleMoodTag(tag: string) {
         <div class="collapsible-section bookmarks-hub-shortcut-card" :class="{ 'mobile-hidden': activeMobileSection !== 'mood' }">
           <div class="bookmarks-shortcut-inner">
             <div class="bookmarks-shortcut-left">
-              <div class="shortcut-icon-badge">🔖</div>
+              <div class="shortcut-icon-badge"><WolfIcon name="bookmarks" :size="14" /></div>
               <div class="shortcut-text-wrap">
                 <h4 class="shortcut-title">Sovereign Bookmarks &amp; Resources Hub</h4>
                 <p class="shortcut-desc">
@@ -1589,7 +1590,7 @@ function toggleMoodTag(tag: string) {
 
               <!-- Upload Button (Direct File Ingest) -->
               <label class="btn-add-mood-quick file-label" title="Upload image files from your computer">
-                📁 Upload Photos
+                <WolfIcon name="folder" :size="12" /> <span>Upload Photos</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -1607,7 +1608,7 @@ function toggleMoodTag(tag: string) {
                 @click="handleExportGalleryToFolder"
                 title="Export all gallery photos directly to a folder on your computer"
               >
-                {{ isExportingPhotos ? "💾 Exporting..." : "💾 Export to Folder" }}
+                <span class="flex-inline-btn"><WolfIcon name="download" :size="12" /> <span>{{ isExportingPhotos ? "Exporting..." : "Export to Folder" }}</span></span>
               </button>
 
               <!-- Manual URL Add Toggle -->
@@ -1628,7 +1629,7 @@ function toggleMoodTag(tag: string) {
                 @click="handleClearAllMood"
                 title="Permanently wipe gallery photos from local database"
               >
-                🗑️ Clear
+                <WolfIcon name="trash" :size="12" /> <span>Clear</span>
               </button>
             </div>
           </div>
@@ -1645,7 +1646,7 @@ function toggleMoodTag(tag: string) {
                   </span>
                 </span>
               </div>
-              <span class="storage-security-pill">🔒 Zero Cloud Telemetry • 100% On-Device</span>
+              <span class="storage-security-pill"><WolfIcon name="shield-check" :size="11" /> <span>Zero Cloud Telemetry • 100% On-Device</span></span>
             </div>
 
             <!-- Mood Gallery Dedicated Tags Filter Strip -->
@@ -1763,7 +1764,7 @@ function toggleMoodTag(tag: string) {
                     loading="lazy"
                   />
                   <div class="mood-img-overlay">
-                    <span class="zoom-badge">🔍 Enlarge Lightbox</span>
+                    <span class="zoom-badge"><WolfIcon name="maximize" :size="11" /> <span>Enlarge Lightbox</span></span>
                   </div>
                   <span class="card-drag-handle-badge" title="Drag to reorder card">⋮⋮</span>
                 </div>
@@ -1776,9 +1777,9 @@ function toggleMoodTag(tag: string) {
                     </span>
                   </div>
                   <div class="mood-btn-group">
-                    <button type="button" class="btn-item-icon" @click.stop="handleDownloadSinglePhoto(img)" title="Save Photo to Folder">⬇️</button>
-                    <button type="button" class="btn-item-icon" @click.stop="startEditMood(img)" title="Edit Photo Details">✏️</button>
-                    <button type="button" class="btn-item-icon danger" @click.stop="handleDeleteMood(img.id)" title="Permanently Delete Photo from Database">✕</button>
+                    <button type="button" class="btn-item-icon" @click.stop="handleDownloadSinglePhoto(img)" title="Save Photo to Folder"><WolfIcon name="download" :size="12" /></button>
+                    <button type="button" class="btn-item-icon" @click.stop="startEditMood(img)" title="Edit Photo Details"><WolfIcon name="write" :size="12" /></button>
+                    <button type="button" class="btn-item-icon danger" @click.stop="handleDeleteMood(img.id)" title="Permanently Delete Photo from Database"><WolfIcon name="trash" :size="12" /></button>
                   </div>
                 </div>
 
@@ -1796,7 +1797,7 @@ function toggleMoodTag(tag: string) {
             </div>
 
             <div v-else class="resource-empty-hint">
-              <span>No mood images found. Drag & drop images onto this card or click "📁 Upload Photos" to add some!</span>
+              <span>No mood images found. Drag & drop images onto this card or click "<WolfIcon name="folder" :size="12" /> <span>Upload Photos</span>" to add some!</span>
             </div>
 
             <!-- Edit Mood Item Form -->
@@ -1844,7 +1845,7 @@ function toggleMoodTag(tag: string) {
           </button>
 
           <button type="button" class="btn-panel-action" @click="handleAddToVault">
-            <span class="action-icon">🔐</span>
+            <WolfIcon name="key" :size="13" class="action-icon" />
             <span>Add to Vault</span>
           </button>
 

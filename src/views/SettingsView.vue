@@ -160,14 +160,6 @@ const autoSaveDebounce = ref<number>(200);
 const importFileInput = ref<HTMLInputElement | null>(null);
 
 onMounted(() => {
-  // Load connections
-  const localConn = localStorage.getItem("wolfitway_connections_state");
-  if (localConn) {
-    try {
-      connections.value = JSON.parse(localConn);
-    } catch {}
-  }
-
   // Load theme
   const savedTheme = localStorage.getItem("wolf_theme") || "obsidian";
   currentTheme.value = savedTheme;

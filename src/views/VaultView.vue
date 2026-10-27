@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WolfIcon from "@/components/common/WolfIcon.vue";
 import { ref, onMounted } from "vue";
 import { useVaultStore } from "@/stores/useVaultStore";
 import { useUiStore } from "@/stores/useUiStore";
@@ -94,12 +95,20 @@ function copyToClipboard(val?: string) {
           </div>
 
           <button type="submit" class="btn-unlock-vault" :disabled="isSubmitting">
-            {{ isSubmitting ? "⚡ Decrypting..." : vaultStore.isInitialized ? "🔓 Decrypt & Unlock Vault" : "🔒 Create & Lock Vault" }}
+            <span v-if="isSubmitting">Decrypting...</span>
+            <span v-else-if="vaultStore.isInitialized" class="btn-flex-inline">
+              <WolfIcon name="unlock" :size="14" />
+              <span>Decrypt &amp; Unlock Vault</span>
+            </span>
+            <span v-else class="btn-flex-inline">
+              <WolfIcon name="lock" :size="14" />
+              <span>Create &amp; Lock Vault</span>
+            </span>
           </button>
         </form>
 
         <div class="vault-guarantee">
-          <span>🔒 Zero-Knowledge 100,000 PBKDF2 • AES-256-GCM • Offline Airgapped</span>
+          <span class="flex-badge-text"><WolfIcon name="shield-check" :size="12" /> <span>Zero-Knowledge 100,000 PBKDF2 • AES-256-GCM • Offline Airgapped</span></span>
         </div>
       </div>
     </div>
@@ -136,7 +145,7 @@ function copyToClipboard(val?: string) {
             :class="{ active: vaultStore.activeCategory === 'api' }"
             @click="vaultStore.activeCategory = 'api'"
           >
-            ⚡ API Keys ({{ vaultStore.categoryCounts.api }})
+            <WolfIcon name="zap" :size="13" /> <span>API Keys ({{ vaultStore.categoryCounts.api }})</span>
           </button>
           <button
             type="button"
@@ -144,7 +153,7 @@ function copyToClipboard(val?: string) {
             :class="{ active: vaultStore.activeCategory === 'login' }"
             @click="vaultStore.activeCategory = 'login'"
           >
-            👤 Logins ({{ vaultStore.categoryCounts.login }})
+            <WolfIcon name="user" :size="13" /> <span>Logins ({{ vaultStore.categoryCounts.login }})</span>
           </button>
           <button
             type="button"
@@ -152,19 +161,19 @@ function copyToClipboard(val?: string) {
             :class="{ active: vaultStore.activeCategory === 'db' }"
             @click="vaultStore.activeCategory = 'db'"
           >
-            🗄️ Databases ({{ vaultStore.categoryCounts.db }})
+            <WolfIcon name="database" :size="13" /> <span>Databases ({{ vaultStore.categoryCounts.db }})</span>
           </button>
         </div>
 
         <div class="vault-header-actions">
           <button type="button" class="btn-scan-trigger" @click="uiStore.showSecretScanner = true">
-            ⚡ Scan .txt / .env
+            <WolfIcon name="sparkles" :size="13" /> <span>Scan .txt / .env</span>
           </button>
           <button type="button" class="btn-add-secret" @click="uiStore.showSecretEditor = true">
             + Add Secret
           </button>
           <button type="button" class="btn-lock-now" @click="vaultStore.lockVault">
-            🔒 Lock ({{ vaultStore.autoLockCountdown }}s)
+            <WolfIcon name="lock" :size="13" /> <span>Lock ({{ vaultStore.autoLockCountdown }}s)</span>
           </button>
         </div>
       </div>
@@ -186,7 +195,7 @@ function copyToClipboard(val?: string) {
           <div v-if="secret.username" class="secret-field-row">
             <span class="field-label">Username:</span>
             <span class="field-value">{{ secret.username }}</span>
-            <button type="button" class="btn-copy-mini" @click="copyToClipboard(secret.username)">📋</button>
+            <button type="button" class="btn-copy-mini" @click="copyToClipboard(secret.username)"><WolfIcon name="copy" :size="12" /></button>
           </div>
 
           <div class="secret-field-row password-row">
@@ -196,9 +205,9 @@ function copyToClipboard(val?: string) {
             </span>
             <div class="field-actions">
               <button type="button" class="btn-eye-mini" @click="toggleSecretVisibility(secret.id)">
-                {{ visibleSecretIds.has(secret.id) ? "🙈" : "👁️" }}
+                <WolfIcon :name="visibleSecretIds.has(secret.id) ? 'eye-off' : 'eye'" :size="13" />
               </button>
-              <button type="button" class="btn-copy-mini" @click="copyToClipboard(secret.password)">📋</button>
+              <button type="button" class="btn-copy-mini" @click="copyToClipboard(secret.password)"><WolfIcon name="copy" :size="12" /></button>
             </div>
           </div>
 
@@ -217,18 +226,18 @@ function copyToClipboard(val?: string) {
               class="btn-secret-del"
               @click="vaultStore.deleteSecret(secret.id)"
             >
-              🗑️ Delete
+              <WolfIcon name="trash" :size="12" /> <span>Delete</span>
             </button>
           </div>
         </div>
 
         <div v-if="vaultStore.filteredSecrets.length === 0" class="secrets-empty-state">
-          <div class="empty-icon">🛡️</div>
+          <div class="empty-icon"><WolfIcon name="vault" :size="36" /></div>
           <h3>Your Secret Locker is Empty</h3>
-          <p>Click "⚡ Scan .txt / .env" or "+ Add Secret" to store zero-knowledge encrypted credentials.</p>
+          <p>Click "<WolfIcon name="sparkles" :size="13" /> <span>Scan .txt / .env</span>" or "+ Add Secret" to store zero-knowledge encrypted credentials.</p>
           <div class="empty-actions">
             <button type="button" class="btn-scan-trigger" @click="uiStore.showSecretScanner = true">
-              ⚡ Scan .txt / .env
+              <WolfIcon name="sparkles" :size="13" /> <span>Scan .txt / .env</span>
             </button>
             <button type="button" class="btn-add-secret" @click="uiStore.showSecretEditor = true">
               + Add Secret
