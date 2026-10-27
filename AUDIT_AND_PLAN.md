@@ -1,253 +1,205 @@
-# 🐺 Wolf Timeline — Mobile-First, Wolfitway Amber & Black & WCAG 2.1 AA Audit & Plan
+# 🐺 Wolf Timeline — Enterprise "Sovereign Trojan Horse" Audit & Master Plan
+## Entering Big Client Pipelines for Real Money With Zero-Loss Architecture
 
-**Document Version:** 2.0.0-SOVEREIGN  
+**Document Version:** 3.0.0-ENTERPRISE-SOVEREIGN  
 **Council Convened:** October 27, 2026  
-**Governing Standard:** WCAG 2.1 Level AA / AAA Compliant & Mobile-First Touch Ergonomics  
-**Lead Curators:** Council of Sovereign Experts (`@design-guardian`, `@a11y-specialist`, `@user-flow-architect`, `@product-strategist`, `@systems-crypto`)
+**Governing Objective:** Product-Led Growth (PLG) Free-to-Enterprise Monetization & Multi-Tier Zero-Data-Loss Architecture  
+**Council of Experts Convened:**
+- **@enterprise-sales-lead** (B2B Procurement & Air-Gapped Infosec Approval)
+- **@cro-specialist** (Conversion Rate Optimization & Funnel Friction Elimination)
+- **@retention-architect** (Daily Habit Loops, D1/D7/D30 Retention & Switching Moats)
+- **@distributed-systems-lead** (Local-First Multi-Tier Zero-Loss Persistence & P2P Mesh)
+- **@crypto-sec-lead** (AES-256-GCM Cryptographic Compliance & Attestation Dossiers)
+- **@design-guardian** (Executive Aesthetics, Obsidian Amber & Solar Light Moats)
+- **@growth-marketing-lead** (Viral Client Dossiers & Bottom-Up Developer Adoption)
 
 ---
 
-## 🏛️ Executive Summary & Council Verdict
+## 🏛️ Executive Summary & Core Strategic Hypothesis
 
-The Sovereign Council of Experts has executed a full architectural and ergonomic audit of **Wolf Timeline**. 
+### The Problem With Current Enterprise Tools
+Enterprise clients (defense, financial institutions, healthcare, fintech, crypto, Fortune 500 tech) have locked down their vendor pipelines:
+1. **Cloud Data Leakage Bans:** Corporate CISOs and Infosec officers are actively banning cloud notes (Notion, Slack, ChatGPT, cloud docs) due to risk of proprietary source code and architecture strategies leaking into third-party LLM training sets or foreign cloud regions.
+2. **Procurement Friction:** Enterprise software procurement takes 6–18 months for cloud SaaS (SOC2 audits, penetration testing, vendor risk assessments).
+3. **Data Fragility:** Cloud tools suffer from sync conflicts, vendor lock-in, and unpredictable outages.
 
-While the desktop cyber-obsidian experience is technically sound (AES-256-GCM encryption, zero-telemetry offline verification, instant drag-and-drop, and rich markdown capabilities), the system has **two critical gaps**:
-1. **Desktop-Only Viewport Assumptions:** The layout relies on static multi-column CSS grids (`grid-template-columns: 380px 1fr`, `440px 1fr`, fixed `calc(100vh - 56px)` heights, and crowded desktop topbars) with virtually no mobile media queries or touch target considerations.
-2. **Theme Contrast Gaps & Lack of Sovereign Light Mode:** Secondary text and badges in several themes (notably `amber`, `sapphire`, and `crimson`) fall below the WCAG 2.1 AA 4.5:1 threshold against dark backgrounds. Crucially, the app lacks a dedicated, high-contrast **Light Mode** ("Wolfitway Solar Amber" / "Alabaster Gold") for bright daylight environments.
+### The "Sovereign Trojan Horse" Model
+Wolf Timeline solves this with an unblockable **"Free for Entry, Pay for Scale"** bottom-up enterprise loop:
 
-The Council unanimously approves this comprehensive transformation into a **Mobile-First, Wolfitway Amber & Black sovereign workstation with certified WCAG 2.1 AA contrast across all themes and a stunning Solar Light Mode**.
+```
+[ 1. Free Solo Personal Node ] 
+   - 100% Free Forever, 0 Sign-up, 0 Telemetry, 100% Offline
+   - Approved by Enterprise Infosec instantly: "Data never leaves device"
+   - Lead architects, staff engineers, and founders run daily operations inside
+         │
+         ▼
+[ 2. The Viral Infiltration Loop: Client Dossier Export ]
+   - Lead architect presents Q3 infrastructure overhaul to enterprise client/VP
+   - Generates a standalone, encrypted, self-contained HTML/Wasm Client Dossier
+   - Client opens an interactive, responsive, executive timeline report:
+     "Built with Wolf Timeline Enterprise Node — Verify Cryptographic Signature"
+         │
+         ▼
+[ 3. High-Margin Commercial Conversions ]
+   - Commercial Solo ($190/yr): Custom client branding, signed export, unlimited vaults
+   - Pack Mesh ($49/user/mo): Air-gapped P2P encrypted synchronization across lead team
+   - Enterprise Sovereign ($15k - $50k/yr): On-premise relay, HSM/YubiKey token, SOC2 audit dossier
+```
 
 ```mermaid
 graph TD
-  subgraph Mobile-First Ergonomics
-    A[Adaptive Topbar] -->|Collapsed Header & Quick Capture| M1[Compact Hero Bar]
-    B[Bottom Nav Bar] -->|Thumb-Zone Navigation| M2[Timeline / Studio / Roadmap / Bookmarks / Vault / Settings]
-    C[Adaptive Dual Panes] -->|Single-Column on Mobile| M3[Slide/Tab Inspector & Mobile Sheets]
-    D[Touch Targets] -->|>= 44x44px Targets| M4[Touch-Friendly Handles & Action Strips]
+  subgraph Free Entry Layer "0 Friction Trojan Horse"
+    A[Free Solo Node] -->|Zero Cloud, Zero Setup| B[Immediate Daily Use]
+    B -->|Fast Markdown + Task Checklists| C[High Daily Stickiness]
   end
 
-  subgraph Sovereign Design System
-    E[Wolfitway Amber & Black] -->|Pure Onyx & Golden Amber| T1[Signature Brand Identity]
-    F[Wolfitway Solar Light] -->|Alabaster & Burnished Ochre| T2[16:1 Contrast Light Mode]
-    G[Full Cyber Themes] -->|Obsidian, Cyan, Sapphire, Crimson, Matrix| T3[Calibrated Contrast]
+  subgraph Viral Expansion "Client Pipeline Penetration"
+    C -->|One-Click Export| D[Interactive Encrypted Client Dossier]
+    D -->|Client Receives Beautiful Executive HTML| E[VP / Enterprise Buyer Impressed]
+    E -->|"How do we deploy this for our whole department?"| F[Enterprise Sales Inquiry]
   end
 
-  subgraph WCAG 2.1 AA Compliance
-    H[Color Contrast Matrix] -->|>= 4.5:1 Body / >= 3:1 Large| W1[Contrast Validation Engine]
-    I[Accessible Focus Rings] -->|2px Glow Focus Visible| W2[Full Keyboard / Assistive Navigation]
-    J[Sensory Independence] -->|Icons + Text + Badges| W3[No Color-Only Information]
+  subgraph Enterprise Monetization "$$$ Real Money"
+    F --> G[Pack Mesh Tier: $49/seat/mo]
+    F --> H[Enterprise Air-Gapped Node: $15k - $50k/yr]
+    G --> I[Multi-Seat P2P Mesh Sync & Cryptographic Attestation]
+  end
+
+  subgraph Zero-Data-Loss Architecture "The Foundation"
+    Z1[Reactive Memory State] --> Z2[IndexedDB Sovereign Vault DB v2]
+    Z2 --> Z3[LocalStorage Dual Mirror Backup]
+    Z3 --> Z4[Time Machine Rolling Hourly Snapshots]
+    Z4 --> Z5[Cryptographic Offline JSON Archive]
   end
 ```
 
 ---
 
-## 🧐 1. Council of Sovereign Experts — Multi-Perspective Audit
+## 🧐 1. Council of Experts Audit & Multi-Perspective Directives
 
-### 🎨 Lead UX/UI & Motion Engineering Guardian (`@design-guardian`)
-* **Wolfitway Amber & Black Identity:** The core signature of Wolfitway is ultra-deep tungsten/black velvet (`#000000`, `#090704`, `#120e06`) contrasted against warm glowing amber and incandescent gold (`#f59e0b`, `#fbbf24`, `#d97706`). It evokes the feel of a bespoke aerospace instrument terminal.
-* **Light Mode Aesthetics:** Light mode must not feel like a generic washed-out white page. It should feel like **high-grade cream alabaster and archival parchment** (`#fbf9f4`, `#f3eee4`, `#ffffff`) framed by burnished amber bronze (`#b45309`, `#92400e`, `#d97706`) and deep charcoal obsidian typography (`#120e06`).
-* **Motion on Mobile:** Replace heavy desktop hover transforms with swift, hardware-accelerated touch feedback (`active: scale(0.98)` and `cubic-bezier(0.16, 1, 0.3, 1)` drawer transitions).
-
-### ♿ Accessibility (a11y) & Inclusive Interaction Specialist (`@a11y-specialist`)
-* **WCAG 2.1 Level AA Compliance Mandate:**
-  - **Criterion 1.4.3 (Contrast Minimum):** Text and images of text must have a contrast ratio of at least **4.5:1** (normal text) and **3:1** (large text >= 18.66px bold or 24px regular).
-  - **Criterion 1.4.11 (Non-text Contrast):** UI components, active state borders, focus rings, and input borders must have a contrast ratio of at least **3:1** against adjacent backgrounds.
-  - **Criterion 2.5.5 / 2.5.8 (Target Size):** Touch targets must measure at least **44x44 CSS pixels** on mobile devices, or provide sufficient spacing so the target center is at least 24px from any neighboring active element.
-  - **Criterion 2.4.7 (Focus Visible):** Clear, unambiguous focus indicators with glowing borders and offset outline (`outline: 2px solid var(--border-focus); outline-offset: 2px`).
-* **Audit Findings in Current CSS:**
-  - `amber` theme: `--text-secondary: #b45309` on `#0d0a04` has a contrast ratio of **3.6:1 (FAILS AA for normal text)**.
-  - `sapphire` theme: `--emerald-main: #6366f1` on `#050612` has a contrast ratio of **4.03:1 (FAILS AA for body text/links)**.
-  - `crimson` theme: `--emerald-deep: #dc2626` on `#0e0404` has a contrast ratio of **3.6:1 (FAILS AA)**.
-  - No `prefers-color-scheme` synchronization or dedicated light theme tokens exist.
-
-### 🌊 User Flow & Cognitive Ergonomics Architect (`@user-flow-architect`)
-* **Mobile Thumb-Zone Rule:** On mobile (360px - 430px wide), the top 20% of the screen is hard to reach one-handed. Crucial navigation (Timeline, Studio, Roadmap, Bookmarks, Vault, Settings) must reside in a **fixed bottom navigation bar**.
-* **Two-Column Breakdown:** The desktop side-by-side feed (`380px cards | 1fr detail`) must break into a responsive mobile stack:
-  - Mobile Default: Feed list with sticky filter chips and Quick Capture trigger.
-  - On Card Tap: Smoothly open the Card Detail Inspector with an ergonomic `← Back to Feed` header button.
-* **Studio Mobile Editing:** Side-by-side editor + preview is impossible on a 375px mobile screen. Implement a segmented toggle button: `[ ✏️ Editor ] | [ 👁️ Preview ]` on mobile, keeping split-view on desktop (`>= 1024px`).
-
-### 🏛️ Chief Product & Funnel Architect (`@product-strategist`)
-* **Mobile Creator Velocity:** Founders and creators capture inspiration on the go (phones, tablets, mobile browsers). Quick Capture must be 1-tap accessible from anywhere via a floating or bottom-anchored amber action button.
-* **Funnel Visibility on Small Screens:** Funnel stages (`▽ TOFU`, `🧲 MOFU`, `🛡️ Core`, `💎 BOFU`) need compact icon+pill representations so metadata fits horizontally without horizontal scrollbars.
-
-### 🔐 Principal Systems & Cryptography Engineer (`@systems-crypto`)
-* **Offline & Performance Integrity:** The mobile layout and theme updates must not compromise our 0-telemetry, 100% offline local-first security. No external CSS frameworks, no analytics trackers, no heavy runtime dependencies. Everything is pure, high-performance CSS and Vue 3 reactivity.
+### 💼 1. Enterprise B2B Sales Architect (`@enterprise-sales-lead`)
+* **How We Close Big Clients:** Big enterprises do not buy software from cold emails. They buy software their senior engineers are **already using** and begging procurement to formalize.
+* **The Infosec Gold Card:** Because Wolf Timeline is 100% local-first (WebCrypto AES-256-GCM, IndexedDB, zero external network calls, zero telemetry), developers can use it behind classified, banking, and air-gapped corporate VPNs where Notion and Confluence are blocked.
+* **The Deal Trigger:** Enterprise contracts are signed when management says: *"We love these architecture timelines and security dossiers, but we need our 15 lead architects to sync without exposing unencrypted data to AWS/Google Cloud."*
+* **Target Enterprise Pricing:**
+  - **Solo Personal Node:** Free Forever (0 barrier).
+  - **Commercial Solo Node:** $19/mo or $190/yr ($290 lifetime founder pass).
+  - **Pack Mesh Node:** $49/seat/mo (min 5 seats = $2,940/yr ARR).
+  - **Enterprise Sovereign Node:** $15,000/yr (Air-gapped deployment, custom cryptographic attestation, SAML/SCIM directory bridge, dedicated support SLA).
 
 ---
 
-## 🎨 2. Theme Architecture & Color System
-
-### A. Signature Wolfitway Amber & Black Theme (`data-theme="amber"`)
-*The ultimate sovereign command console.*
-
-| Token | Value | Role | WCAG Contrast on Background | Verdict |
-| :--- | :--- | :--- | :--- | :--- |
-| `--bg-canvas` | `#000000` | Deepest velvet black canvas | Baseline | Reference |
-| `--bg-body` | `#080603` | Primary application body | Baseline | Reference |
-| `--bg-card` | `#120e06` | Elevated card container | Baseline | Reference |
-| `--bg-surface` | `#1a1409` | Interactive surface | Baseline | Reference |
-| `--border-card` | `#33220a` | Structural card borders | 3.4:1 vs bg | PASS (Non-text AA) |
-| `--border-focus` | `#fbbf24` | Glowing focus ring | 13.8:1 vs bg | PASS (AAA) |
-| `--text-primary` | `#fffbeb` | Main headlines & body text | **18.7:1 vs bg** | **PASS (AAA)** |
-| `--text-secondary` | `#fcd34d` | Metadata, author, date, subtext | **13.5:1 vs bg** | **PASS (AAA)** |
-| `--text-muted` | `#d4a373` | Tags, inactive hints, icons | **6.8:1 vs bg** | **PASS (AA)** |
-| `--emerald-main` | `#f59e0b` | Primary Amber Accent | 8.8:1 vs bg | PASS (AA) |
-| `--emerald-bright` | `#fbbf24` | High-luminescence Golden Amber | 13.8:1 vs bg | PASS (AAA) |
-| `--emerald-deep` | `#d97706` | Deep Ochre Border & Badge Base | 6.5:1 vs bg | PASS (AA) |
-| `--emerald-pill-bg` | `#281b05` | Badge fill background | Contrast buffer | PASS |
-| `--btn-primary-text`| `#080501` | Dark text on amber buttons | **12.6:1 vs #f59e0b** | **PASS (AAA)** |
+### 📈 2. Conversion Rate Optimization (CRO) Specialist (`@cro-specialist`)
+* **Friction Elimination in Free Tier:**
+  - Never show a paywall that blocks note creation, editing, searching, or basic exports. Artificial document limits kill word-of-mouth growth.
+  - Zero registration: the user opens the URL or desktop app and is typing in their sovereign workspace within 0.8 seconds.
+* **Contextual "Aha!" Conversion Triggers:**
+  - **Trigger 1 (Client Presentation):** When clicking "Export Client Dossier" or "White-Label Branding", show preview of the executive report with a subtle badge: *"Upgrade to Commercial Solo to add custom enterprise branding, remove watermark, and generate password-encrypted standalone HTML dossiers."*
+  - **Trigger 2 (Security Audit):** When running `SecretScannerModal` and discovering secrets, offer a 1-click *"Generate Cryptographic Attestation Certificate"* (Commercial/Team perk).
+  - **Trigger 3 (Team Sync Handshake):** In the topbar Control Center, show *"Pair Node with Teammate Mesh"* which launches the Pack Mesh pairing wizard.
 
 ---
 
-### B. NEW: Wolfitway Solar Light Mode (`data-theme="light"` / `solar-amber`)
-*Parchment elegance, high-contrast daylight clarity, zero eye strain.*
-
-| Token | Value | Role | WCAG Contrast on Background | Verdict |
-| :--- | :--- | :--- | :--- | :--- |
-| `--bg-canvas` | `#f4efe6` | Warm parchment canvas | Baseline | Reference |
-| `--bg-body` | `#fcfbfa` | Crisp alabaster page body | Baseline | Reference |
-| `--bg-card` | `#ffffff` | Elevated pure white card | Subtle shadow buffer | Reference |
-| `--bg-surface` | `#f5eedf` | Input & surface fill | Baseline | Reference |
-| `--border-card` | `#d8cbba` | Clean structural borders | 3.2:1 vs #ffffff | PASS (Non-text AA) |
-| `--border-focus` | `#b45309` | Burnished Amber focus ring | 6.2:1 vs #ffffff | PASS (AAA) |
-| `--text-primary` | `#140f07` | Deep obsidian ink text | **17.2:1 vs #ffffff** | **PASS (AAA)** |
-| `--text-secondary` | `#58442a` | Subtitle & metadata text | **6.2:1 vs #ffffff** | **PASS (AA)** |
-| `--text-muted` | `#7a6243` | Tags, hint text, icons | **4.6:1 vs #ffffff** | **PASS (AA)** |
-| `--emerald-main` | `#b45309` | Burnished Amber Main Accent | **6.2:1 vs #ffffff** | **PASS (AA)** |
-| `--emerald-bright` | `#92400e` | Deep Amber Highlight | **8.1:1 vs #ffffff** | **PASS (AAA)** |
-| `--emerald-deep` | `#d97706` | Ochre Accent | 4.6:1 vs dark elements | PASS (AA) |
-| `--emerald-pill-bg` | `#fef3c7` | Warm gold pill badge fill | Soft background | PASS |
-| `--emerald-pill-border` | `#fcd34d` | Pill border | 3.1:1 vs #fef3c7 | PASS (AA) |
-| `--btn-primary-text`| `#ffffff` | White text on burnished amber | **6.2:1 vs #b45309** | **PASS (AA)** |
+### 🔄 3. Chief Retention Specialist (`@retention-architect`)
+* **The Habit Loop (D1 -> D7 -> D30):**
+  - **Morning Strategy Ritual (Trigger):** The executive Today header displays a live greeting (`Morning focus · Wednesday, October 28`), circular task ratio ring (`1/4 Milestones`, `3/5 Tasks`), and streak counter.
+  - **Frictionless Capture (Action):** Instant `+ Capture` FAB on mobile and `⌘+Enter` on desktop. Never prompt for a folder or complex metadata upfront.
+  - **Neural Audio Digest (Investment):** 1-click Kokoro Voice companion reads today's top 3 milestones and pending decisions in a natural human voice.
+  - **Evening Queue Clearance (Reward):** Completing tasks plays an affirming audio chime (`kokoroVoice.playHeartChime("affirm")`) and advances the productivity streak.
+* **The Switching Moat:** Once a user stores project timelines, AI multi-model debates, bookmarked research, and AES-256 encrypted hardware secrets in their Sovereign Vault DB, switching to a generic note app feels like downgrading from a cockpit to a paper notebook.
 
 ---
 
-### C. Recalibrated Theme Contrast Matrix (All Themes Compliant)
-
-| Theme ID | Primary Accent | Main BG | Fixed Secondary Text | Contrast Ratio | WCAG 2.1 AA Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **amber** (Wolfitway) | `#f59e0b` | `#080603` | `#fcd34d` / `#d4a373` | **13.5:1 / 6.8:1** | ✅ **PASSED (AAA)** |
-| **light** (Solar Amber) | `#b45309` | `#fcfbfa` | `#58442a` | **6.2:1** | ✅ **PASSED (AA/AAA)** |
-| **obsidian** (Cyber Emerald) | `#10b981` | `#060b09` | `#94a3b8` / `#6ee7b7` | **7.6:1 / 11.2:1** | ✅ **PASSED (AAA)** |
-| **cyan** (Cyber Slate) | `#06b6d4` | `#030a0e` | `#94a3b8` / `#2dd4bf` | **7.6:1 / 10.4:1** | ✅ **PASSED (AAA)** |
-| **sapphire** (Midnight) | `#818cf8` | `#050612` | `#94a3b8` / `#a5b4fc` | **7.6:1 / 9.2:1** | ✅ **PASSED (AAA)** |
-| **crimson** (Ruby Carbon) | `#f87171` | `#0e0404` | `#fca5a5` / `#94a3b8` | **7.2:1 / 7.6:1** | ✅ **PASSED (AAA)** |
-| **matrix** (Phosphor CRT) | `#22c55e` | `#020803` | `#86efac` / `#94a3b8` | **10.1:1 / 7.8:1** | ✅ **PASSED (AAA)** |
+### 🛡️ 4. Distributed Systems & Zero-Loss Engineer (`@distributed-systems-lead`)
+* **The Zero-Data-Loss Golden Standard:**
+  Data loss is fatal to user trust. Wolf Timeline implements **5-Layer Redundant Persistence**:
+  1. **Layer 1 (L1 Memory):** Pinia reactive state with in-memory fast indexing.
+  2. **Layer 2 (L2 Sovereign DB):** IndexedDB (`wolf_sovereign_vault_db_v1` v2) with structured object stores (`notes`, `roadmap_phases`, `vault_secrets`, `time_machine_snapshots`).
+  3. **Layer 3 (L3 Dual LocalStorage Mirror):** Primary `wolftimeline_notes_v5` synced alongside secondary safety mirror `wolftimeline_notes_backup`.
+  4. **Layer 4 (L4 Time Machine Rolling Snapshots):** Automatically takes hourly differential snapshots (retaining last 24 hours + daily snapshots for 30 days) in IndexedDB. Users can roll back to any previous state in 1 click.
+  5. **Layer 5 (L5 Sovereign JSON Archive):** Complete, tamper-proof, offline cryptographic JSON export with hash verification.
 
 ---
 
-## 📱 3. Mobile-First Layout & Touch Ergonomics Architecture
+### 🔐 5. Principal Cryptographer & Security Auditor (`@crypto-sec-lead`)
+* **Air-Gapped Cryptographic Attestation:**
+  - WebCrypto AES-256-GCM authenticated encryption with 96-bit random IVs and PBKDF2 (250,000 iterations + SHA-256).
+  - Secret Scanner runs entirely client-side with zero network calls, verifying 0-telemetry compliance.
+  - Device Fingerprinting (`WOLF-DEV-XXXX-XXXX-XXXX`) derived deterministically via SHA-256 hardware seed, enabling 100% offline license validation without calling an activation server.
 
-### Viewport Breakpoints & Fluid Scaling
-```css
-/* Standard Breakpoints */
---bp-mobile: 480px;      /* Small phones (iPhone SE, Galaxy A) */
---bp-phablet: 768px;     /* Large phones & mini tablets (Portrait) */
---bp-tablet: 1024px;     /* Tablets & compact laptops */
---bp-desktop: 1280px;    /* Full desktop workstation */
-```
+---
 
-### Architectural Layout Components
+### 🎨 6. Lead Product Designer (`@design-guardian`)
+* **Visual Excellence as a Sales Vector:**
+  - Executive presence: When a VP or client sees Wolf Timeline on an architect's screen, the aesthetic alone commands respect.
+  - Wolfitway Obsidian Velvet & Warm Amber (`#080603` / `#f59e0b` / `#fbbf24`) evokes aerospace telemetry instruments.
+  - Wolfitway Solar Light (`#ffffff` / `#b45309`) provides daylight readability for executive conference rooms and iPad presentations.
+  - Clutter-free topbar and 5-element elevated mobile dock create instant consumer-grade delight with enterprise-grade power.
+
+---
+
+## 🚀 2. Enterprise Monetization & Client Pipeline Architecture
 
 ```
-+----------------------------------------------------+
-|  🐺 Wolf Timeline  [+ Quick Capture]  [🔍] [⚙️]    |  <-- Mobile Header (h: 52px)
-+----------------------------------------------------+
-|                                                    |
-|  [ All ] [ #strategy ] [ #crypto ] [ #bofu ]       |  <-- Horizontal Scroll Chips
-|                                                    |
-|  +----------------------------------------------+  |
-|  | Project Card 1 (44px min tap target)         |  |
-|  | - Status Pill: [● In Progress]               |  |  <-- Single Column Card Feed
-|  | - Funnel: 🛡️ Core Engine                     |  |      (or Full-Screen Detail
-|  | - Updated 2h ago                             |  |       when card selected)
-|  +----------------------------------------------+  |
-|                                                    |
-+----------------------------------------------------+
-| [🕒 Timeline] [📝 Studio] [🗺️ Roadmap] [🔐 Vault] |  <-- Mobile Bottom Nav (h: 58px)
-+----------------------------------------------------+
++----------------------------------------------------------------------------------------------------+
+|                                    WOLF TIMELINE MONETIZATION MATRIX                                |
++---------------------+-------------------+---------------------+------------------+-----------------+
+| TIER                | TARGET AUDIENCE   | PRICING             | KEY CAPABILITIES | PLG PIPELINE    |
++---------------------+-------------------+---------------------+------------------+-----------------+
+| 1. Solo Personal    | Engineers, Devs,  | FREE FOREVER        | • Unlimited Local| Free Entry      |
+|    (Free Node)      | Founders, Leads   | $0                  |   Vault & Notes  | "Trojan Horse"  |
+|                     |                   |                     | • Timeline Engine| Installed in    |
+|                     |                   |                     | • 5-Layer Backup | Enterprise      |
++---------------------+-------------------+---------------------+------------------+-----------------+
+| 2. Commercial Solo  | Consultants, Tech | $19 / mo            | • Client Dossier | Freelancers &   |
+|    (Pro Creator)    | Leads, Architects | $190 / yr           |   Exporter (HTML)| Consultants     |
+|                     |                   | ($290 Lifetime)     | • Custom Branding| Presenting to   |
+|                     |                   |                     | • Attestation Cert| Big Clients    |
++---------------------+-------------------+---------------------+------------------+-----------------+
+| 3. Pack Mesh        | Engineering Pods, | $49 / seat / mo     | • P2P Encrypted  | Departmental    |
+|    (Team Mesh)      | Boutiques, SecOps | ($2,940/yr 5-pack)  |   Mesh Sync      | Expansion via   |
+|                     |                   |                     | • Shared Vaults  | Lead Architect  |
+|                     |                   |                     | • Multi-Party Log| Recommendation  |
++---------------------+-------------------+---------------------+------------------+-----------------+
+| 4. Enterprise       | FinTech, Defense, | $15,000 - $50,000/yr| • Air-Gapped Hub | Central IT /    |
+|    Sovereign Node   | Healthcare, Corp  | (Annual Contract)   | • SAML/SCIM SSO  | Security CISO   |
+|                     |                   |                     | • HSM / YubiKey  | Procurement     |
+|                     |                   |                     | • Dedicated SLA  | Approval        |
++---------------------+-------------------+---------------------+------------------+-----------------+
 ```
 
-1. **Adaptive Topbar (`AppTopbar.vue`):**
-   - **Desktop (>= 768px):** Retains the full suite of controls (Main horizontal tabs, Search ⌘K, Import Bookmarks, Kokoro Voice, Hands-free Voice toggle, License Status, Hardware Cryptography Badge).
-   - **Mobile (< 768px):** Collapses to brand logo + Quick Capture amber button + Search icon trigger + Context menu button. The primary tabs relocate to the Bottom Navigation Bar.
-2. **Dedicated Mobile Bottom Navigation Bar (`MobileBottomNav.vue`):**
-   - Fixed at the bottom (`position: fixed; bottom: 0; left: 0; right: 0; height: 58px + env(safe-area-inset-bottom)`).
-   - 5 thumb-friendly items: `Timeline`, `Studio`, `Roadmap`, `Bookmarks`, `Vault`, `Settings`.
-   - Minimum 48x48px tap targets with haptic micro-interaction and glowing amber active indicator dot.
-3. **Timeline View Adaptive Navigation (`TimelineView.vue`):**
-   - On screens `< 768px`, renders as a smooth view switcher:
-     - **Mode 1 (`feed`):** Cards list with full-width search, filter tags, and quick capture.
-     - **Mode 2 (`detail`):** Full detail inspector with title editor, status cyclist, timeline events, AI debates, and mood gallery. Includes a prominent `← Back to Projects` button.
-4. **Studio Dual Panes Adaptive Toggle (`StudioView.vue`):**
-   - On screens `< 768px`, replaces desktop 50/50 split with a sticky top tab bar:
-     - `[ ✏️ Draft Note ]` vs `[ 👁️ Live Preview ]`.
-     - Maintains full editing toolbar with horizontal scroll and minimum 44px buttons.
-5. **Universal Touch Targets & Form Inputs:**
-   - All interactive buttons have a minimum touch target of `44px x 44px` (or `min-height: 44px; padding: 10px 16px`).
-   - Inputs have `font-size: 16px` on mobile to prevent iOS Safari auto-zoom behavior.
-   - Modals adopt dynamic viewport heights (`100dvh` / `max-height: 90dvh`) with draggable bottom sheet styling on phones.
+---
+
+## 🛠️ 3. Immediate High-Leverage Engineering Roadmap
+
+### Phase 1: Zero-Loss Time Machine Snapshot Vault (`vaultDatabase.ts` & `useNotesStore.ts`)
+- [x] **Task 1.1:** Add `snapshots` object store in IndexedDB (`wolf_sovereign_vault_db_v1` schema).
+- [x] **Task 1.2:** Implement automated hourly rolling snapshot creation (stores timestamp, note count, snapshot hash, and payload).
+- [x] **Task 1.3:** Build "Time Machine Snapshots" viewer in `SettingsView.vue` with 1-click restore and zero risk of data loss.
+
+### Phase 2: Client Dossier Interactive Exporter (`clientDossierExporter.ts`)
+- [x] **Task 2.1:** Build `exportClientDossier(note, options)` service that compiles a project note, milestones, AI debate outcomes, and resource links into a **self-contained standalone HTML document**.
+- [x] **Task 2.2:** Embed Wolfitway Obsidian/Solar design tokens and responsive CSS inside the HTML dossier so it renders without internet connection.
+- [x] **Task 2.3:** Add optional AES-256 client password encryption: clients enter password in browser to decrypt and view confidential project specs.
+
+### Phase 3: High-Converting Enterprise Presentation Triggers (`AppTopbar.vue`, `LicenseActivationModal.vue`)
+- [x] **Task 3.1:** Add "Export Client Dossier" button in project detail header and Control Center popover.
+- [x] **Task 3.2:** Upgrade `LicenseActivationModal.vue` with transparent ROI breakdowns for Commercial Solo and Pack Mesh tiers.
+- [x] **Task 3.3:** Add offline trial activation code generator so users can test commercial features air-gapped without internet.
+
+### Phase 4: Daily Retention Engine & Executive Briefing
+- [x] **Task 4.1:** Morning Strategy voice synthesis readout via `kokoroVoice` ("Good morning. You have 3 active milestones and 1 open decision on Q3 Infrastructure.").
+- [x] **Task 4.2:** 7-day streak celebration with micro-haptic and audio heart chime.
+- [x] **Task 4.3:** Keyboard command `⌘+Shift+S` to instantly trigger an encrypted snapshot save.
 
 ---
 
-## 📋 4. Phased Implementation Roadmap
+## 🛡️ Council Approval & Verification Standard
 
-```mermaid
-gantt
-  title Sovereign Mobile-First & WCAG Implementation Schedule
-  dateFormat  YYYY-MM-DD
-  section Phase 1: Tokens & Themes
-  WCAG AA Contrast Calibration          :done, p1_1, 2026-10-27, 1d
-  Wolfitway Amber & Black Refinement    :done, p1_2, 2026-10-27, 1d
-  Wolfitway Solar Light Mode Build      :done, p1_3, 2026-10-27, 1d
-  section Phase 2: Navigation
-  Mobile Bottom Navigation Component    :done, p2_1, 2026-10-27, 1d
-  Responsive AppTopbar Overhaul         :done, p2_2, 2026-10-27, 1d
-  section Phase 3: Responsive Views
-  Timeline Single/Dual Mode Switcher    :done, p3_1, 2026-10-27, 1d
-  Studio Mobile Editor/Preview Toggle   :done, p3_2, 2026-10-27, 1d
-  Roadmap & Bookmarks Mobile Grids      :done, p3_3, 2026-10-27, 1d
-  section Phase 4: Modals & Polish
-  Mobile Bottom Sheets & Touch Targets  :done, p4_1, 2026-10-27, 1d
-  Automated Vitest & a11y Verification  :done, p4_2, 2026-10-27, 1d
-```
+All proposed features must strictly satisfy:
+1. **Zero Data Loss Guarantee:** Never overwrite custom notes or lose local vault items across restarts, migrations, or upgrades.
+2. **100% Offline Capability:** All capabilities (including license checks, client dossier generation, and snapshots) must work with network cable unplugged.
+3. **WCAG 2.1 AAA/AA Readability:** Retain strict 17:1 / 7:1 contrast ratios in Obsidian Amber and Solar Light modes.
+4. **Automated Verification:** 100% passing rate across all unit, integration, and security tests.
 
-### Phase 1: Theme Tokens, Wolfitway Amber & Black & Solar Light Mode
-- [x] **Task 1.1:** Update `src/styles/base.css` and `src/style.css` with calibrated WCAG 2.1 AA tokens.
-- [x] **Task 1.2:** Introduce `data-theme="light"` (Wolfitway Solar Amber) with warm alabaster backgrounds, rich burnished ochre accents, and deep obsidian text (17:1 contrast).
-- [x] **Task 1.3:** Elevate `data-theme="amber"` to the supreme Wolfitway command standard with deep onyx blacks, glowing amber focus rings, and high-visibility secondary text (`#fcd34d`).
-- [x] **Task 1.4:** Update `SettingsView.vue` and `useUiStore.ts` with the new Light mode selector and quick theme toggle in topbar.
-
-### Phase 2: Responsive Navigation & Safe Areas
-- [x] **Task 2.1:** Create `src/components/layout/MobileBottomNav.vue` for thumb-zone navigation.
-- [x] **Task 2.2:** Update `AppTopbar.vue` to dynamically collapse on mobile screens, preserving essential quick actions and deferring navigation tabs to the bottom bar.
-- [x] **Task 2.3:** Add `env(safe-area-inset-bottom)` support to `App.vue` for modern mobile notch and home-indicator handling.
-
-### Phase 3: Adaptive Viewports Across All 6 Workspaces
-- [x] **Task 3.1 (`TimelineView.vue`):** Implement responsive column collapse with a mobile `mobileDetailOpen` state and `← Back to Projects` header.
-- [x] **Task 3.2 (`StudioView.vue`):** Implement mobile-first editor/preview toggle buttons when viewport is `< 768px`.
-- [x] **Task 3.3 (`RoadmapView.vue`):** Collapse 440px master-detail split into responsive accordion cards.
-- [x] **Task 3.4 (`BookmarksView.vue` & `VaultView.vue`):** Refactor grid layouts from static `minmax(320px, 1fr)` to fluid `minmax(min(100%, 280px), 1fr)`.
-
-### Phase 4: Modals, Touch Targets & Final WCAG Audit
-- [x] **Task 4.1:** Transform desktop-centered modals (`QuickCaptureModal`, `CommandPalette`, `SecretEditorModal`, `SecretScannerModal`, `BookmarkImporterModal`, `FocusEditorModal`, `LicenseActivationModal`, `VoiceGuideModal`, `ImageLightboxModal`, `AiExplorationModal`) into responsive bottom sheets and mobile viewports.
-- [x] **Task 4.2:** Ensure all buttons, inputs, and chips satisfy the 44x44px touch target requirement and 16px input font size to eliminate iOS auto-zoom.
-- [x] **Task 4.3:** Run comprehensive test suites (`npm test`) with dedicated mathematical WCAG 2.1 AA luminance & contrast tests (`tests/wcag-a11y-theme.test.ts`), passing 50/50 tests.
-
----
-
-## 🛡️ Expert Council Sign-Off Matrix
-
-| Expert Domain | Authority | Status | Review Notes |
-| :--- | :--- | :--- | :--- |
-| **@design-guardian** | UX/UI & Motion Integrity | ✅ **Approved** | "Wolfitway Amber & Black is glorious. Solar Light Mode preserves sovereign feel without sterile white glare." |
-| **@a11y-specialist** | Accessibility (WCAG 2.1 AA) | ✅ **Approved** | "All tokens verified mathematically; normal text >= 4.5:1, large text/UI >= 3:1. Touch targets >= 44px." |
-| **@user-flow-architect** | Ergonomics & Thumb Zone | ✅ **Approved** | "Bottom navigation bar solves single-hand reachability. Timeline card-to-detail flow is natural." |
-| **@product-strategist** | Creator Funnels & Velocity | ✅ **Approved** | "Mobile Quick Capture ensures zero dropped inspirations. Funnel tags adapt gracefully." |
-| **@systems-crypto** | Local-First & Zero-Telemetry | ✅ **Approved** | "100% offline, zero runtime bloat, no external font/script trackers." |
-| **@monetization-lead** | Commercialization & Tiers | ✅ **Approved** | "High visual quality in both Light and Amber Dark directly drives commercial solo conversions." |
-
----
-*Execution completed and fully verified across all workspaces and modal surfaces.*
 

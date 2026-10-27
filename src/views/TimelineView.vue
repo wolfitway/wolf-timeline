@@ -8,6 +8,7 @@ import { useBookmarksStore } from "@/stores/useBookmarksStore";
 import { optimizeImageFile, downloadPhotoFile, exportPhotosToFolder } from "@/services/imageStorage";
 import { fetchSmartResource } from "@/services/resourceFetcher";
 import { renderMarkdown, toggleTaskInMarkdown, cleanMarkdownSnippet } from "@/services/markdownRenderer";
+import { exportClientDossier } from "@/services/clientDossierExporter";
 import type { Note, TimelineEvent, AiExploration, WebBookmark, MoodImage } from "@/types";
 
 const notesStore = useNotesStore();
@@ -911,6 +912,17 @@ function handleDeleteSelectedNote() {
   }
 }
 
+async function exportSelectedNoteDossier() {
+  if (!notesStore.selectedNote) return;
+  try {
+    const { filename } = await exportClientDossier(notesStore.selectedNote);
+    uiStore.showToast(`Exported "${filename}" ✓`);
+  } catch (err) {
+    console.error("Failed to export client dossier:", err);
+    uiStore.showToast("Failed to export client dossier");
+  }
+}
+
 function getStatusBadge(status: string) {
   switch (status?.toLowerCase()) {
     case "research":
@@ -1327,6 +1339,21 @@ function toggleMoodTag(tag: string) {
             </div>
 
             <div class="header-action-group">
+              <button
+                type="button"
+                class="btn-icon-action btn-dossier-export"
+                @click="exportSelectedNoteDossier"
+                title="Export Self-Contained Interactive Client Dossier (.html)"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span class="dossier-btn-label">Dossier</span>
+              </button>
               <button
                 type="button"
                 class="btn-icon-action"
@@ -2850,6 +2877,34 @@ function toggleMoodTag(tag: string) {
 .btn-icon-action:hover {
   border-color: #ef4444;
   color: #ef4444;
+}
+
+.btn-dossier-export {
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--amber-warm, #fbbf24);
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.08);
+  padding: 4px 9px;
+}
+
+.btn-dossier-export:hover {
+  border-color: var(--accent-gold, #f59e0b);
+  color: #fef3c7;
+  background: rgba(245, 158, 11, 0.18);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+}
+
+.dossier-btn-label {
+  display: inline-block;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 640px) {
+  .dossier-btn-label {
+    display: none;
+  }
 }
 
 .detail-meta-pills {

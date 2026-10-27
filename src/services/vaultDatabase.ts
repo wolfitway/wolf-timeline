@@ -340,6 +340,70 @@ export async function dbCreateSnapshot(
   }
 }
 
+export async function dbListSnapshots(): Promise<SovereignSnapshot[]> {
+  try {
+    const db = await openVaultDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORES.SNAPSHOTS, "readonly");
+      const store = tx.objectStore(STORES.SNAPSHOTS);
+      const req = store.getAll();
+      req.onsuccess = () => {
+        const results = (req.result as SovereignSnapshot[]) || [];
+        results.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        resolve(results);
+      };
+      req.onerror = () => resolve([]);
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function dbRestoreSnapshot(snapshotId: string): Promise<SovereignSnapshot | null> {
+  try {
+    const db = await openVaultDB();
+    const snapshot = await new Promise<SovereignSnapshot | null>((resolve) => {
+      const tx = db.transaction(STORES.SNAPSHOTS, "readonly");
+      const store = tx.objectStore(STORES.SNAPSHOTS);
+      const req = store.get(snapshotId);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+
+    if (!snapshot) return null;
+
+    if (snapshot.notes?.length) {
+      await dbSaveAllNotes(snapshot.notes);
+    }
+    if (snapshot.roadmap?.length) {
+      await dbSaveRoadmap(snapshot.roadmap);
+    }
+    if (snapshot.secrets?.length) {
+      await dbSaveAllVaultSecrets(snapshot.secrets);
+    }
+
+    return snapshot;
+  } catch (e) {
+    console.warn("dbRestoreSnapshot error:", e);
+    return null;
+  }
+}
+
+export async function dbDeleteSnapshot(snapshotId: string): Promise<boolean> {
+  try {
+    const db = await openVaultDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORES.SNAPSHOTS, "readwrite");
+      const store = tx.objectStore(STORES.SNAPSHOTS);
+      const req = store.delete(snapshotId);
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => resolve(false);
+    });
+  } catch {
+    return false;
+  }
+}
+
 export async function dbExportFullArchive(
   notes: Note[],
   roadmap: RoadmapPhase[],

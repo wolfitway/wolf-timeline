@@ -15,6 +15,10 @@ import {
   dbExportFullArchive,
   dbRestoreFullArchive,
   dbGetAllVaultSecrets,
+  dbListSnapshots,
+  dbRestoreSnapshot,
+  dbDeleteSnapshot,
+  type SovereignSnapshot,
 } from "@/services/vaultDatabase";
 
 const notesStore = useNotesStore();
@@ -273,8 +277,15 @@ const dbHealth = ref<{
   status: "healthy",
 });
 
+const snapshotsList = ref<SovereignSnapshot[]>([]);
+
 async function refreshDbHealth() {
   dbHealth.value = await dbCheckHealth();
+  try {
+    snapshotsList.value = await dbListSnapshots();
+  } catch (err) {
+    console.error("Failed to load snapshots list:", err);
+  }
 }
 
 onMounted(() => {
@@ -291,7 +302,29 @@ async function handleCreateSnapshot() {
   const secrets = await dbGetAllVaultSecrets();
   const id = await dbCreateSnapshot(notesStore.notes, roadmapStore.phases, secrets);
   await refreshDbHealth();
-  uiStore.showToast(`Snapshot saved to Sovereign Vault DB: ${id} ✓`);
+  uiStore.showToast(`Snapshot saved: ${id.substring(0, 20)}... ✓`);
+}
+
+async function handleRestoreSnapshot(id: string) {
+  if (!confirm(`Restore snapshot "${id}"? This will roll back your in-memory notes and roadmap to this snapshot point.`)) {
+    return;
+  }
+  const result = await dbRestoreSnapshot(id);
+  if (result) {
+    notesStore.notes = result.notes;
+    roadmapStore.phases = result.roadmap;
+    await refreshDbHealth();
+    uiStore.showToast(`Snapshot restored successfully ✓`);
+  } else {
+    uiStore.showToast(`Snapshot could not be restored.`);
+  }
+}
+
+async function handleDeleteSnapshot(id: string) {
+  if (!confirm(`Permanently delete snapshot "${id}"?`)) return;
+  await dbDeleteSnapshot(id);
+  await refreshDbHealth();
+  uiStore.showToast(`Snapshot deleted ✓`);
 }
 
 // Export Handlers
@@ -808,6 +841,63 @@ function jumpToCategory(catId: SettingsCategory) {
               All data is permanently written to quota-free local IndexedDB, synchronized to local storage backups, and safely restored across restarts. Zero cloud leakage.
             </span>
           </p>
+        </div>
+
+        <!-- Time Machine Point-in-Time Snapshots (Zero Data Loss Engine) -->
+        <div class="vault-snapshots-card">
+          <div class="snapshots-header">
+            <div class="snapshots-title-row">
+              <WolfIcon name="shield-check" :size="16" />
+              <h4 class="snapshots-title">Time Machine Point-in-Time Snapshots</h4>
+              <span class="snapshots-badge">{{ snapshotsList.length }} Checkpoints</span>
+            </div>
+            <p class="snapshots-desc">
+              Immutable local state freeze points. Restore historical versions instantly or save manual milestones before high-impact changes.
+            </p>
+          </div>
+
+          <div v-if="snapshotsList.length === 0" class="snapshots-empty-state">
+            <WolfIcon name="shield-check" :size="20" />
+            <span>No point-in-time snapshots created yet. Click "Save Snapshot" above to create an instant zero-loss checkpoint.</span>
+          </div>
+
+          <div v-else class="snapshots-list">
+            <div
+              v-for="snap in snapshotsList"
+              :key="snap.id"
+              class="snapshot-item"
+            >
+              <div class="snapshot-info">
+                <span class="snapshot-time">
+                  <WolfIcon name="clock" :size="12" />
+                  {{ new Date(snap.timestamp).toLocaleString() }}
+                </span>
+                <span class="snapshot-metrics">
+                  {{ snap.notes?.length || 0 }} notes • {{ snap.roadmap?.length || 0 }} phases • {{ snap.secrets?.length || 0 }} secrets
+                </span>
+                <span class="snapshot-id-tag">{{ snap.id.substring(0, 18) }}...</span>
+              </div>
+              <div class="snapshot-actions">
+                <button
+                  type="button"
+                  class="btn-snapshot-restore"
+                  title="Roll back workspace to this point in time"
+                  @click="handleRestoreSnapshot(snap.id)"
+                >
+                  <WolfIcon name="reset" :size="12" />
+                  <span>Restore</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn-snapshot-delete"
+                  title="Delete snapshot from local vault"
+                  @click="handleDeleteSnapshot(snap.id)"
+                >
+                  <WolfIcon name="trash" :size="12" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="export-cards-grid">
@@ -1834,6 +1924,164 @@ function jumpToCategory(catId: SettingsCategory) {
 
 .vault-hero-guarantee span {
   flex: 1;
+}
+
+/* Time Machine Snapshots */
+.vault-snapshots-card {
+  background: var(--bg-card, #0a0805);
+  border: 1px solid var(--border-amber, rgba(245, 158, 11, 0.25));
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.snapshots-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.snapshots-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--amber-warm, #fbbf24);
+}
+
+.snapshots-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.snapshots-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.snapshots-desc {
+  font-size: 11.5px;
+  color: var(--text-secondary, #9ca3af);
+  margin: 0;
+}
+
+.snapshots-empty-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--border-subtle, #231d15);
+  color: var(--text-dim, #6b7280);
+  font-size: 11.5px;
+}
+
+.snapshots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.snapshot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--bg-inner, #050403);
+  border: 1px solid var(--border-subtle, #1a1610);
+  transition: all 0.15s ease;
+}
+
+.snapshot-item:hover {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.snapshot-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.snapshot-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.snapshot-metrics {
+  font-size: 11px;
+  color: var(--text-secondary, #9ca3af);
+}
+
+.snapshot-id-tag {
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-dim, #6b7280);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.snapshot-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-snapshot-restore {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-snapshot-restore:hover {
+  background: rgba(16, 185, 129, 0.22);
+  color: #34d399;
+}
+
+.btn-snapshot-delete {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--border-subtle, #1f1b13);
+  color: var(--text-dim, #6b7280);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.btn-snapshot-delete:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* Export Cards */
