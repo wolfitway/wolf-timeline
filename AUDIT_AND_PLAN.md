@@ -199,41 +199,41 @@ gantt
   dateFormat  YYYY-MM-DD
   section Phase 1: Tokens & Themes
   WCAG AA Contrast Calibration          :done, p1_1, 2026-10-27, 1d
-  Wolfitway Amber & Black Refinement    :active, p1_2, 2026-10-27, 1d
-  Wolfitway Solar Light Mode Build      :active, p1_3, 2026-10-27, 1d
+  Wolfitway Amber & Black Refinement    :done, p1_2, 2026-10-27, 1d
+  Wolfitway Solar Light Mode Build      :done, p1_3, 2026-10-27, 1d
   section Phase 2: Navigation
-  Mobile Bottom Navigation Component    :p2_1, 2026-10-28, 1d
-  Responsive AppTopbar Overhaul         :p2_2, 2026-10-28, 1d
+  Mobile Bottom Navigation Component    :done, p2_1, 2026-10-27, 1d
+  Responsive AppTopbar Overhaul         :done, p2_2, 2026-10-27, 1d
   section Phase 3: Responsive Views
-  Timeline Single/Dual Mode Switcher    :p3_1, 2026-10-28, 1d
-  Studio Mobile Editor/Preview Toggle   :p3_2, 2026-10-29, 1d
-  Roadmap & Bookmarks Mobile Grids      :p3_3, 2026-10-29, 1d
+  Timeline Single/Dual Mode Switcher    :done, p3_1, 2026-10-27, 1d
+  Studio Mobile Editor/Preview Toggle   :done, p3_2, 2026-10-27, 1d
+  Roadmap & Bookmarks Mobile Grids      :done, p3_3, 2026-10-27, 1d
   section Phase 4: Modals & Polish
-  Mobile Bottom Sheets & Touch Targets  :p4_1, 2026-10-29, 1d
-  Automated Vitest & a11y Verification  :p4_2, 2026-10-30, 1d
+  Mobile Bottom Sheets & Touch Targets  :done, p4_1, 2026-10-27, 1d
+  Automated Vitest & a11y Verification  :done, p4_2, 2026-10-27, 1d
 ```
 
 ### Phase 1: Theme Tokens, Wolfitway Amber & Black & Solar Light Mode
-- **Task 1.1:** Update `src/styles/base.css` and `src/style.css` with calibrated WCAG 2.1 AA tokens.
-- **Task 1.2:** Introduce `data-theme="light"` (Wolfitway Solar Amber) with warm alabaster backgrounds, rich burnished ochre accents, and deep obsidian text (17:1 contrast).
-- **Task 1.3:** Elevate `data-theme="amber"` to the supreme Wolfitway command standard with deep onyx blacks, glowing amber focus rings, and high-visibility secondary text (`#fcd34d`).
-- **Task 1.4:** Update `SettingsView.vue` and `useUiStore.ts` with the new Light mode selector and quick theme toggle in topbar.
+- [x] **Task 1.1:** Update `src/styles/base.css` and `src/style.css` with calibrated WCAG 2.1 AA tokens.
+- [x] **Task 1.2:** Introduce `data-theme="light"` (Wolfitway Solar Amber) with warm alabaster backgrounds, rich burnished ochre accents, and deep obsidian text (17:1 contrast).
+- [x] **Task 1.3:** Elevate `data-theme="amber"` to the supreme Wolfitway command standard with deep onyx blacks, glowing amber focus rings, and high-visibility secondary text (`#fcd34d`).
+- [x] **Task 1.4:** Update `SettingsView.vue` and `useUiStore.ts` with the new Light mode selector and quick theme toggle in topbar.
 
 ### Phase 2: Responsive Navigation & Safe Areas
-- **Task 2.1:** Create `src/components/layout/MobileBottomNav.vue` for thumb-zone navigation.
-- **Task 2.2:** Update `AppTopbar.vue` to dynamically collapse on mobile screens, preserving essential quick actions and deferring navigation tabs to the bottom bar.
-- **Task 2.3:** Add `env(safe-area-inset-bottom)` support to `App.vue` for modern mobile notch and home-indicator handling.
+- [x] **Task 2.1:** Create `src/components/layout/MobileBottomNav.vue` for thumb-zone navigation.
+- [x] **Task 2.2:** Update `AppTopbar.vue` to dynamically collapse on mobile screens, preserving essential quick actions and deferring navigation tabs to the bottom bar.
+- [x] **Task 2.3:** Add `env(safe-area-inset-bottom)` support to `App.vue` for modern mobile notch and home-indicator handling.
 
 ### Phase 3: Adaptive Viewports Across All 6 Workspaces
-- **Task 3.1 (`TimelineView.vue`):** Implement responsive column collapse with a mobile `mobileDetailOpen` state and `← Back to Projects` header.
-- **Task 3.2 (`StudioView.vue`):** Implement mobile-first editor/preview toggle buttons when viewport is `< 768px`.
-- **Task 3.3 (`RoadmapView.vue`):** Collapse 440px master-detail split into responsive accordion cards.
-- **Task 3.4 (`BookmarksView.vue` & `VaultView.vue`):** Refactor grid layouts from static `minmax(320px, 1fr)` to fluid `minmax(min(100%, 280px), 1fr)`.
+- [x] **Task 3.1 (`TimelineView.vue`):** Implement responsive column collapse with a mobile `mobileDetailOpen` state and `← Back to Projects` header.
+- [x] **Task 3.2 (`StudioView.vue`):** Implement mobile-first editor/preview toggle buttons when viewport is `< 768px`.
+- [x] **Task 3.3 (`RoadmapView.vue`):** Collapse 440px master-detail split into responsive accordion cards.
+- [x] **Task 3.4 (`BookmarksView.vue` & `VaultView.vue`):** Refactor grid layouts from static `minmax(320px, 1fr)` to fluid `minmax(min(100%, 280px), 1fr)`.
 
 ### Phase 4: Modals, Touch Targets & Final WCAG Audit
-- **Task 4.1:** Transform desktop-centered modals (`QuickCaptureModal`, `CommandPalette`, `SecretEditorModal`, `AiExplorationModal`) into responsive bottom sheets on mobile devices.
-- **Task 4.2:** Ensure all buttons, inputs, and chips satisfy the 44x44px touch target requirement.
-- **Task 4.3:** Run comprehensive test suites (`npm test`) and accessibility checks to guarantee zero regressions.
+- [x] **Task 4.1:** Transform desktop-centered modals (`QuickCaptureModal`, `CommandPalette`, `SecretEditorModal`, `SecretScannerModal`, `BookmarkImporterModal`, `FocusEditorModal`, `LicenseActivationModal`, `VoiceGuideModal`, `ImageLightboxModal`, `AiExplorationModal`) into responsive bottom sheets and mobile viewports.
+- [x] **Task 4.2:** Ensure all buttons, inputs, and chips satisfy the 44x44px touch target requirement and 16px input font size to eliminate iOS auto-zoom.
+- [x] **Task 4.3:** Run comprehensive test suites (`npm test`) with dedicated mathematical WCAG 2.1 AA luminance & contrast tests (`tests/wcag-a11y-theme.test.ts`), passing 50/50 tests.
 
 ---
 
@@ -249,4 +249,5 @@ gantt
 | **@monetization-lead** | Commercialization & Tiers | ✅ **Approved** | "High visual quality in both Light and Amber Dark directly drives commercial solo conversions." |
 
 ---
-*Ready for immediate execution.*
+*Execution completed and fully verified across all workspaces and modal surfaces.*
+

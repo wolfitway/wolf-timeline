@@ -599,4 +599,61 @@ function closeModal() {
     opacity: 1;
   }
 }
+
+@media (max-width: 680px) {
+  .voice-guide-overlay {
+    padding: 8px;
+    align-items: flex-end;
+  }
+
+  .voice-guide-dialog {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: calc(100dvh - 20px);
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .header-left {
+    gap: 12px;
+  }
+
+  .kokoro-heart-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .modal-body {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .voice-select-box {
+    font-size: 16px; /* Prevents auto-zoom on mobile */
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  .btn-audition {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  .modal-footer {
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .btn-done {
+    width: 100%;
+    min-height: 46px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
 </style>

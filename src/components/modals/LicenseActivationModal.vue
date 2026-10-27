@@ -1112,4 +1112,63 @@ async function handleDeactivate() {
 .btn-corner-close:hover {
   color: var(--text-primary, #ffffff);
 }
+
+@media (max-width: 680px) {
+  .license-modal-overlay {
+    padding: 8px;
+    align-items: flex-end;
+  }
+
+  .license-modal-window {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 24px);
+  }
+
+  .modal-tab-btn {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .form-input.mono {
+    font-size: 16px; /* Prevents auto-zoom on mobile */
+    min-height: 44px;
+  }
+
+  .key-input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-activate-submit {
+    min-height: 46px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-copy-device {
+    min-height: 44px;
+  }
+
+  .tier-comparison-box {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .output-actions {
+    flex-direction: column;
+  }
+
+  .btn-output-action {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
 </style>

@@ -972,4 +972,105 @@ function toggleNativeFullscreen() {
   border-radius: 3px;
   color: var(--text-primary, #d1d5db);
 }
+
+/* =========================================================================
+   SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (FocusEditorModal)
+   ========================================================================= */
+@media (max-width: 768px) {
+  .focus-topbar {
+    height: auto;
+    min-height: 48px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .topbar-left {
+    gap: 8px;
+  }
+
+  .brand-label {
+    display: none;
+  }
+
+  /* Hide Split on mobile */
+  .focus-view-toggle button:nth-child(2) {
+    display: none;
+  }
+
+  .toggle-btn {
+    min-height: 38px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .focus-mini-ribbon {
+    overflow-x: auto;
+    max-width: 100vw;
+    padding: 2px 4px;
+    gap: 4px;
+  }
+
+  .btn-ribbon {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .topbar-right {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .control-pill-group {
+    display: none;
+  }
+
+  .btn-icon-fullscreen {
+    display: none;
+  }
+
+  .btn-save-inline,
+  .btn-done {
+    min-height: 38px;
+    padding: 6px 14px;
+  }
+
+  .kbd-pill {
+    display: none;
+  }
+
+  .focus-canvas {
+    padding: 12px 14px;
+  }
+
+  .focus-title-input {
+    font-size: 20px;
+    padding: 6px 0;
+  }
+
+  .focus-panes-grid.split {
+    grid-template-columns: 1fr;
+  }
+
+  .focus-textarea {
+    font-size: 16px !important; /* Prevents auto-zoom on mobile */
+    padding: 14px 12px;
+  }
+
+  .preview-content {
+    padding: 14px 12px;
+  }
+
+  .focus-footer {
+    padding: 0 12px calc(0px + env(safe-area-inset-bottom, 0px));
+    height: auto;
+    min-height: 40px;
+  }
+
+  .esc-hint {
+    display: none;
+  }
+}
 </style>

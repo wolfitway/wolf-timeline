@@ -282,4 +282,47 @@ onUnmounted(() => {
   padding: 2px 8px;
   border-radius: 10px;
 }
+
+@media (max-width: 680px) {
+  .lightbox-overlay {
+    padding: 0;
+  }
+
+  .lightbox-window {
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
+
+  .lightbox-header {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
+  .btn-lightbox-close {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .btn-lightbox-nav {
+    width: 44px;
+    height: 44px;
+  }
+
+  .btn-lightbox-nav.prev {
+    left: 8px;
+  }
+
+  .btn-lightbox-nav.next {
+    right: 8px;
+  }
+
+  .lightbox-footer {
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+}
 </style>
