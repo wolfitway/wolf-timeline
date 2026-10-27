@@ -181,7 +181,8 @@ onMounted(async () => {
   await licenseStore.checkLicense();
   await notesStore.loadNotes();
   await bookmarksStore.loadBookmarks();
-  roadmapStore.loadRoadmap();
+  await roadmapStore.loadRoadmap();
+  await vaultStore.checkInit();
 });
 
 onUnmounted(() => {

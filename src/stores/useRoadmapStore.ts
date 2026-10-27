@@ -13,9 +13,28 @@ const LEGACY_STORAGE_KEYS = [
   "wolf_roadmap",
 ];
 
+export interface RoadmapVersionSummary {
+  source: string;
+  sourceKey: string;
+  phaseCount: number;
+  previewTitles: string[];
+  isCustom: boolean;
+  phases: RoadmapPhase[];
+}
+
+function isDefaultRoadmap(phaseList: RoadmapPhase[]): boolean {
+  if (!phaseList || phaseList.length !== INITIAL_ROADMAP.length) return false;
+  return phaseList.every((p, i) => {
+    const init = INITIAL_ROADMAP[i];
+    if (!init) return false;
+    return p.title === init.title && p.subtitle === init.subtitle && p.practices.length === init.practices.length;
+  });
+}
+
 export const useRoadmapStore = defineStore("roadmap", () => {
   const phases = ref<RoadmapPhase[]>([]);
   const activePhaseId = ref<string | null>(null);
+  const detectedVersions = ref<RoadmapVersionSummary[]>([]);
 
   // Computed
   const activePhase = computed<RoadmapPhase | null>(() => {
@@ -52,62 +71,66 @@ export const useRoadmapStore = defineStore("roadmap", () => {
 
   async function loadRoadmap() {
     let loaded: RoadmapPhase[] | null = null;
+    const candidates: RoadmapVersionSummary[] = [];
 
-    // 1. First, check Sovereign IndexedDB Vault DB (permanent storage)
+    // 1. Check Sovereign IndexedDB Vault DB
     try {
       const idbPhases = await dbGetRoadmap();
       if (Array.isArray(idbPhases) && idbPhases.length > 0) {
-        loaded = idbPhases;
-        console.info(`Loaded ${idbPhases.length} roadmap phases from Sovereign Vault DB ✓`);
+        candidates.push({
+          source: "Sovereign Vault IndexedDB",
+          sourceKey: "idb",
+          phaseCount: idbPhases.length,
+          previewTitles: idbPhases.map((p) => p.title),
+          isCustom: !isDefaultRoadmap(idbPhases),
+          phases: idbPhases,
+        });
       }
     } catch (e) {
       console.warn("Could not read roadmap from Sovereign Vault DB:", e);
     }
 
-    // 2. If IDB empty, check primary localStorage
-    if (!loaded) {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        try {
+    // 2. Check all primary, backup, and legacy LocalStorage keys
+    const keysToCheck = [
+      { key: STORAGE_KEY, label: "Primary Storage (v3)" },
+      { key: BACKUP_STORAGE_KEY, label: "Backup Storage Mirror" },
+      { key: "wolftimeline_roadmap_v2", label: "Legacy Storage (v2)" },
+      { key: "wolftimeline_roadmap_v1", label: "Legacy Storage (v1)" },
+      { key: "wolftimeline_roadmap", label: "Legacy Root Storage" },
+      { key: "wolf_roadmap", label: "Legacy Wolf Storage" },
+      { key: "wolf_roadmap_data", label: "Legacy Data Storage" },
+      { key: "wolf_roadmap_phases", label: "Legacy Phases Storage" },
+    ];
+
+    for (const item of keysToCheck) {
+      try {
+        const raw = localStorage.getItem(item.key);
+        if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            loaded = parsed;
+            candidates.push({
+              source: item.label,
+              sourceKey: item.key,
+              phaseCount: parsed.length,
+              previewTitles: parsed.map((p: any) => p.title || "Untitled Phase"),
+              isCustom: !isDefaultRoadmap(parsed),
+              phases: parsed,
+            });
           }
-        } catch {
-          // ignore
         }
-      }
+      } catch {}
     }
 
-    if (!loaded) {
-      const backupRaw = localStorage.getItem(BACKUP_STORAGE_KEY);
-      if (backupRaw) {
-        try {
-          const parsed = JSON.parse(backupRaw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            loaded = parsed;
-          }
-        } catch {
-          // ignore
-        }
-      }
-    }
+    detectedVersions.value = candidates;
 
-    if (!loaded) {
-      for (const legacyKey of LEGACY_STORAGE_KEYS) {
-        const legacyRaw = localStorage.getItem(legacyKey);
-        if (legacyRaw) {
-          try {
-            const parsed = JSON.parse(legacyRaw);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              loaded = parsed;
-              break;
-            }
-          } catch {
-            // continue
-          }
-        }
-      }
+    // Smart prioritization:
+    // If any candidate contains user-customized roadmap phases, adopt it!
+    const customCandidate = candidates.find((c) => c.isCustom);
+    if (customCandidate) {
+      loaded = customCandidate.phases;
+      console.info(`Loaded custom roadmap from ${customCandidate.source} (${loaded.length} phases) ✓`);
+    } else if (candidates.length > 0) {
+      loaded = candidates[0].phases;
     }
 
     if (loaded && loaded.length > 0) {
@@ -121,6 +144,19 @@ export const useRoadmapStore = defineStore("roadmap", () => {
     if (phases.value.length > 0 && !activePhaseId.value) {
       activePhaseId.value = phases.value[0].id;
     }
+  }
+
+  function restoreRoadmapFromVersion(sourceKey: string): boolean {
+    const target = detectedVersions.value.find((v) => v.sourceKey === sourceKey);
+    if (target) {
+      phases.value = target.phases;
+      saveToLocal();
+      if (phases.value.length > 0) {
+        activePhaseId.value = phases.value[0].id;
+      }
+      return true;
+    }
+    return false;
   }
 
   function togglePractice(phaseId: string, practiceId: string) {
@@ -251,5 +287,7 @@ export const useRoadmapStore = defineStore("roadmap", () => {
     toggleAllCollapsed,
     reorderPhases,
     resetToDefaults,
+    detectedVersions,
+    restoreRoadmapFromVersion,
   };
 });

@@ -35,6 +35,7 @@ export const useVaultStore = defineStore("vault", () => {
   const activeCategory = ref<string>("all");
   const searchQuery = ref<string>("");
   const autoLockCountdown = ref<number>(300);
+  const rawSecretsCount = ref<number>(0);
   let autoLockTimer: any = null;
 
   // Computed
@@ -70,7 +71,7 @@ export const useVaultStore = defineStore("vault", () => {
     if (tauriVal !== null) return tauriVal;
     const idbVal = await dbGetMeta(key);
     if (idbVal !== null) return idbVal;
-    return localStorage.getItem("wolf_vault_meta_" + key);
+    return localStorage.getItem("wolf_vault_meta_" + key) || localStorage.getItem(key);
   }
 
   async function setMeta(key: string, val: string): Promise<void> {
@@ -81,9 +82,63 @@ export const useVaultStore = defineStore("vault", () => {
     } catch {}
   }
 
+  async function getAllRawEncryptedSecrets(): Promise<VaultSecretItem[]> {
+    const map = new Map<string, VaultSecretItem>();
+
+    // 1. Tauri SQLite
+    try {
+      const rawDbSecrets = await tauriGetVaultSecrets();
+      if (Array.isArray(rawDbSecrets)) {
+        for (const item of rawDbSecrets) {
+          if (item && item.id) map.set(item.id, item);
+        }
+      }
+    } catch {}
+
+    // 2. Sovereign IndexedDB
+    try {
+      const idbSecrets = await dbGetAllVaultSecrets();
+      if (Array.isArray(idbSecrets)) {
+        for (const item of idbSecrets) {
+          if (item && item.id) map.set(item.id, item);
+        }
+      }
+    } catch {}
+
+    // 3. LocalStorage primary, backup, and legacy keys
+    const keysToCheck = [
+      LOCAL_SECRETS_KEY,
+      BACKUP_SECRETS_KEY,
+      ...LEGACY_SECRETS_KEYS,
+    ];
+
+    for (const k of keysToCheck) {
+      try {
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          const list = JSON.parse(raw);
+          if (Array.isArray(list)) {
+            for (const item of list) {
+              if (item && (item.id || item.service)) {
+                const id = item.id || `sec_${item.service}`;
+                if (!map.has(id)) {
+                  map.set(id, { ...item, id });
+                }
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+
+    return Array.from(map.values());
+  }
+
   async function checkInit(): Promise<boolean> {
     const canary = await getMeta("vault_canary");
-    isInitialized.value = Boolean(canary);
+    const rawSecrets = await getAllRawEncryptedSecrets();
+    rawSecretsCount.value = rawSecrets.length;
+    isInitialized.value = Boolean(canary) || rawSecrets.length > 0;
     return isInitialized.value;
   }
 
@@ -114,12 +169,16 @@ export const useVaultStore = defineStore("vault", () => {
     try {
       const canaryStr = await getMeta("vault_canary");
       let saltHex = await getMeta("vault_salt");
+      const allEncrypted = await getAllRawEncryptedSecrets();
+      rawSecretsCount.value = allEncrypted.length;
+
+      let derivedKey: CryptoKey;
 
       if (!canaryStr || !saltHex) {
-        // Initial setup
+        // Initial setup or uninitialized vault with legacy raw secrets
         const saltBytes = crypto.getRandomValues(new Uint8Array(16));
         saltHex = bytesToHex(saltBytes);
-        const derivedKey = await deriveVaultKey(passphrase, saltBytes);
+        derivedKey = await deriveVaultKey(passphrase, saltBytes);
 
         const canaryObj = { marker: "WOLF_SOVEREIGN_VAULT", created_at: Date.now() };
         const encCanary = await encryptVaultPayload(derivedKey, canaryObj);
@@ -130,11 +189,10 @@ export const useVaultStore = defineStore("vault", () => {
         cryptoKey.value = derivedKey;
         isUnlocked.value = true;
         isInitialized.value = true;
-        decryptedSecrets.value = [];
       } else {
         // Unlock existing
         const saltBytes = hexToBytes(saltHex);
-        const derivedKey = await deriveVaultKey(passphrase, saltBytes);
+        derivedKey = await deriveVaultKey(passphrase, saltBytes);
 
         let canaryPayload;
         try {
@@ -150,64 +208,46 @@ export const useVaultStore = defineStore("vault", () => {
 
         cryptoKey.value = derivedKey;
         isUnlocked.value = true;
-
-        // Fetch & decrypt secrets
-        const rawDbSecrets = await tauriGetVaultSecrets();
-        let encryptedRows: VaultSecretItem[] = [];
-
-        if (rawDbSecrets && rawDbSecrets.length > 0) {
-          encryptedRows = rawDbSecrets;
-        } else {
-          // Check Sovereign Vault IndexedDB
-          const idbSecrets = await dbGetAllVaultSecrets();
-          if (idbSecrets && idbSecrets.length > 0) {
-            encryptedRows = idbSecrets;
-          } else {
-            let localRaw = localStorage.getItem(LOCAL_SECRETS_KEY);
-            if (!localRaw) {
-              localRaw = localStorage.getItem(BACKUP_SECRETS_KEY);
-            }
-            if (!localRaw) {
-              for (const lk of LEGACY_SECRETS_KEYS) {
-                const leg = localStorage.getItem(lk);
-                if (leg) {
-                  localRaw = leg;
-                  break;
-                }
-              }
-            }
-            if (localRaw) {
-              try {
-                encryptedRows = JSON.parse(localRaw);
-              } catch {}
-            }
-          }
-        }
-
-        const decrypted: VaultSecretItem[] = [];
-        for (const row of encryptedRows) {
-          if (row.ciphertext && row.iv) {
-            try {
-              const p = await decryptVaultPayload(derivedKey, row.ciphertext, row.iv);
-              decrypted.push({
-                id: row.id,
-                service: row.service || p.service || "Unnamed Secret",
-                category: row.category || p.category || "api",
-                username: row.username || p.username || "",
-                password: p.password || "",
-                host: p.host || "",
-                notes: row.notes || p.notes || "",
-                created_at: row.created_at || new Date().toISOString(),
-                updated_at: row.updated_at || new Date().toISOString(),
-              });
-            } catch (e) {
-              console.warn(`Could not decrypt secret ${row.id}:`, e);
-            }
-          }
-        }
-
-        decryptedSecrets.value = decrypted;
       }
+
+      // Decrypt all secrets across all sources (Tauri, IndexedDB, LocalStorage v2/v1/legacy)
+      const decrypted: VaultSecretItem[] = [];
+      for (const row of allEncrypted) {
+        if (row.ciphertext && row.iv) {
+          try {
+            const p = await decryptVaultPayload(derivedKey, row.ciphertext, row.iv);
+            decrypted.push({
+              id: row.id,
+              service: row.service || p.service || "Unnamed Secret",
+              category: row.category || p.category || "api",
+              username: row.username || p.username || "",
+              password: p.password || "",
+              host: p.host || "",
+              notes: row.notes || p.notes || "",
+              created_at: row.created_at || new Date().toISOString(),
+              updated_at: row.updated_at || new Date().toISOString(),
+            });
+          } catch (e) {
+            console.warn(`Could not decrypt secret ${row.id}:`, e);
+          }
+        } else if (row.password || row.service) {
+          // Secret stored in plaintext / unencrypted legacy format
+          decrypted.push({
+            id: row.id,
+            service: row.service || "Legacy Secret",
+            category: row.category || "api",
+            username: row.username || "",
+            password: row.password || "",
+            host: row.host || "",
+            notes: row.notes || "",
+            created_at: row.created_at || new Date().toISOString(),
+            updated_at: row.updated_at || new Date().toISOString(),
+          });
+        }
+      }
+
+      decryptedSecrets.value = decrypted;
+      rawSecretsCount.value = decrypted.length;
 
       startAutoLockTimer();
       return { success: true };
@@ -310,6 +350,7 @@ export const useVaultStore = defineStore("vault", () => {
   return {
     isUnlocked,
     isInitialized,
+    rawSecretsCount,
     decryptedSecrets,
     filteredSecrets,
     activeCategory,
@@ -322,5 +363,6 @@ export const useVaultStore = defineStore("vault", () => {
     saveSecret,
     deleteSecret,
     resetAutoLock,
+    getAllRawEncryptedSecrets,
   };
 });

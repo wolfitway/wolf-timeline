@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import WolfIcon from "@/components/common/WolfIcon.vue";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
@@ -9,6 +9,26 @@ import type { RoadmapPhase, KeyPractice } from "@/types";
 const roadmapStore = useRoadmapStore();
 const notesStore = useNotesStore();
 const uiStore = useUiStore();
+
+onMounted(async () => {
+  if (!roadmapStore.phases.length) {
+    await roadmapStore.loadRoadmap();
+  }
+});
+
+const alternativeVersions = computed(() => {
+  return roadmapStore.detectedVersions.filter((v) => {
+    if (v.phaseCount !== roadmapStore.phases.length) return true;
+    return v.isCustom;
+  });
+});
+
+function restoreVersion(sourceKey: string) {
+  const success = roadmapStore.restoreRoadmapFromVersion(sourceKey);
+  if (success) {
+    uiStore.showToast("Roadmap version restored ✓");
+  }
+}
 
 const newPracticeText = ref("");
 const isAddingPhase = ref(false);
@@ -327,6 +347,25 @@ function selectPhaseMobile(phaseId: string) {
             >
               {{ isAddingPhase ? '✕ Close' : '+ Add Phase' }}
             </button>
+          </div>
+
+          <!-- Stored Versions Recovery Strip -->
+          <div v-if="alternativeVersions.length > 0" class="roadmap-versions-strip">
+            <div class="strip-label">
+              <WolfIcon name="shield-check" :size="12" />
+              <span>Alternative stored roadmap version:</span>
+            </div>
+            <div class="strip-buttons">
+              <button
+                v-for="ver in alternativeVersions"
+                :key="ver.sourceKey"
+                type="button"
+                class="btn-version-pill"
+                @click="restoreVersion(ver.sourceKey)"
+              >
+                <span>Switch to {{ ver.source }} ({{ ver.phaseCount }} phases)</span>
+              </button>
+            </div>
           </div>
 
           <div class="phases-connected-list">
@@ -734,6 +773,50 @@ function selectPhaseMobile(phaseId: string) {
 .btn-add-phase-quick:hover {
   background: var(--emerald-main, #10b981);
   color: var(--bg-body, #03140b);
+}
+
+.roadmap-versions-strip {
+  margin: 0 16px 12px 16px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.strip-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--amber-warm, #fbbf24);
+}
+
+.strip-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btn-version-pill {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fef3c7;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-version-pill:hover {
+  background: rgba(245, 158, 11, 0.3);
+  border-color: #fbbf24;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
 }
 
 .phases-connected-list {

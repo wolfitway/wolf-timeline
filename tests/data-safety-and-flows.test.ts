@@ -116,6 +116,38 @@ describe("Sovereign Data Safety & Zero-Loss Migration Suite", () => {
     // Verify backup mirror
     expect(localStorage.getItem("wolftimeline_roadmap_backup")).toContain("Zero-Knowledge Architecture");
   });
+
+  it("detects and restores secrets across all legacy keys and IndexedDB without loss", async () => {
+    const rawLegacySecrets: VaultSecretItem[] = [
+      {
+        id: "sec_legacy_open_ai",
+        service: "OpenAI Enterprise",
+        category: "api",
+        username: "admin@corp.internal",
+        password: "sk-proj-super-secret-key-12345",
+        host: "api.openai.com",
+        notes: "Primary production token",
+        created_at: "2026-09-01T00:00:00Z",
+        updated_at: "2026-09-01T00:00:00Z",
+      },
+    ];
+
+    localStorage.setItem("wolf_vault_secrets_v2", JSON.stringify(rawLegacySecrets));
+
+    const vaultStore = useVaultStore();
+    await vaultStore.checkInit();
+
+    // Verify rawSecretsCount was detected immediately even while locked
+    expect(vaultStore.rawSecretsCount).toBe(1);
+    expect(vaultStore.isInitialized).toBe(true);
+
+    // Unlock with passphrase
+    const unlockRes = await vaultStore.unlockVault("wolfmaster123");
+    expect(unlockRes.success).toBe(true);
+    expect(vaultStore.decryptedSecrets.length).toBe(1);
+    expect(vaultStore.decryptedSecrets[0].service).toBe("OpenAI Enterprise");
+    expect(vaultStore.decryptedSecrets[0].password).toBe("sk-proj-super-secret-key-12345");
+  });
 });
 
 describe("Cross-Workspace User Flows & Integration Suite", () => {

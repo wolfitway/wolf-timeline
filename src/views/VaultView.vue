@@ -79,6 +79,11 @@ function copyToClipboard(val?: string) {
           }}
         </p>
 
+        <div v-if="vaultStore.rawSecretsCount > 0" class="vault-stored-badge">
+          <WolfIcon name="shield-check" :size="13" />
+          <span>{{ vaultStore.rawSecretsCount }} Encrypted {{ vaultStore.rawSecretsCount === 1 ? 'Secret' : 'Secrets' }} Preserved on Disk • Ready to Decrypt</span>
+        </div>
+
         <form class="vault-unlock-form" @submit.prevent="handleUnlock">
           <div class="input-row">
             <input
@@ -326,7 +331,22 @@ function copyToClipboard(val?: string) {
   font-size: 12px;
   color: var(--text-muted, #9ca3af);
   line-height: 1.5;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
+}
+
+.vault-stored-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  border-radius: 9999px;
+  padding: 5px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
 }
 
 .vault-unlock-form {
