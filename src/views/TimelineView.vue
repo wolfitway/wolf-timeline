@@ -102,6 +102,29 @@ const activeDetailSection = ref<"all" | "notes" | "timeline" | "ai" | "docs" | "
   typeof window !== "undefined" && window.innerWidth <= 768 ? "notes" : "all"
 );
 
+// Left sidebar visibility - starts HIDDEN by default so user can focus on writing full-width!
+const isSidebarVisible = ref<boolean>(false);
+
+function toggleSidebar() {
+  isSidebarVisible.value = !isSidebarVisible.value;
+}
+
+const noteWordCount = computed(() => {
+  if (!notesStore.selectedNote?.body) return 0;
+  const words = notesStore.selectedNote.body.trim().split(/\s+/).filter(Boolean);
+  return words.length;
+});
+
+const noteReadingTime = computed(() => {
+  return Math.max(1, Math.ceil(noteWordCount.value / 200));
+});
+
+function copyNoteMarkdown() {
+  if (!notesStore.selectedNote?.body) return;
+  navigator.clipboard.writeText(notesStore.selectedNote.body);
+  uiStore.showToast("Markdown copied to clipboard ✓");
+}
+
 // Timeline Notes Live Preview mode
 const timelineNotesViewMode = ref<"preview" | "edit">("preview");
 const isPreviewExpanded = ref<boolean>(false);
@@ -847,12 +870,22 @@ async function handleGlobalPaste(e: ClipboardEvent) {
   }
 }
 
+function handleTimelineKeyDown(e: KeyboardEvent) {
+  if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
+    e.preventDefault();
+    toggleSidebar();
+    uiStore.showToast(isSidebarVisible.value ? "Sidebar revealed" : "Sidebar collapsed (Focus Mode)");
+  }
+}
+
 onMounted(() => {
   window.addEventListener("paste", handleGlobalPaste);
+  window.addEventListener("keydown", handleTimelineKeyDown);
 });
 
 onUnmounted(() => {
   window.removeEventListener("paste", handleGlobalPaste);
+  window.removeEventListener("keydown", handleTimelineKeyDown);
 });
 
 /* =========================================================================
@@ -1173,16 +1206,32 @@ function toggleMoodTag(tag: string) {
     </header>
 
     <!-- Workspace Main Layout (Cards Feed & Detail Inspector) -->
-    <div class="timeline-workspace-layout">
-      <!-- Left Column: Cards Feed with Search & Drag-and-Drop -->
-      <div class="cards-column">
-      <!-- Full Width Glowing Green Quick Capture Button -->
-      <button
-        type="button"
-        class="btn-quick-capture-hero"
-        @click="uiStore.showQuickCapture = true"
-        title="Quick Capture (⌘+Enter)"
-      >
+    <div class="timeline-workspace-layout" :class="{ 'sidebar-hidden': !isSidebarVisible }">
+      <!-- Left Column: Cards Feed with Search & Drag-and-Drop (Hidden by default for writing focus) -->
+      <div v-show="isSidebarVisible" class="cards-column">
+        <!-- Sidebar Top Header with Hide Action -->
+        <div class="sidebar-top-bar">
+          <div class="sidebar-heading-text">
+            <WolfIcon name="folder" :size="12" />
+            <span>PROJECTS ({{ filteredNotesList.length }})</span>
+          </div>
+          <button
+            type="button"
+            class="btn-close-sidebar"
+            @click="isSidebarVisible = false"
+            title="Collapse sidebar to focus on writing (⌘\)"
+          >
+            <span>✕ Hide</span>
+          </button>
+        </div>
+
+        <!-- Full Width Glowing Green Quick Capture Button -->
+        <button
+          type="button"
+          class="btn-quick-capture-hero"
+          @click="uiStore.showQuickCapture = true"
+          title="Quick Capture (⌘+Enter)"
+        >
         <span class="plus-symbol">+</span>
         <span>Quick Capture</span>
       </button>
@@ -1310,53 +1359,92 @@ function toggleMoodTag(tag: string) {
         <!-- Detail Header: Title, Status Picker & Actions -->
         <div class="detail-header-section">
           <div class="detail-title-top-row">
-            <button
-              type="button"
-              class="btn-mobile-back"
-              @click="mobileShowDetail = false"
-              title="Back to all projects"
-              aria-label="Back to projects"
-            >
-              ← Back
-            </button>
-            <div v-if="!isEditingNoteTitle" class="title-display-wrap" @dblclick="startEditingNoteTitle">
-              <h1 class="detail-title">{{ notesStore.selectedNote.title }}</h1>
-              <button type="button" class="btn-edit-title" @click="startEditingNoteTitle" title="Edit project title">
-                <WolfIcon name="write" :size="13" />
-              </button>
-            </div>
-            <div v-else class="title-edit-wrap">
-              <input
-                v-model="editNoteTitle"
-                type="text"
-                class="title-inline-input"
-                @keydown.enter="saveNoteTitle"
-                @keydown.esc="isEditingNoteTitle = false"
-                autofocus
-              />
-              <button type="button" class="btn-title-save" @click="saveNoteTitle">Save</button>
-              <button type="button" class="btn-title-cancel" @click="isEditingNoteTitle = false">✕</button>
-            </div>
-
-            <div class="header-action-group">
+            <!-- Left Side: Mobile Back & Sidebar Toggle & Title -->
+            <div class="title-left-group">
               <button
                 type="button"
-                class="btn-icon-action btn-dossier-export"
+                class="btn-mobile-back"
+                @click="mobileShowDetail = false"
+                title="Back to all projects"
+                aria-label="Back to projects"
+              >
+                ← Back
+              </button>
+
+              <!-- Sidebar Toggle Button (Lets user easily reveal/hide projects list) -->
+              <button
+                type="button"
+                class="btn-toggle-sidebar"
+                :class="{ 'is-active': isSidebarVisible }"
+                @click="toggleSidebar"
+                :title="isSidebarVisible ? 'Collapse sidebar to focus on writing (⌘\\)' : 'Show projects sidebar (⌘\\)'"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="9" y1="3" x2="9" y2="21"></line>
+                </svg>
+                <span>{{ isSidebarVisible ? 'Hide List' : 'Projects (' + filteredNotesList.length + ')' }}</span>
+              </button>
+
+              <div v-if="!isEditingNoteTitle" class="title-display-wrap" @dblclick="startEditingNoteTitle">
+                <h1 class="detail-title">{{ notesStore.selectedNote.title }}</h1>
+                <button type="button" class="btn-edit-title" @click="startEditingNoteTitle" title="Edit project title">
+                  <WolfIcon name="write" :size="13" />
+                </button>
+              </div>
+              <div v-else class="title-edit-wrap">
+                <input
+                  v-model="editNoteTitle"
+                  type="text"
+                  class="title-inline-input"
+                  @keydown.enter="saveNoteTitle"
+                  @keydown.esc="isEditingNoteTitle = false"
+                  autofocus
+                />
+                <button type="button" class="btn-title-save" @click="saveNoteTitle">Save</button>
+                <button type="button" class="btn-title-cancel" @click="isEditingNoteTitle = false">✕</button>
+              </div>
+            </div>
+
+            <!-- Right Side: Clean Executive Action Group -->
+            <div class="header-action-group">
+              <!-- Zen Deep Focus Mode -->
+              <button
+                type="button"
+                class="btn-action-pill btn-zen-focus-top"
+                @click="uiStore.showFocusEditor = true"
+                title="Open Deep Zen Focus Mode (⤢)"
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <polyline points="9 21 3 21 3 15"></polyline>
+                  <line x1="21" y1="3" x2="14" y2="10"></line>
+                  <line x1="3" y1="21" x2="10" y2="14"></line>
+                </svg>
+                <span>Zen Focus</span>
+              </button>
+
+              <!-- Export Client Dossier -->
+              <button
+                type="button"
+                class="btn-action-pill btn-dossier-gold"
                 @click="exportSelectedNoteDossier"
                 title="Export Self-Contained Interactive Client Dossier (.html)"
               >
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="16" y1="13" x2="8" y2="13"></line>
                   <line x1="16" y1="17" x2="8" y2="17"></line>
                   <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                <span class="dossier-btn-label">Dossier</span>
+                <span>Dossier</span>
               </button>
+
+              <!-- Delete Project Note -->
               <button
                 type="button"
-                class="btn-icon-action"
+                class="btn-action-icon btn-delete-danger"
                 @click="handleDeleteSelectedNote"
                 title="Delete Project Note"
               >
@@ -1368,6 +1456,7 @@ function toggleMoodTag(tag: string) {
             </div>
           </div>
 
+          <!-- Metadata & Tags Row with Writing Word Counts -->
           <div class="detail-meta-pills">
             <div class="meta-status-pill clickable" @click="cycleNoteStatus" title="Click to cycle status">
               <span
@@ -1382,29 +1471,33 @@ function toggleMoodTag(tag: string) {
             <div v-if="notesStore.selectedNote.funnel_stage" class="meta-stage-pill">
               <span>Funnel: {{ notesStore.selectedNote.funnel_stage }}</span>
             </div>
-          </div>
+            <div class="meta-words-pill" title="Note length & estimated reading time">
+              <span>{{ noteWordCount }} words</span>
+              <span class="meta-dot">·</span>
+              <span>{{ noteReadingTime }}m read</span>
+            </div>
 
-          <!-- Selected Note Tag Filter Strip (Single-line smooth scroll) -->
-          <div v-if="selectedNoteAllTags.length" class="detail-tags-bar">
-            <span class="detail-tag-label"><WolfIcon name="tag" :size="11" /> Tags:</span>
-            <button
-              type="button"
-              class="tag-filter-chip sm"
-              :class="{ active: activeDetailTag === null }"
-              @click="activeDetailTag = null"
-            >
-              All
-            </button>
-            <button
-              v-for="t in selectedNoteAllTags"
-              :key="t"
-              type="button"
-              class="tag-filter-chip sm"
-              :class="{ active: activeDetailTag === t }"
-              @click="toggleDetailTag(t)"
-            >
-              #{{ t }}
-            </button>
+            <!-- Single-line smooth scroll tags -->
+            <div v-if="selectedNoteAllTags.length" class="detail-tags-inline-strip">
+              <button
+                type="button"
+                class="tag-filter-chip sm"
+                :class="{ active: activeDetailTag === null }"
+                @click="activeDetailTag = null"
+              >
+                All
+              </button>
+              <button
+                v-for="t in selectedNoteAllTags"
+                :key="t"
+                type="button"
+                class="tag-filter-chip sm"
+                :class="{ active: activeDetailTag === t }"
+                @click="toggleDetailTag(t)"
+              >
+                #{{ t }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1460,20 +1553,20 @@ function toggleMoodTag(tag: string) {
           </button>
         </div>
 
-        <!-- Notes Section with Live Markdown Preview & Deep Focus Trigger -->
+        <!-- Notes Section with Streamlined Writing Control Bar -->
         <div
           v-show="activeDetailSection === 'all' || activeDetailSection === 'notes'"
           class="detail-section timeline-notes-section"
         >
           <div class="section-title-row">
             <div class="notes-title-left">
-              <h2 class="section-title">Notes &amp; Specs</h2>
               <div class="notes-mode-pills">
                 <button
                   type="button"
                   class="btn-mode-pill"
                   :class="{ active: timelineNotesViewMode === 'preview' }"
                   @click="timelineNotesViewMode = 'preview'"
+                  title="Live Preview mode (renders markdown, checklist tasks & code blocks)"
                 >
                   <WolfIcon name="read" :size="12" /> <span>Live Preview</span>
                 </button>
@@ -1482,6 +1575,7 @@ function toggleMoodTag(tag: string) {
                   class="btn-mode-pill"
                   :class="{ active: timelineNotesViewMode === 'edit' }"
                   @click="timelineNotesViewMode = 'edit'"
+                  title="Edit Source mode (raw markdown text editing)"
                 >
                   <WolfIcon name="write" :size="12" /> <span>Edit Source</span>
                 </button>
@@ -1490,27 +1584,22 @@ function toggleMoodTag(tag: string) {
 
             <div class="notes-header-actions">
               <button
+                type="button"
+                class="btn-note-tool"
+                @click="copyNoteMarkdown"
+                title="Copy raw markdown to clipboard"
+              >
+                <WolfIcon name="copy" :size="11" />
+                <span>Copy MD</span>
+              </button>
+              <button
                 v-if="timelineNotesViewMode === 'preview'"
                 type="button"
-                class="btn-expand-preview"
+                class="btn-note-tool"
                 :title="isPreviewExpanded ? 'Collapse preview height' : 'Expand full height'"
                 @click="isPreviewExpanded = !isPreviewExpanded"
               >
                 {{ isPreviewExpanded ? '▲ Compact' : '▼ Full Height' }}
-              </button>
-              <button
-                type="button"
-                class="btn-expand-focus"
-                @click="uiStore.showFocusEditor = true"
-                title="Expand to Deep Focus Zen Mode (⤢)"
-              >
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <polyline points="9 21 3 21 3 15"></polyline>
-                  <line x1="21" y1="3" x2="14" y2="10"></line>
-                  <line x1="3" y1="21" x2="10" y2="14"></line>
-                </svg>
-                <span>Zen Focus</span>
               </button>
             </div>
           </div>
@@ -2150,13 +2239,28 @@ function toggleMoodTag(tag: string) {
 
 .timeline-workspace-layout {
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 360px 1fr;
   grid-template-rows: minmax(0, 1fr);
   gap: 20px;
   width: 100%;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timeline-workspace-layout.sidebar-hidden {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.timeline-workspace-layout.sidebar-hidden .cards-column {
+  display: none !important;
+}
+
+.timeline-workspace-layout.sidebar-hidden .detail-column {
+  width: 100%;
+  max-width: 100%;
 }
 
 /* =========================================================================
@@ -2468,6 +2572,41 @@ function toggleMoodTag(tag: string) {
   height: 100%;
   min-height: 0;
   overflow: hidden;
+}
+
+.sidebar-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 2px 6px;
+}
+
+.sidebar-heading-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fbbf24;
+}
+
+.btn-close-sidebar {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-close-sidebar:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
 }
 
 .btn-quick-capture-hero {
@@ -2785,6 +2924,45 @@ function toggleMoodTag(tag: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.title-left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.btn-toggle-sidebar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 8px;
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.btn-toggle-sidebar:hover {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: #fbbf24;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+.btn-toggle-sidebar.is-active {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #fbbf24;
 }
 
 .title-display-wrap {
@@ -2858,53 +3036,73 @@ function toggleMoodTag(tag: string) {
 .header-action-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.btn-icon-action {
-  background: transparent;
-  border: 1px solid var(--border-card, #112d20);
-  border-radius: 6px;
-  padding: 5px 8px;
-  color: var(--text-dim, #64748b);
+.btn-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
-  display: flex;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-zen-focus-top {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e5e7eb;
+}
+
+.btn-zen-focus-top:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-dossier-gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.1) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+.btn-dossier-gold:hover {
+  background: rgba(245, 158, 11, 0.3);
+  border-color: #fbbf24;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-action-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border: 1px solid transparent;
 }
 
-.btn-icon-action:hover {
-  border-color: #ef4444;
-  color: #ef4444;
+.btn-delete-danger {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
 }
 
-.btn-dossier-export {
-  gap: 5px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--amber-warm, #fbbf24);
-  border-color: rgba(245, 158, 11, 0.35);
-  background: rgba(245, 158, 11, 0.08);
-  padding: 4px 9px;
-}
-
-.btn-dossier-export:hover {
-  border-color: var(--accent-gold, #f59e0b);
-  color: #fef3c7;
-  background: rgba(245, 158, 11, 0.18);
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
-}
-
-.dossier-btn-label {
-  display: inline-block;
-  letter-spacing: 0.02em;
-}
-
-@media (max-width: 640px) {
-  .dossier-btn-label {
-    display: none;
-  }
+.btn-delete-danger:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  transform: translateY(-1px);
 }
 
 .detail-meta-pills {
@@ -2958,6 +3156,37 @@ function toggleMoodTag(tag: string) {
   font-size: 11.5px;
   color: var(--emerald-bright, #6ee7b7);
   text-transform: capitalize;
+}
+
+.meta-words-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 11.5px;
+  color: #9ca3af;
+  font-feature-settings: "tnum";
+}
+
+.meta-dot {
+  color: #6b7280;
+  font-size: 10px;
+}
+
+.detail-tags-inline-strip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 550px;
+}
+
+.detail-tags-inline-strip::-webkit-scrollbar {
+  display: none;
 }
 
 .btn-edit-title {
@@ -3143,6 +3372,29 @@ function toggleMoodTag(tag: string) {
   gap: 8px;
 }
 
+.btn-note-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-note-tool:hover {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
 .btn-expand-preview {
   background: var(--emerald-pill-bg, #081e14);
   border: 1px solid var(--emerald-pill-border, #133a28);
@@ -3323,18 +3575,24 @@ function toggleMoodTag(tag: string) {
 
 .timeline-inline-textarea {
   width: 100%;
-  min-height: 180px;
+  min-height: 260px;
   background: var(--bg-inner, #030805);
-  border: 1px solid var(--emerald-main, #10b981);
+  border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: 8px;
-  padding: 14px;
+  padding: 16px 18px;
   color: var(--text-primary, #e5e7eb);
   font-family: var(--font-mono, monospace);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 13.5px;
+  line-height: 1.65;
   outline: none;
   resize: vertical;
   box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.timeline-inline-textarea:focus {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
 }
 
 .timeline-editor-foot {
