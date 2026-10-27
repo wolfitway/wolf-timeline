@@ -130,13 +130,14 @@ const filteredShortcutsList = computed(() => {
 const connections = ref<Record<string, { connected: boolean; token: string }>>({});
 
 // Themes State
-const currentTheme = ref<string>("obsidian");
+const currentTheme = ref<string>("amber");
 const themesList = [
-  { id: "obsidian", name: "Cyber Obsidian", desc: "Signature emerald neon on deep obsidian black", primary: "#10b981", bg: "#060b09" },
+  { id: "amber", name: "Wolfitway Amber Sovereign", desc: "Signature warm gold & amber on velvet obsidian black", primary: "#f59e0b", bg: "#080603" },
+  { id: "light", name: "Wolfitway Solar Light", desc: "Crisp alabaster & warm parchment with burnished amber", primary: "#b45309", bg: "#fcfbfa" },
+  { id: "obsidian", name: "Cyber Obsidian", desc: "Emerald neon on deep obsidian black", primary: "#10b981", bg: "#060b09" },
   { id: "cyan", name: "Cyber Neon Cyan", desc: "Vibrant high-contrast cyan on dark navy slate", primary: "#06b6d4", bg: "#030a0e" },
-  { id: "amber", name: "Amber Sovereign", desc: "Warm gold & amber terminal on dark tungsten", primary: "#f59e0b", bg: "#0d0a04" },
-  { id: "sapphire", name: "Midnight Sapphire", desc: "Deep indigo and violet on midnight stealth", primary: "#6366f1", bg: "#050612" },
-  { id: "crimson", name: "Crimson Terminal", desc: "Aggressive blood cyber-red on dark carbon", primary: "#ef4444", bg: "#0e0404" },
+  { id: "sapphire", name: "Midnight Sapphire", desc: "Deep indigo and violet on midnight stealth", primary: "#818cf8", bg: "#050612" },
+  { id: "crimson", name: "Crimson Terminal", desc: "Aggressive blood cyber-red on dark carbon", primary: "#f87171", bg: "#0e0404" },
   { id: "matrix", name: "Matrix Phosphor", desc: "Raw CRT phosphor green on pitch black", primary: "#22c55e", bg: "#020803" },
 ];
 
@@ -4698,5 +4699,67 @@ function jumpToCategory(catId: SettingsCategory) {
 .settings-nav {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+}
+
+/* =========================================================================
+   SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (SettingsView)
+   ========================================================================= */
+@media (max-width: 768px) {
+  .settings-view-layout {
+    flex-direction: column;
+    overflow-y: auto;
+    height: 100%;
+  }
+
+  .settings-sidebar {
+    width: 100%;
+    min-width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-card, #14281f);
+  }
+
+  .sidebar-header {
+    padding: 12px 14px 8px;
+  }
+
+  .settings-nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 6px 12px 10px;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .settings-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-item {
+    white-space: nowrap;
+    min-height: 40px;
+    padding: 8px 14px;
+    flex-shrink: 0;
+  }
+
+  .settings-main-pane {
+    padding: 14px 14px 30px;
+    height: auto;
+    overflow: visible;
+  }
+
+  .themes-selector-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-color-swatches {
+    flex-wrap: wrap;
+  }
+
+  .pane-header {
+    margin-bottom: 16px;
+  }
 }
 </style>

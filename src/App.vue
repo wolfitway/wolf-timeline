@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
 import AppTopbar from "@/components/layout/AppTopbar.vue";
+import MobileBottomNav from "@/components/layout/MobileBottomNav.vue";
 import TimelineView from "@/views/TimelineView.vue";
 import StudioView from "@/views/StudioView.vue";
 import RoadmapView from "@/views/RoadmapView.vue";
@@ -144,7 +145,7 @@ onMounted(async () => {
   window.addEventListener("click", handleUserActivity, { passive: true });
 
   // Initialize theme, font, scale & effects
-  const savedTheme = localStorage.getItem("wolf_theme") || "obsidian";
+  const savedTheme = localStorage.getItem("wolf_theme") || "amber";
   document.documentElement.dataset.theme = savedTheme;
 
   const savedFont = localStorage.getItem("wolf_font") || "jakarta";
@@ -205,6 +206,9 @@ onUnmounted(() => {
         <VaultView v-else-if="uiStore.activeTab === 'secrets'" />
         <SettingsView v-else-if="uiStore.activeTab === 'settings'" />
       </main>
+
+      <!-- Sovereign Mobile Bottom Navigation -->
+      <MobileBottomNav />
     </div>
 
     <!-- Modals & Overlays -->
@@ -233,6 +237,7 @@ onUnmounted(() => {
   height: 100%;
   max-width: 100vw;
   max-height: 100vh;
+  max-height: 100dvh;
   overflow: hidden;
   background: var(--bg-canvas, #040c08);
 }
@@ -256,19 +261,33 @@ onUnmounted(() => {
   background: var(--bg-canvas, #040c08);
 }
 
+@media (max-width: 768px) {
+  .view-container {
+    height: calc(100dvh - 52px - 58px - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 52px - 58px - env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0;
+  }
+
+  .global-toast {
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    left: 16px;
+    text-align: center;
+  }
+}
 
 .global-toast {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: #091a12;
-  border: 1px solid var(--emerald-bright, #34d399);
-  color: #fff;
+  background: var(--bg-card, #120e06);
+  border: 1px solid var(--emerald-bright, #fbbf24);
+  color: var(--text-primary, #fffbeb);
   padding: 10px 18px;
   border-radius: 8px;
   font-size: 12.5px;
   font-weight: 700;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px var(--border-glow, rgba(245, 158, 11, 0.25));
   z-index: 20000;
   animation: slideUp 0.2s ease;
 }

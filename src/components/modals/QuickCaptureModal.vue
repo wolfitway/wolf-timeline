@@ -431,4 +431,32 @@ function handleKeyDown(e: KeyboardEvent) {
     transform: scale(1) translateY(0);
   }
 }
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 8px;
+    align-items: flex-end;
+  }
+
+  .modal-card {
+    padding: 20px 16px;
+    border-radius: 16px 16px 0 0;
+    max-height: calc(100dvh - 20px);
+  }
+
+  .primary-input,
+  .inline-input,
+  .inline-select,
+  .inline-textarea {
+    font-size: 16px; /* Prevents auto-zoom on mobile */
+  }
+
+  .btn-save-primary {
+    min-height: 46px;
+  }
+
+  .btn-cancel {
+    min-height: 42px;
+  }
+}
 </style>

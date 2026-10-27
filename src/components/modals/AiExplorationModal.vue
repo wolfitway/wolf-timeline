@@ -1362,4 +1362,46 @@ function handleDeleteCurrent() {
   background: var(--emerald-bright, #34d399);
   box-shadow: 0 0 16px rgba(52, 211, 153, 0.4);
 }
+
+/* =========================================================================
+   SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (AiExplorationModal)
+   ========================================================================= */
+@media (max-width: 768px) {
+  .ai-modal-overlay {
+    padding: 0;
+  }
+
+  .ai-modal-dialog,
+  .ai-modal-dialog.fullscreen {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
+
+  .modal-topbar {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .decision-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .model-name-cell {
+    font-weight: 800;
+  }
+
+  .btn-footer-save,
+  .btn-footer-cancel {
+    min-height: 42px;
+  }
+}
 </style>

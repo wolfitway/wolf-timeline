@@ -17,6 +17,9 @@ const showAiExplorations = ref(true);
 const showDocs = ref(true);
 const showMoodGallery = ref(true);
 
+// Mobile responsive master-detail toggle state
+const mobileShowDetail = ref(false);
+
 // Timeline Notes Live Preview mode
 const timelineNotesViewMode = ref<"preview" | "edit">("preview");
 const isPreviewExpanded = ref<boolean>(false);
@@ -950,7 +953,7 @@ function toggleMoodTag(tag: string) {
 </script>
 
 <template>
-  <div class="timeline-view">
+  <div class="timeline-view" :class="{ 'mobile-view-detail': mobileShowDetail }">
     <!-- Left Column: Cards Feed with Search & Drag-and-Drop -->
     <div class="cards-column">
       <!-- Full Width Glowing Green Quick Capture Button -->
@@ -1025,7 +1028,7 @@ function toggleMoodTag(tag: string) {
           @dragleave="onNoteDragLeave(note.id)"
           @drop="onNoteDrop($event, note.id)"
           @dragend="onNoteDragEnd"
-          @click="notesStore.selectedNoteId = note.id"
+          @click="notesStore.selectedNoteId = note.id; mobileShowDetail = true"
         >
           <div class="card-title-row">
             <h3 class="card-title">{{ note.title }}</h3>
@@ -1077,6 +1080,15 @@ function toggleMoodTag(tag: string) {
         <!-- Detail Header: Title, Status Picker & Actions -->
         <div class="detail-header-section">
           <div class="detail-title-top-row">
+            <button
+              type="button"
+              class="btn-mobile-back"
+              @click="mobileShowDetail = false"
+              title="Back to all projects"
+              aria-label="Back to projects"
+            >
+              ← Back
+            </button>
             <div v-if="!isEditingNoteTitle" class="title-display-wrap" @dblclick="startEditingNoteTitle">
               <h1 class="detail-title">{{ notesStore.selectedNote.title }}</h1>
               <button type="button" class="btn-edit-title" @click="startEditingNoteTitle" title="Edit project title">✏️</button>
@@ -3924,5 +3936,90 @@ select.adder-input:focus {
 .timeline-inline-textarea {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+}
+
+/* =========================================================================
+   SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (WCAG 2.1 AA)
+   ========================================================================= */
+.btn-mobile-back {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .timeline-view {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: 1fr;
+    padding: 10px 10px 16px 10px;
+    gap: 0;
+    max-width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Single-column master-detail switcher on phones */
+  .timeline-view:not(.mobile-view-detail) .detail-column {
+    display: none !important;
+  }
+
+  .timeline-view:not(.mobile-view-detail) .cards-column {
+    display: flex !important;
+    width: 100%;
+    height: 100%;
+  }
+
+  .timeline-view.mobile-view-detail .cards-column {
+    display: none !important;
+  }
+
+  .timeline-view.mobile-view-detail .detail-column {
+    display: flex !important;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+  }
+
+  .btn-mobile-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-surface, #181208);
+    border: 1px solid var(--border-card, #33220a);
+    color: var(--emerald-bright, #fbbf24);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    min-height: 42px;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+
+  .btn-mobile-back:active {
+    transform: scale(0.95);
+  }
+
+  .detail-title-top-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .detail-title {
+    font-size: 18px;
+  }
+
+  .card-footer-row {
+    gap: 6px;
+  }
+
+  .project-card {
+    padding: 12px;
+  }
+
+  .btn-quick-capture-hero {
+    min-height: 46px;
+    font-size: 14px;
+  }
 }
 </style>

@@ -1258,4 +1258,61 @@ const activePhaseProgress = computed(() => {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
 }
+
+/* =========================================================================
+   SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (RoadmapView)
+   ========================================================================= */
+@media (max-width: 860px) {
+  .roadmap-view {
+    padding: 12px 14px 24px 14px;
+    gap: 14px;
+    overflow-y: auto;
+  }
+
+  .roadmap-header-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .roadmap-body {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    gap: 18px;
+    height: auto;
+  }
+
+  .roadmap-column-left {
+    height: auto;
+    overflow: visible;
+  }
+
+  .roadmap-column-right {
+    height: auto;
+    overflow: visible;
+  }
+
+  .milestones-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-mode-pill {
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .btn-quick-milestone {
+    min-height: 44px;
+    width: 100%;
+    justify-content: center;
+  }
+}
 </style>

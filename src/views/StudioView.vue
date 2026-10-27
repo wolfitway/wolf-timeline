@@ -2163,4 +2163,74 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   font-weight: 600;
   color: var(--text-secondary, #88929b);
 }
+
+/* =========================================================================
+   SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (StudioView)
+   ========================================================================= */
+@media (max-width: 768px) {
+  .studio-panes.split {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .studio-top-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+    min-height: auto;
+  }
+
+  .top-left-identity {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .top-right-controls {
+    width: 100%;
+    justify-content: space-between;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .markdown-toolbar {
+    overflow-x: auto;
+    padding: 8px 12px;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .markdown-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .btn-mode {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .btn-tool,
+  .btn-tool-callout {
+    min-height: 38px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .pane-meta-strip {
+    padding: 6px 12px;
+  }
+
+  .pane-hint {
+    display: none;
+  }
+
+  .studio-footer-status {
+    padding: 6px 12px;
+  }
+
+  .footer-left {
+    display: none;
+  }
+}
 </style>

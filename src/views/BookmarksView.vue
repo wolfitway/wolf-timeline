@@ -886,7 +886,7 @@ onMounted(() => {
 
 .bookmarks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 1.15rem;
 }
 
@@ -1384,5 +1384,38 @@ onMounted(() => {
 .bookmarks-view-root {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+}
+
+/* =========================================================================
+   SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (BookmarksView)
+   ========================================================================= */
+@media (max-width: 768px) {
+  .bookmarks-view-root {
+    padding: 12px 14px 28px 14px;
+    gap: 1rem;
+  }
+
+  .bookmarks-header-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1.1rem;
+  }
+
+  .bookmarks-hero-actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .btn-primary-action,
+  .btn-secondary-action {
+    flex: 1;
+    min-height: 42px;
+    justify-content: center;
+  }
+
+  .bookmarks-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

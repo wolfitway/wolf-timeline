@@ -203,6 +203,18 @@ function handleSecurityBadgeClick() {
     uiStore.setTab("secrets");
   }
 }
+
+// Quick Theme Switcher
+const isLightTheme = ref(typeof document !== "undefined" && document.documentElement.dataset.theme === "light");
+
+function toggleTheme() {
+  const current = document.documentElement.dataset.theme || "amber";
+  const next = current === "light" ? "amber" : "light";
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem("wolf_theme", next);
+  isLightTheme.value = next === "light";
+  uiStore.showToast(next === "light" ? "Wolfitway Solar Light mode active ☀️" : "Wolfitway Amber & Black active 🐺");
+}
 </script>
 
 <template>
@@ -314,6 +326,29 @@ function handleSecurityBadgeClick() {
       >
         <span class="license-icon">{{ licenseStore.isTeam ? '👥' : licenseStore.isCommercialSolo ? '⚡' : '🐺' }}</span>
         <span>{{ licenseStore.isTeam ? 'Pack Mesh (Team)' : licenseStore.isCommercialSolo ? 'Commercial Solo' : 'Free Solo' }}</span>
+      </button>
+
+      <!-- Quick Theme Switcher (Amber & Black <-> Solar Light) -->
+      <button
+        type="button"
+        class="topbar-theme-toggle-btn"
+        @click="toggleTheme"
+        :title="isLightTheme ? 'Switch to Wolfitway Amber & Black' : 'Switch to Wolfitway Solar Light'"
+        aria-label="Toggle Theme"
+      >
+        <span class="theme-icon">{{ isLightTheme ? '☀️' : '🐺' }}</span>
+        <span class="btn-label-desktop">{{ isLightTheme ? 'Solar' : 'Amber' }}</span>
+      </button>
+
+      <!-- Mobile-only Quick Capture Button -->
+      <button
+        type="button"
+        class="topbar-mobile-qc-btn"
+        @click="uiStore.showQuickCapture = true"
+        title="Quick Capture (⌘+Enter)"
+        aria-label="Quick Capture"
+      >
+        <span>+</span>
       </button>
 
       <!-- Security / Encryption Status Badge -->
@@ -641,5 +676,139 @@ function handleSecurityBadgeClick() {
 
 .security-pill-badge:hover .lock-icon {
   color: var(--emerald-bright, #34d399);
+}
+
+/* Theme Toggle Button */
+.topbar-theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card, #120e06);
+  border: 1px solid var(--border-card, #33220a);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald-bright, #fbbf24);
+  cursor: pointer;
+  min-height: 36px;
+  min-width: 36px;
+  justify-content: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.topbar-theme-toggle-btn:hover {
+  background: var(--bg-card-hover, #1c160a);
+  border-color: var(--border-focus, #fbbf24);
+  box-shadow: 0 0 10px var(--border-glow, rgba(245, 158, 11, 0.25));
+}
+
+.theme-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* Mobile Quick Capture Button (hidden on desktop) */
+.topbar-mobile-qc-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  background: var(--emerald-main, #f59e0b);
+  color: var(--bg-canvas, #000000);
+  border: none;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 0 12px var(--border-glow, rgba(245, 158, 11, 0.35));
+  transition: transform 0.15s ease;
+}
+
+.topbar-mobile-qc-btn:active {
+  transform: scale(0.92);
+}
+
+/* Responsive Breakpoints & Mobile Optimization */
+@media (max-width: 1024px) {
+  .topbar-right .btn-label-desktop {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-topbar {
+    height: 52px;
+    min-height: 52px;
+    padding: 0 12px;
+  }
+
+  /* Defer navigation tabs to MobileBottomNav */
+  .topbar-nav {
+    display: none;
+  }
+
+  .brand-title {
+    font-size: 13.5px;
+  }
+
+  .topbar-right {
+    gap: 6px;
+  }
+
+  /* Show mobile quick capture */
+  .topbar-mobile-qc-btn {
+    display: flex;
+  }
+
+  /* Hide secondary desktop buttons on mobile to avoid overflow */
+  .topbar-action-icon-btn,
+  .topbar-kokoro-btn,
+  .topbar-voice-control-btn,
+  .topbar-license-btn,
+  .security-pill-badge span {
+    display: none;
+  }
+
+  .security-pill-badge {
+    padding: 8px 10px;
+    min-height: 40px;
+    min-width: 40px;
+    justify-content: center;
+  }
+
+  .topbar-search-btn {
+    padding: 8px 10px;
+    min-height: 40px;
+  }
+
+  .topbar-search-btn kbd {
+    display: none;
+  }
+
+  .topbar-theme-toggle-btn {
+    min-height: 40px;
+    min-width: 40px;
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-title {
+    display: none;
+  }
+
+  .topbar-search-btn span {
+    display: none;
+  }
+
+  .topbar-search-btn {
+    min-width: 40px;
+    justify-content: center;
+  }
 }
 </style>

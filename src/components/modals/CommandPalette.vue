@@ -403,4 +403,31 @@ function handleKeyDown(e: KeyboardEvent) {
   color: var(--emerald-bright, #4b6357);
   opacity: 0.8;
 }
+
+@media (max-width: 600px) {
+  .palette-overlay {
+    padding: 10px;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
+  .palette-modal {
+    width: 100%;
+    max-height: calc(100dvh - 40px);
+  }
+
+  .palette-input {
+    font-size: 16px;
+    padding: 12px 14px 12px 42px;
+  }
+
+  .palette-footer {
+    display: none;
+  }
+
+  .palette-item {
+    min-height: 48px;
+    padding: 12px 14px;
+  }
+}
 </style>

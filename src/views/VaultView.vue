@@ -479,7 +479,7 @@ function copyToClipboard(val?: string) {
   scrollbar-gutter: stable;
   padding: 24px 24px 80px 24px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 16px;
   align-content: flex-start;
 }
@@ -662,5 +662,35 @@ function copyToClipboard(val?: string) {
 .secrets-grid-container {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb, rgba(16, 185, 129, 0.5)) var(--scrollbar-track, rgba(4, 12, 8, 0.8));
+}
+
+/* =========================================================================
+   SOVEREIGN MOBILE-FIRST RESPONSIVE MEDIA QUERIES (VaultView)
+   ========================================================================= */
+@media (max-width: 768px) {
+  .vault-hero-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .vault-hero-right {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .btn-add-secret,
+  .btn-scanner-trigger,
+  .btn-lock-emergency {
+    flex: 1;
+    min-height: 42px;
+    justify-content: center;
+  }
+
+  .secrets-grid-container {
+    padding: 12px 14px 60px 14px;
+    grid-template-columns: 1fr;
+  }
 }
 </style>
