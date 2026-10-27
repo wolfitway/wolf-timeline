@@ -102,6 +102,8 @@ export interface KeyPractice {
   completed: boolean;
 }
 
+export type RoadmapHorizon = "now" | "next" | "later" | "shipped";
+
 export interface RoadmapPhase {
   id: string;
   number: number;
@@ -112,7 +114,25 @@ export interface RoadmapPhase {
   focus: string;
   outcome: string;
   collapsed?: boolean;
+  horizon?: RoadmapHorizon;
+  targetQuarter?: string;
   practices: KeyPractice[];
+}
+
+export interface CompetitorProfile {
+  id: string;
+  name: string;
+  category: string;
+  pricing: string;
+  airGapped: boolean;
+  zeroKnowledgeVault: boolean;
+  clientDossierSealed: boolean;
+  horizonsAndGantt: boolean;
+  multiModelAi: boolean;
+  timeMachineSnapshots: boolean;
+  primaryPros: string[];
+  fatalFlaws: string[];
+  wolfAdvantage: string;
 }
 
 export interface VaultSecretItem {

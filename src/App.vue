@@ -19,6 +19,7 @@ import ImageLightboxModal from "@/components/modals/ImageLightboxModal.vue";
 import AiExplorationModal from "@/components/modals/AiExplorationModal.vue";
 import BookmarkImporterModal from "@/components/modals/BookmarkImporterModal.vue";
 import VoiceGuideModal from "@/components/modals/VoiceGuideModal.vue";
+import CompetitorAuditModal from "@/components/modals/CompetitorAuditModal.vue";
 
 import { useUiStore } from "@/stores/useUiStore";
 import { useNotesStore } from "@/stores/useNotesStore";
@@ -223,6 +224,7 @@ onUnmounted(() => {
     <AiExplorationModal />
     <BookmarkImporterModal />
     <VoiceGuideModal />
+    <CompetitorAuditModal v-if="uiStore.showCompetitorAuditModal" />
 
     <!-- Toast Notification -->
     <div v-if="uiStore.toastMessage" class="global-toast">

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import type { RoadmapPhase, KeyPractice } from "@/types";
+import type { RoadmapPhase, KeyPractice, RoadmapHorizon } from "@/types";
 import { INITIAL_ROADMAP } from "@/services/seedData";
 import { dbGetRoadmap, dbSaveRoadmap } from "@/services/vaultDatabase";
 
@@ -22,6 +22,14 @@ export interface RoadmapVersionSummary {
   phases: RoadmapPhase[];
 }
 
+export function getPhaseHorizon(phase: RoadmapPhase): RoadmapHorizon {
+  if (phase.horizon) return phase.horizon;
+  if (phase.status === "In Progress") return "now";
+  if (phase.status === "Up Next") return "next";
+  if (phase.status === "Live") return "shipped";
+  return "later";
+}
+
 function isDefaultRoadmap(phaseList: RoadmapPhase[]): boolean {
   if (!phaseList || phaseList.length !== INITIAL_ROADMAP.length) return false;
   return phaseList.every((p, i) => {
@@ -35,6 +43,7 @@ export const useRoadmapStore = defineStore("roadmap", () => {
   const phases = ref<RoadmapPhase[]>([]);
   const activePhaseId = ref<string | null>(null);
   const detectedVersions = ref<RoadmapVersionSummary[]>([]);
+  const viewMode = ref<"track" | "horizons" | "gantt">("track");
 
   // Computed
   const activePhase = computed<RoadmapPhase | null>(() => {
@@ -42,17 +51,47 @@ export const useRoadmapStore = defineStore("roadmap", () => {
     return phases.value.find((p) => p.id === activePhaseId.value) || phases.value[0] || null;
   });
 
+  const totalPracticesCount = computed(() => {
+    return phases.value.reduce((acc, p) => acc + (p.practices?.length || 0), 0);
+  });
+
+  const completedPracticesCount = computed(() => {
+    return phases.value.reduce(
+      (acc, p) => acc + (p.practices?.filter((pr) => pr.completed).length || 0),
+      0
+    );
+  });
+
   const overallProgress = computed(() => {
-    let total = 0;
-    let completed = 0;
-    phases.value.forEach((p) => {
-      p.practices.forEach((pr) => {
-        total++;
-        if (pr.completed) completed++;
-      });
-    });
+    const total = totalPracticesCount.value;
+    const completed = completedPracticesCount.value;
     return total === 0 ? 0 : Math.round((completed / total) * 100);
   });
+
+  const phasesByHorizon = computed<Record<RoadmapHorizon, RoadmapPhase[]>>(() => {
+    const map: Record<RoadmapHorizon, RoadmapPhase[]> = {
+      now: [],
+      next: [],
+      later: [],
+      shipped: [],
+    };
+    phases.value.forEach((p) => {
+      const h = getPhaseHorizon(p);
+      map[h].push(p);
+    });
+    return map;
+  });
+
+  function setPhaseHorizon(phaseId: string, horizon: RoadmapHorizon) {
+    const target = phases.value.find((p) => p.id === phaseId);
+    if (!target) return;
+    target.horizon = horizon;
+    if (horizon === "now") target.status = "In Progress";
+    else if (horizon === "next") target.status = "Up Next";
+    else if (horizon === "shipped") target.status = "Live";
+    else if (horizon === "later") target.status = "Planned";
+    saveToLocal();
+  }
 
   // Actions
   function saveToLocal() {
@@ -274,6 +313,12 @@ export const useRoadmapStore = defineStore("roadmap", () => {
     activePhaseId,
     activePhase,
     overallProgress,
+    viewMode,
+    phasesByHorizon,
+    totalPracticesCount,
+    completedPracticesCount,
+    getPhaseHorizon,
+    setPhaseHorizon,
     loadRoadmap,
     togglePractice,
     addPractice,

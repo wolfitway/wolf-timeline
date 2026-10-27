@@ -109,6 +109,19 @@ const results = computed<PaletteItem[]>(() => {
     },
   });
 
+  list.push({
+    id: "act-competitors",
+    type: "action",
+    title: "Benchmark vs 7 Competitors (Linear, ProductPlan, Obsidian, Aeon...)",
+    subtitle: "Compare air-gap security, AES-256 vault, client dossier, and TCO",
+    icon: "shield-check",
+    badge: "Audit",
+    action: () => {
+      uiStore.showCommandPalette = false;
+      uiStore.openCompetitorAuditModal();
+    },
+  });
+
   // Notes
   notesStore.notes.forEach((n) => {
     list.push({

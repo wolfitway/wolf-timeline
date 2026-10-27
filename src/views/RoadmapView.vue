@@ -266,6 +266,34 @@ function selectPhaseMobile(phaseId: string) {
   roadmapStore.activePhaseId = phaseId;
   mobileRoadmapTab.value = "details";
 }
+
+function switchViewMode(mode: "track" | "horizons" | "gantt") {
+  roadmapStore.viewMode = mode;
+}
+
+const horizonOrder: Array<"now" | "next" | "later" | "shipped"> = ["now", "next", "later", "shipped"];
+
+function movePhaseHorizonStep(phaseId: string, currentHorizon: "now" | "next" | "later" | "shipped", step: 1 | -1) {
+  const curIdx = horizonOrder.indexOf(currentHorizon);
+  const nextIdx = Math.max(0, Math.min(horizonOrder.length - 1, curIdx + step));
+  if (nextIdx !== curIdx) {
+    const nextHorizon = horizonOrder[nextIdx];
+    roadmapStore.setPhaseHorizon(phaseId, nextHorizon);
+    uiStore.showToast(`Phase moved to ${nextHorizon.toUpperCase()} horizon ✓`);
+  }
+}
+
+function inspectPhaseFromCard(phaseId: string) {
+  roadmapStore.activePhaseId = phaseId;
+  roadmapStore.viewMode = "track";
+  mobileRoadmapTab.value = "details";
+}
+
+function getPhaseProgress(phase: RoadmapPhase): number {
+  if (!phase.practices || phase.practices.length === 0) return 0;
+  const completed = phase.practices.filter((p) => p.completed).length;
+  return Math.round((completed / phase.practices.length) * 100);
+}
 </script>
 
 <template>
@@ -277,10 +305,55 @@ function selectPhaseMobile(phaseId: string) {
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
-        <span class="roadmap-main-heading">Human-Mode Roadmap</span>
+        <span class="roadmap-main-heading">Strategic Roadmap Canvas</span>
+
+        <!-- View Mode Switcher: Track vs Horizons vs Gantt -->
+        <div class="view-mode-pill-group" role="tablist" aria-label="Roadmap View Options">
+          <button
+            type="button"
+            class="mode-pill-btn"
+            :class="{ active: roadmapStore.viewMode === 'track' }"
+            @click="switchViewMode('track')"
+            title="Track View (Deep-Dive Milestone Deliverables)"
+          >
+            <WolfIcon name="roadmap" :size="12" />
+            <span>Track</span>
+          </button>
+          <button
+            type="button"
+            class="mode-pill-btn"
+            :class="{ active: roadmapStore.viewMode === 'horizons' }"
+            @click="switchViewMode('horizons')"
+            title="Horizon Matrix (Now / Next / Later / Shipped)"
+          >
+            <WolfIcon name="sparkles" :size="12" />
+            <span>Horizons</span>
+          </button>
+          <button
+            type="button"
+            class="mode-pill-btn"
+            :class="{ active: roadmapStore.viewMode === 'gantt' }"
+            @click="switchViewMode('gantt')"
+            title="Gantt Timeline (Visual Delivery Schedule)"
+          >
+            <WolfIcon name="timeline" :size="12" />
+            <span>Gantt</span>
+          </button>
+        </div>
       </div>
 
       <div class="header-right">
+        <!-- 7-Competitor Intelligence Trigger Button -->
+        <button
+          type="button"
+          class="btn-competitor-benchmark"
+          @click="uiStore.openCompetitorAuditModal"
+          title="Compare Wolf Timeline against Linear, ProductPlan, Obsidian, Aeon..."
+        >
+          <span class="benchmark-spark">⚡</span>
+          <span>vs 7 Competitors</span>
+        </button>
+
         <div class="wolf-brand-wrap">
           <svg
             viewBox="0 0 24 24"
@@ -303,8 +376,46 @@ function selectPhaseMobile(phaseId: string) {
       </div>
     </div>
 
-    <!-- Mobile Segment Switcher (<860px) -->
-    <div class="roadmap-mobile-tabs" role="tablist" aria-label="Roadmap View Switcher">
+    <!-- Executive Velocity & Health HUD -->
+    <div class="roadmap-hud-strip">
+      <div class="hud-item">
+        <span class="hud-label">PHASES</span>
+        <span class="hud-val">{{ roadmapStore.phases.length }}</span>
+      </div>
+      <div class="hud-divider"></div>
+      <div class="hud-item">
+        <span class="hud-label">ACTIVE (NOW)</span>
+        <span class="hud-val green">{{ roadmapStore.phasesByHorizon.now.length }}</span>
+      </div>
+      <div class="hud-divider"></div>
+      <div class="hud-item">
+        <span class="hud-label">NEXT / UPCOMING</span>
+        <span class="hud-val amber">{{ roadmapStore.phasesByHorizon.next.length }}</span>
+      </div>
+      <div class="hud-divider"></div>
+      <div class="hud-item">
+        <span class="hud-label">SHIPPED</span>
+        <span class="hud-val blue">{{ roadmapStore.phasesByHorizon.shipped.length }}</span>
+      </div>
+      <div class="hud-divider"></div>
+      <div class="hud-item velocity-item">
+        <div class="velocity-header">
+          <span class="hud-label">VELOCITY</span>
+          <span class="hud-val-bold">{{ roadmapStore.overallProgress }}%</span>
+        </div>
+        <div class="hud-progress-track">
+          <div class="hud-progress-bar" :style="{ width: `${roadmapStore.overallProgress}%` }"></div>
+        </div>
+      </div>
+      <div class="hud-spacer"></div>
+      <div class="hud-security-tag">
+        <WolfIcon name="shield-check" :size="12" />
+        <span>100% AIR-GAPPED</span>
+      </div>
+    </div>
+
+    <!-- Mobile Segment Switcher (<860px) - Only in Track View -->
+    <div v-if="roadmapStore.viewMode === 'track'" class="roadmap-mobile-tabs" role="tablist" aria-label="Roadmap View Switcher">
       <button
         type="button"
         role="tab"
@@ -327,8 +438,8 @@ function selectPhaseMobile(phaseId: string) {
       </button>
     </div>
 
-    <!-- Main 2-Column Body -->
-    <div class="roadmap-body">
+    <!-- Main 2-Column Track Body -->
+    <div v-if="roadmapStore.viewMode === 'track'" class="roadmap-body">
       <!-- Left Column: ROADMAP Phases Track -->
       <div class="roadmap-column-left" :class="{ 'mobile-hidden': mobileRoadmapTab !== 'phases' }">
         <div class="roadmap-track-card">
@@ -630,6 +741,324 @@ function selectPhaseMobile(phaseId: string) {
             <div class="progress-track">
               <div class="progress-fill" :style="{ width: `${activePhaseProgress}%` }"></div>
               <div class="progress-handle" :style="{ left: `${activePhaseProgress}%` }"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Horizon Matrix View (Now / Next / Later / Shipped) -->
+    <div v-else-if="roadmapStore.viewMode === 'horizons'" class="roadmap-horizons-container">
+      <div class="horizons-board-grid">
+        <!-- 1. NOW Column -->
+        <div class="horizon-column col-now">
+          <div class="horizon-col-header">
+            <div class="header-status-dot dot-now"></div>
+            <div class="col-title-group">
+              <span class="col-title">NOW</span>
+              <span class="col-subtitle">Active Sprints</span>
+            </div>
+            <span class="col-count-badge badge-now">{{ roadmapStore.phasesByHorizon.now.length }}</span>
+          </div>
+
+          <div class="horizon-cards-list">
+            <div
+              v-if="roadmapStore.phasesByHorizon.now.length === 0"
+              class="horizon-empty-state"
+            >
+              <span>No active milestones in NOW. Move from Next or create one.</span>
+            </div>
+            <div
+              v-for="phase in roadmapStore.phasesByHorizon.now"
+              :key="phase.id"
+              class="horizon-phase-card"
+              @click="inspectPhaseFromCard(phase.id)"
+            >
+              <div class="card-top-row">
+                <span class="card-phase-num">Phase {{ phase.number }}</span>
+                <span class="card-status-pill pill-now">{{ phase.status }}</span>
+              </div>
+              <h4 class="card-phase-title">{{ phase.title }}</h4>
+              <p class="card-phase-desc">{{ phase.description }}</p>
+
+              <!-- Progress bar -->
+              <div class="card-progress-wrap">
+                <div class="card-progress-bar">
+                  <div class="card-progress-fill fill-now" :style="{ width: `${getPhaseProgress(phase)}%` }"></div>
+                </div>
+                <div class="card-progress-meta">
+                  <span>{{ phase.practices.filter(p => p.completed).length }}/{{ phase.practices.length }} deliverables</span>
+                  <span>{{ getPhaseProgress(phase) }}%</span>
+                </div>
+              </div>
+
+              <!-- Action Bar -->
+              <div class="card-actions-row" @click.stop>
+                <button
+                  type="button"
+                  class="btn-horizon-shift"
+                  @click="movePhaseHorizonStep(phase.id, 'now', 1)"
+                  title="Shift to NEXT"
+                >
+                  <span>Shift to NEXT ▶</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn-horizon-open"
+                  @click="inspectPhaseFromCard(phase.id)"
+                  title="Open Deep Track Details"
+                >
+                  <span>Details</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. NEXT Column -->
+        <div class="horizon-column col-next">
+          <div class="horizon-col-header">
+            <div class="header-status-dot dot-next"></div>
+            <div class="col-title-group">
+              <span class="col-title">NEXT</span>
+              <span class="col-subtitle">Queued Milestones</span>
+            </div>
+            <span class="col-count-badge badge-next">{{ roadmapStore.phasesByHorizon.next.length }}</span>
+          </div>
+
+          <div class="horizon-cards-list">
+            <div
+              v-if="roadmapStore.phasesByHorizon.next.length === 0"
+              class="horizon-empty-state"
+            >
+              <span>No milestones queued in NEXT.</span>
+            </div>
+            <div
+              v-for="phase in roadmapStore.phasesByHorizon.next"
+              :key="phase.id"
+              class="horizon-phase-card"
+              @click="inspectPhaseFromCard(phase.id)"
+            >
+              <div class="card-top-row">
+                <span class="card-phase-num">Phase {{ phase.number }}</span>
+                <span class="card-status-pill pill-next">{{ phase.status }}</span>
+              </div>
+              <h4 class="card-phase-title">{{ phase.title }}</h4>
+              <p class="card-phase-desc">{{ phase.description }}</p>
+
+              <div class="card-progress-wrap">
+                <div class="card-progress-bar">
+                  <div class="card-progress-fill fill-next" :style="{ width: `${getPhaseProgress(phase)}%` }"></div>
+                </div>
+                <div class="card-progress-meta">
+                  <span>{{ phase.practices.filter(p => p.completed).length }}/{{ phase.practices.length }} deliverables</span>
+                  <span>{{ getPhaseProgress(phase) }}%</span>
+                </div>
+              </div>
+
+              <div class="card-actions-row" @click.stop>
+                <button
+                  type="button"
+                  class="btn-horizon-shift"
+                  @click="movePhaseHorizonStep(phase.id, 'next', -1)"
+                  title="Promote to NOW"
+                >
+                  <span>◀ NOW</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn-horizon-shift"
+                  @click="movePhaseHorizonStep(phase.id, 'next', 1)"
+                  title="Move to LATER"
+                >
+                  <span>LATER ▶</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn-horizon-open"
+                  @click="inspectPhaseFromCard(phase.id)"
+                >
+                  <span>Details</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. LATER Column -->
+        <div class="horizon-column col-later">
+          <div class="horizon-col-header">
+            <div class="header-status-dot dot-later"></div>
+            <div class="col-title-group">
+              <span class="col-title">LATER</span>
+              <span class="col-subtitle">Planned Architecture</span>
+            </div>
+            <span class="col-count-badge badge-later">{{ roadmapStore.phasesByHorizon.later.length }}</span>
+          </div>
+
+          <div class="horizon-cards-list">
+            <div
+              v-if="roadmapStore.phasesByHorizon.later.length === 0"
+              class="horizon-empty-state"
+            >
+              <span>No milestones in LATER horizon.</span>
+            </div>
+            <div
+              v-for="phase in roadmapStore.phasesByHorizon.later"
+              :key="phase.id"
+              class="horizon-phase-card"
+              @click="inspectPhaseFromCard(phase.id)"
+            >
+              <div class="card-top-row">
+                <span class="card-phase-num">Phase {{ phase.number }}</span>
+                <span class="card-status-pill pill-later">{{ phase.status }}</span>
+              </div>
+              <h4 class="card-phase-title">{{ phase.title }}</h4>
+              <p class="card-phase-desc">{{ phase.description }}</p>
+
+              <div class="card-progress-wrap">
+                <div class="card-progress-bar">
+                  <div class="card-progress-fill fill-later" :style="{ width: `${getPhaseProgress(phase)}%` }"></div>
+                </div>
+                <div class="card-progress-meta">
+                  <span>{{ phase.practices.filter(p => p.completed).length }}/{{ phase.practices.length }} deliverables</span>
+                  <span>{{ getPhaseProgress(phase) }}%</span>
+                </div>
+              </div>
+
+              <div class="card-actions-row" @click.stop>
+                <button
+                  type="button"
+                  class="btn-horizon-shift"
+                  @click="movePhaseHorizonStep(phase.id, 'later', -1)"
+                  title="Promote to NEXT"
+                >
+                  <span>◀ NEXT</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn-horizon-open"
+                  @click="inspectPhaseFromCard(phase.id)"
+                >
+                  <span>Details</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. SHIPPED Column -->
+        <div class="horizon-column col-shipped">
+          <div class="horizon-col-header">
+            <div class="header-status-dot dot-shipped"></div>
+            <div class="col-title-group">
+              <span class="col-title">SHIPPED</span>
+              <span class="col-subtitle">Live Deliverables</span>
+            </div>
+            <span class="col-count-badge badge-shipped">{{ roadmapStore.phasesByHorizon.shipped.length }}</span>
+          </div>
+
+          <div class="horizon-cards-list">
+            <div
+              v-if="roadmapStore.phasesByHorizon.shipped.length === 0"
+              class="horizon-empty-state"
+            >
+              <span>No shipped milestones yet. Complete practices in NOW to ship!</span>
+            </div>
+            <div
+              v-for="phase in roadmapStore.phasesByHorizon.shipped"
+              :key="phase.id"
+              class="horizon-phase-card"
+              @click="inspectPhaseFromCard(phase.id)"
+            >
+              <div class="card-top-row">
+                <span class="card-phase-num">Phase {{ phase.number }}</span>
+                <span class="card-status-pill pill-shipped">{{ phase.status }}</span>
+              </div>
+              <h4 class="card-phase-title">{{ phase.title }}</h4>
+              <p class="card-phase-desc">{{ phase.description }}</p>
+
+              <div class="card-progress-wrap">
+                <div class="card-progress-bar">
+                  <div class="card-progress-fill fill-shipped" :style="{ width: `${getPhaseProgress(phase)}%` }"></div>
+                </div>
+                <div class="card-progress-meta">
+                  <span>{{ phase.practices.filter(p => p.completed).length }}/{{ phase.practices.length }} deliverables</span>
+                  <span>{{ getPhaseProgress(phase) }}%</span>
+                </div>
+              </div>
+
+              <div class="card-actions-row" @click.stop>
+                <button
+                  type="button"
+                  class="btn-horizon-shift"
+                  @click="roadmapStore.setPhaseHorizon(phase.id, 'now')"
+                  title="Re-open in NOW"
+                >
+                  <span>↺ Re-open</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn-horizon-open"
+                  @click="inspectPhaseFromCard(phase.id)"
+                >
+                  <span>Details</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chronology Gantt Timeline View -->
+    <div v-else-if="roadmapStore.viewMode === 'gantt'" class="roadmap-gantt-container">
+      <div class="gantt-header-row">
+        <div class="gantt-phase-col-header">MILESTONE PHASES</div>
+        <div class="gantt-timeline-quarters">
+          <div class="quarter-col"><span>Q1 • FOUNDATION</span></div>
+          <div class="quarter-col"><span>Q2 • SCALING</span></div>
+          <div class="quarter-col"><span>Q3 • ECOSYSTEM</span></div>
+          <div class="quarter-col"><span>Q4 • ENTERPRISE MESH</span></div>
+        </div>
+      </div>
+
+      <div class="gantt-swimlanes-list">
+        <div
+          v-for="(phase, idx) in roadmapStore.phases"
+          :key="phase.id"
+          class="gantt-swimlane-row"
+          :class="{ active: roadmapStore.activePhaseId === phase.id }"
+          @click="inspectPhaseFromCard(phase.id)"
+        >
+          <div class="swimlane-label-col">
+            <div class="swimlane-phase-badge">Phase {{ phase.number }}</div>
+            <div class="swimlane-title">{{ phase.title }}</div>
+            <span class="swimlane-status-pill" :class="getPhaseStatusPillClass(phase.status)">
+              {{ phase.status }}
+            </span>
+          </div>
+
+          <div class="swimlane-track-col">
+            <!-- Timeline Grid lines -->
+            <div class="grid-line line-1"></div>
+            <div class="grid-line line-2"></div>
+            <div class="grid-line line-3"></div>
+
+            <!-- Gantt Deliverable Bar -->
+            <div
+              class="gantt-bar"
+              :style="{
+                left: `${Math.min(idx * 16, 56)}%`,
+                width: `${Math.max(28, 44 - idx * 2)}%`
+              }"
+            >
+              <div class="bar-progress-fill" :style="{ width: `${getPhaseProgress(phase)}%` }"></div>
+              <div class="bar-content">
+                <span class="bar-name">{{ phase.title }}</span>
+                <span class="bar-pct">{{ getPhaseProgress(phase) }}%</span>
+              </div>
+              <div class="milestone-diamond" title="Target Milestone Checkpoint">◆</div>
             </div>
           </div>
         </div>
@@ -1734,5 +2163,563 @@ function selectPhaseMobile(phaseId: string) {
     padding: 8px 14px;
     font-size: 13px;
   }
+}
+
+/* --- View Mode Switcher Pill Group --- */
+.view-mode-pill-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  padding: 2px;
+  margin-left: 14px;
+}
+
+.mode-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mode-pill-btn:hover {
+  color: #f59e0b;
+}
+
+.mode-pill-btn.active {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+}
+
+/* Competitor Benchmark Button */
+.btn-competitor-benchmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.08) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-competitor-benchmark:hover {
+  background: rgba(245, 158, 11, 0.28);
+  border-color: #fbbf24;
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+}
+
+.benchmark-spark {
+  color: #f59e0b;
+  font-size: 13px;
+}
+
+/* Executive HUD Strip */
+.roadmap-hud-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: rgba(18, 14, 9, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+.hud-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.hud-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+.hud-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.hud-val.green { color: #34d399; }
+.hud-val.amber { color: #fbbf24; }
+.hud-val.blue { color: #60a5fa; }
+
+.hud-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.velocity-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.velocity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hud-val-bold {
+  font-size: 11px;
+  font-weight: 800;
+  color: #34d399;
+}
+
+.hud-progress-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.hud-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #10b981);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.hud-spacer {
+  flex: 1;
+}
+
+.hud-security-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* --- Horizon Matrix (Now / Next / Later / Shipped) --- */
+.roadmap-horizons-container {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
+}
+
+.horizons-board-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(280px, 1fr));
+  gap: 16px;
+  width: 100%;
+  min-height: 100%;
+}
+
+.horizon-column {
+  background: rgba(14, 11, 7, 0.7);
+  border: 1px solid rgba(245, 158, 11, 0.16);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.horizon-col-header {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.header-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot-now { background: #34d399; box-shadow: 0 0 8px #34d399; }
+.dot-next { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+.dot-later { background: #9ca3af; }
+.dot-shipped { background: #60a5fa; box-shadow: 0 0 8px #60a5fa; }
+
+.col-title-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.col-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #f3f4f6;
+}
+
+.col-subtitle {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.col-count-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.badge-now { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+.badge-next { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+.badge-later { background: rgba(156, 163, 175, 0.15); color: #d1d5db; border: 1px solid rgba(156, 163, 175, 0.3); }
+.badge-shipped { background: rgba(96, 165, 250, 0.15); color: #93c5fd; border: 1px solid rgba(96, 165, 250, 0.3); }
+
+.horizon-cards-list {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.horizon-empty-state {
+  padding: 30px 14px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.5;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.horizon-phase-card {
+  background: rgba(20, 16, 10, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.horizon-phase-card:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-phase-num {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fbbf24;
+}
+
+.card-status-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.pill-now { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+.pill-next { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.pill-later { background: rgba(156, 163, 175, 0.15); color: #d1d5db; }
+.pill-shipped { background: rgba(96, 165, 250, 0.15); color: #93c5fd; }
+
+.card-phase-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f9fafb;
+}
+
+.card-phase-desc {
+  margin: 0;
+  font-size: 11.5px;
+  color: #9ca3af;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.card-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.card-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.fill-now { background: #34d399; }
+.fill-next { background: #fbbf24; }
+.fill-later { background: #9ca3af; }
+.fill-shipped { background: #60a5fa; }
+
+.card-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: #9ca3af;
+}
+
+.card-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.btn-horizon-shift {
+  padding: 4px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-horizon-shift:hover {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.btn-horizon-open {
+  padding: 4px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #9ca3af;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-horizon-open:hover {
+  color: #fbbf24;
+}
+
+/* --- Chronology Gantt Timeline --- */
+.roadmap-gantt-container {
+  flex: 1;
+  background: rgba(12, 10, 6, 0.8);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.gantt-header-row {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gantt-phase-col-header {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gantt-timeline-quarters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.quarter-col {
+  padding: 12px 14px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fbbf24;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+
+.gantt-swimlanes-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.gantt-swimlane-row {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  min-height: 52px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.gantt-swimlane-row:hover {
+  background: rgba(245, 158, 11, 0.04);
+}
+
+.gantt-swimlane-row.active {
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.swimlane-label-col {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.swimlane-phase-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fbbf24;
+  white-space: nowrap;
+}
+
+.swimlane-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #f3f4f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.swimlane-status-pill {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.swimlane-track-col {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.grid-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.line-1 { left: 25%; }
+.line-2 { left: 50%; }
+.line-3 { left: 75%; }
+
+.gantt-bar {
+  position: absolute;
+  height: 28px;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.gantt-bar:hover {
+  border-color: #fbbf24;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+
+.bar-progress-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.45), rgba(16, 185, 129, 0.45));
+  transition: width 0.3s ease;
+}
+
+.bar-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fef3c7;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.milestone-diamond {
+  position: absolute;
+  right: -5px;
+  color: #fbbf24;
+  font-size: 12px;
+  text-shadow: 0 0 6px rgba(245, 158, 11, 0.8);
 }
 </style>

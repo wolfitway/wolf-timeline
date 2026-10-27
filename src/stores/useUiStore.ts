@@ -17,12 +17,21 @@ export const useUiStore = defineStore("ui", () => {
   const showLicenseModal = ref<boolean>(false);
   const showAiExplorationModal = ref<boolean>(false);
   const activeAiExplorationId = ref<string | null>(null);
+  const showCompetitorAuditModal = ref<boolean>(false);
   const showLightbox = ref<boolean>(false);
   const lightboxImageUrl = ref<string>("");
   const lightboxCaption = ref<string>("");
   const lightboxTags = ref<string[]>([]);
   const lightboxGallery = ref<Array<{ url: string; caption?: string; tags?: string[] }>>([]);
   const lightboxIndex = ref<number>(0);
+
+  function openCompetitorAuditModal() {
+    showCompetitorAuditModal.value = true;
+  }
+
+  function closeCompetitorAuditModal() {
+    showCompetitorAuditModal.value = false;
+  }
 
   function openAiExplorationModal(expId: string | null = null) {
     activeAiExplorationId.value = expId;
@@ -111,6 +120,9 @@ export const useUiStore = defineStore("ui", () => {
     activeAiExplorationId,
     openAiExplorationModal,
     closeAiExplorationModal,
+    showCompetitorAuditModal,
+    openCompetitorAuditModal,
+    closeCompetitorAuditModal,
     showLightbox,
     lightboxImageUrl,
     lightboxCaption,
