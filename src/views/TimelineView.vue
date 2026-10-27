@@ -98,7 +98,7 @@ const showMoodGallery = ref(true);
 
 // Mobile responsive master-detail toggle state
 const mobileShowDetail = ref(false);
-const activeDetailSection = ref<"all" | "notes" | "timeline" | "ai" | "docs" | "mood">(
+const activeDetailSection = ref<"all" | "notes" | "docs" | "mood">(
   typeof window !== "undefined" && window.innerWidth <= 768 ? "notes" : "all"
 );
 
@@ -1522,22 +1522,6 @@ function toggleMoodTag(tag: string) {
           <button
             type="button"
             class="dock-tab-btn"
-            :class="{ active: activeDetailSection === 'timeline' }"
-            @click="activeDetailSection = 'timeline'"
-          >
-            <WolfIcon name="clock" :size="12" /> <span>Timeline ({{ filteredEvents.length }})</span>
-          </button>
-          <button
-            type="button"
-            class="dock-tab-btn"
-            :class="{ active: activeDetailSection === 'ai' }"
-            @click="activeDetailSection = 'ai'"
-          >
-            <WolfIcon name="cpu" :size="12" /> <span>AI Debates ({{ filteredAiExplorations.length }})</span>
-          </button>
-          <button
-            type="button"
-            class="dock-tab-btn"
             :class="{ active: activeDetailSection === 'mood' }"
             @click="activeDetailSection = 'mood'"
           >
@@ -1634,241 +1618,6 @@ function toggleMoodTag(tag: string) {
           </div>
         </div>
 
-        <!-- 1. Timeline Section with Drag & Drop Reordering and Full CRUD -->
-        <div
-          v-show="activeDetailSection === 'all' || activeDetailSection === 'timeline'"
-          class="detail-section timeline-section"
-        >
-          <div class="section-title-row">
-            <h2 class="section-title">Timeline ({{ filteredEvents.length }})</h2>
-            <span class="section-reorder-hint">Drag items to reorder</span>
-          </div>
-
-          <div class="vertical-timeline-tree">
-            <div
-              v-for="ev in filteredEvents"
-              :key="ev.id"
-              class="timeline-node-row"
-              :class="{
-                'is-dragging': draggedEventId === ev.id,
-                'drag-over-item': dragOverEventId === ev.id && draggedEventId !== ev.id
-              }"
-              draggable="true"
-              @dragstart="onEventDragStart($event, ev.id)"
-              @dragover="onEventDragOver($event, ev.id)"
-              @dragleave="onEventDragLeave(ev.id)"
-              @drop="onEventDrop($event, ev.id)"
-              @dragend="onEventDragEnd"
-            >
-              <div class="timeline-axis">
-                <div class="timeline-dot" title="Drag to reorder"></div>
-                <div class="timeline-connector-line"></div>
-              </div>
-              <div class="timeline-content">
-                <div class="timeline-header-line">
-                  <div class="event-title-wrap">
-                    <span class="card-drag-handle sm" title="Drag to reorder">⋮</span>
-                    <span class="timeline-event-title">{{ ev.title }}</span>
-                    <span v-if="ev.author" class="timeline-event-author">by {{ ev.author }}</span>
-                  </div>
-                  <div class="timeline-item-actions">
-                    <span class="timeline-event-time">{{ ev.time }}</span>
-                    <button type="button" class="btn-item-icon" @click="startEditEvent(ev)" title="Edit Event"><WolfIcon name="write" :size="12" /></button>
-                    <button type="button" class="btn-item-icon danger" @click="handleDeleteEvent(ev.id)" title="Delete Event"><WolfIcon name="trash" :size="12" /></button>
-                  </div>
-                </div>
-                <p class="timeline-event-desc">{{ ev.desc }}</p>
-                <div v-if="ev.tags?.length" class="inline-tags-row">
-                  <span
-                    v-for="t in ev.tags"
-                    :key="t"
-                    class="resource-tag-pill clickable"
-                    @click="toggleDetailTag(t)"
-                  >
-                    #{{ t }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="filteredEvents.length === 0" class="resource-empty-hint">
-              <span>No timeline events match the active tag filter.</span>
-            </div>
-          </div>
-
-          <!-- Edit Event Inline Modal/Card -->
-          <div v-if="editingEventId" class="inline-adder-card edit-mode">
-            <div class="adder-header">
-              <span class="card-edit-badge">Editing Timeline Event</span>
-              <button type="button" class="btn-item-icon" @click="editingEventId = null">✕</button>
-            </div>
-            <input v-model="editEventTitle" type="text" class="adder-input" placeholder="Event title..." />
-            <div class="adder-input-row">
-              <input v-model="editEventTime" type="text" class="adder-input" placeholder="Time (e.g. 10m ago)..." />
-              <input v-model="editEventAuthor" type="text" class="adder-input" placeholder="Author (e.g. You)..." />
-            </div>
-            <textarea v-model="editEventDesc" class="adder-textarea" placeholder="Event details..."></textarea>
-            <input v-model="editEventTags" type="text" class="adder-input" placeholder="Tags (comma-separated, e.g. canary, k8s)..." />
-            <div class="adder-actions">
-              <button type="button" class="btn-adder-cancel" @click="editingEventId = null">Cancel</button>
-              <button type="button" class="btn-adder-save" @click="handleSaveEditEvent">Update Event</button>
-            </div>
-          </div>
-
-          <!-- Add Event Trigger -->
-          <div class="add-event-wrap">
-            <button
-              v-if="!showAddEvent && !editingEventId"
-              type="button"
-              class="btn-add-timeline-link"
-              @click="showAddEvent = true"
-            >
-              <span class="plus-icon">+</span>
-              <span>Add Timeline Event</span>
-            </button>
-
-            <!-- Inline Add Event Form -->
-            <div v-else-if="showAddEvent" class="inline-adder-card">
-              <div class="adder-header">
-                <span class="card-edit-badge">New Timeline Event</span>
-                <button type="button" class="btn-item-icon" @click="showAddEvent = false">✕</button>
-              </div>
-              <input
-                v-model="newEventTitle"
-                type="text"
-                class="adder-input"
-                placeholder="Event title (e.g. Canary Deploy Initiated)..."
-                @keydown.enter="handleAddEvent"
-              />
-              <div class="adder-input-row">
-                <input v-model="newEventTime" type="text" class="adder-input" placeholder="Time (default: Just now)" />
-                <input v-model="newEventAuthor" type="text" class="adder-input" placeholder="Author (default: You)" />
-              </div>
-              <textarea
-                v-model="newEventDesc"
-                class="adder-textarea"
-                placeholder="Event details & summary..."
-              ></textarea>
-              <input
-                v-model="newEventTags"
-                type="text"
-                class="adder-input"
-                placeholder="Tags (comma-separated, e.g. capture, devops)..."
-                @keydown.enter="handleAddEvent"
-              />
-              <div class="adder-actions">
-                <button type="button" class="btn-adder-cancel" @click="showAddEvent = false">Cancel</button>
-                <button type="button" class="btn-adder-save" @click="handleAddEvent">Save Event</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. Collapsible AI Explorations Section with Decision Studio & Multi-Model Debates -->
-        <div
-          v-show="activeDetailSection === 'all' || activeDetailSection === 'ai'"
-          class="collapsible-section"
-        >
-          <button
-            type="button"
-            class="collapsible-header"
-            @click="showAiExplorations = !showAiExplorations"
-          >
-            <div class="collapsible-left">
-              <span class="chevron-icon">{{ showAiExplorations ? "⌃" : "⌄" }}</span>
-              <span class="collapsible-title">AI Explorations &amp; Decision Debates</span>
-            </div>
-            <div class="header-right-badges">
-              <button
-                type="button"
-                class="btn-open-studio-header"
-                @click.stop="uiStore.openAiExplorationModal()"
-                title="Launch full AI debate studio"
-              >
-                <span class="flex-inline-btn"><WolfIcon name="cpu" :size="12" /> <span>Open Debate Studio</span></span>
-              </button>
-              <span class="collapsible-count-pill">{{ filteredAiExplorations.length }}</span>
-            </div>
-          </button>
-
-          <div v-if="showAiExplorations" class="collapsible-content">
-            <div v-if="filteredAiExplorations.length" class="ai-cards-stack">
-              <div
-                v-for="ai in filteredAiExplorations"
-                :key="ai.id"
-                class="ai-exploration-banner"
-                :class="{
-                  'is-dragging': draggedAiId === ai.id,
-                  'drag-over-item': dragOverAiId === ai.id && draggedAiId !== ai.id
-                }"
-                draggable="true"
-                @dragstart="onAiDragStart($event, ai.id)"
-                @dragover="onAiDragOver($event, ai.id)"
-                @dragleave="onAiDragLeave(ai.id)"
-                @drop="onAiDrop($event, ai.id)"
-                @dragend="onAiDragEnd"
-                @click="uiStore.openAiExplorationModal(ai.id)"
-              >
-                <div class="ai-banner-left">
-                  <span class="ai-drag-dots" title="Drag to reorder" @click.stop>⋮⋮</span>
-                  <div class="ai-banner-info">
-                    <div class="ai-banner-title-row">
-                      <span class="ai-banner-title">{{ ai.title }}</span>
-                      <span class="ai-banner-model-pill">{{ ai.model }}</span>
-                      <span v-if="ai.debate_turns?.length" class="ai-debates-count-pill">
-                        <WolfIcon name="cpu" :size="11" /> <span>{{ ai.debate_turns.length }} Model Debates</span>
-                      </span>
-                      <span class="ai-banner-meta">• {{ ai.date }}</span>
-                    </div>
-
-                    <p v-if="ai.decision_outcome || ai.rationale" class="ai-inline-rationale">
-                      <strong class="rationale-lead">Consensus: </strong>{{ ai.decision_outcome || ai.rationale }}
-                    </p>
-
-                    <div v-if="ai.key_takeaways?.length" class="ai-mini-takeaways">
-                      <span v-for="(k, kidx) in ai.key_takeaways.slice(0, 2)" :key="kidx" class="mini-takeaway-item">
-                        ✓ {{ k }}
-                      </span>
-                    </div>
-
-                    <div v-if="ai.tags?.length" class="inline-tags-row">
-                      <span
-                        v-for="t in ai.tags"
-                        :key="t"
-                        class="resource-tag-pill clickable"
-                        @click.stop="toggleDetailTag(t)"
-                      >
-                        #{{ t }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="ai-banner-actions" @click.stop>
-                  <a v-if="ai.url" :href="ai.url" target="_blank" rel="noopener noreferrer" class="badge-link-pill" title="Open thread URL">
-                    LINK ↗
-                  </a>
-                  <button type="button" class="btn-item-icon" @click="uiStore.openAiExplorationModal(ai.id)" title="Open Full Debate Studio">
-                    <WolfIcon name="write" :size="12" />
-                  </button>
-                  <button type="button" class="btn-item-icon danger" @click="handleDeleteAi(ai.id)" title="Delete Record">✕</button>
-                </div>
-              </div>
-            </div>
-
-            <div v-else class="resource-empty-hint">
-              <span>No AI explorations recorded. Click "+ Launch Decision & Debate Studio" to start.</span>
-            </div>
-
-            <button
-              type="button"
-              class="btn-inline-add"
-              @click="uiStore.openAiExplorationModal()"
-            >
-              + Launch Full AI Decision &amp; Debate Studio
-            </button>
-          </div>
-        </div>
 
         <!-- 3. Sovereign Bookmarks Hub Quick-Link (Dedicated Docs & Discovery) -->
         <div
@@ -1903,13 +1652,14 @@ function toggleMoodTag(tag: string) {
         <div
           v-show="activeDetailSection === 'all' || activeDetailSection === 'mood'"
           class="collapsible-section mood-gallery-section"
-          :class="{ 'gallery-drop-active': isGalleryDraggingFiles }"
+          :class="{ 'gallery-drop-active': isGalleryDraggingFiles, 'dedicated-view': activeDetailSection === 'mood' }"
           @dragover.prevent="isGalleryDraggingFiles = true"
           @dragleave.prevent="isGalleryDraggingFiles = false"
           @drop.prevent="onGalleryDropFiles"
         >
-          <div class="collapsible-header-row">
+          <div class="collapsible-header-row" :class="{ 'dedicated-header-row': activeDetailSection === 'mood' }">
             <button
+              v-if="activeDetailSection === 'all'"
               type="button"
               class="collapsible-header"
               @click="showMoodGallery = !showMoodGallery"
@@ -1922,7 +1672,7 @@ function toggleMoodTag(tag: string) {
             </button>
 
             <!-- Gallery Controls Toolbar -->
-            <div v-if="showMoodGallery" class="gallery-controls-toolbar">
+            <div v-if="activeDetailSection === 'mood' || showMoodGallery" class="gallery-controls-toolbar">
               <div class="grid-layout-buttons">
                 <button
                   type="button"
@@ -1999,7 +1749,7 @@ function toggleMoodTag(tag: string) {
             </div>
           </div>
 
-          <div v-if="showMoodGallery" class="collapsible-content">
+          <div v-if="activeDetailSection === 'mood' || showMoodGallery" class="collapsible-content">
             <!-- Sovereign Media Storage Info Strip -->
             <div class="sovereign-storage-strip">
               <div class="storage-strip-left">
@@ -2214,6 +1964,11 @@ function toggleMoodTag(tag: string) {
           <button type="button" class="btn-panel-action" @click="handleOpenInStudio">
             <WolfIcon name="studio" :size="13" class="action-icon" />
             <span>Open in Studio</span>
+          </button>
+
+          <button type="button" class="btn-panel-action" @click="uiStore.openAiExplorationModal()" title="Launch AI Multi-Model Decision & Debate Studio">
+            <WolfIcon name="cpu" :size="13" class="action-icon" />
+            <span>AI Debate</span>
           </button>
         </div>
       </div>
@@ -3296,6 +3051,27 @@ function toggleMoodTag(tag: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.section-title-row.compact-mode {
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.section-title-row.dedicated-action-row {
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 2px 0;
+}
+
+.collapsible-section.dedicated-view {
+  border-top: none;
+  padding-top: 6px;
+}
+
+.collapsible-header-row.dedicated-header-row {
+  justify-content: flex-end;
   margin-bottom: 8px;
 }
 
