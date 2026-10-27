@@ -354,11 +354,13 @@ function toggleTheme() {
       <button
         type="button"
         class="security-pill-badge"
+        :class="{ unlocked: vaultStore.isUnlocked }"
         @click="handleSecurityBadgeClick"
-        title="Local-First Hardware Cryptography Engine"
+        :title="vaultStore.isUnlocked ? 'Sovereign Vault DB: AES-256 Active & Unlocked' : 'Sovereign Vault DB: Local-First AES-256 (Locked)'"
       >
-        <WolfIcon name="lock" :size="13" />
-        <span>Local-First AES-256</span>
+        <span class="vault-db-indicator-dot"></span>
+        <WolfIcon :name="vaultStore.isUnlocked ? 'shield-check' : 'lock'" :size="13" />
+        <span>{{ vaultStore.isUnlocked ? 'Vault DB Active' : 'Vault DB AES-256' }}</span>
       </button>
     </div>
   </header>
@@ -644,7 +646,7 @@ function toggleTheme() {
   border-radius: 8px;
   padding: 6px 14px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-gray, #94a3b8);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -654,6 +656,20 @@ function toggleTheme() {
   border-color: var(--border-selected, rgba(16, 185, 129, 0.4));
   color: var(--text-primary, #e2e8f0);
   background: var(--bg-card-hover, #092017);
+}
+
+.security-pill-badge.unlocked {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: var(--emerald-bright, #34d399);
+}
+
+.vault-db-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
 }
 
 .lock-icon {

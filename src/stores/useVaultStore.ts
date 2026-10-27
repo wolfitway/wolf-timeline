@@ -15,6 +15,13 @@ import {
   tauriGetVaultMeta,
   tauriSetVaultMeta,
 } from "@/services/tauriIpc";
+import {
+  dbGetAllVaultSecrets,
+  dbSaveVaultSecret,
+  dbDeleteVaultSecret,
+  dbGetMeta,
+  dbSetMeta,
+} from "@/services/vaultDatabase";
 
 const LOCAL_SECRETS_KEY = "wolf_vault_secrets_v2";
 const BACKUP_SECRETS_KEY = "wolf_vault_secrets_backup";
@@ -61,11 +68,14 @@ export const useVaultStore = defineStore("vault", () => {
   async function getMeta(key: string): Promise<string | null> {
     const tauriVal = await tauriGetVaultMeta(key);
     if (tauriVal !== null) return tauriVal;
+    const idbVal = await dbGetMeta(key);
+    if (idbVal !== null) return idbVal;
     return localStorage.getItem("wolf_vault_meta_" + key);
   }
 
   async function setMeta(key: string, val: string): Promise<void> {
     await tauriSetVaultMeta(key, val);
+    await dbSetMeta(key, val);
     try {
       localStorage.setItem("wolf_vault_meta_" + key, val);
     } catch {}
@@ -148,23 +158,29 @@ export const useVaultStore = defineStore("vault", () => {
         if (rawDbSecrets && rawDbSecrets.length > 0) {
           encryptedRows = rawDbSecrets;
         } else {
-          let localRaw = localStorage.getItem(LOCAL_SECRETS_KEY);
-          if (!localRaw) {
-            localRaw = localStorage.getItem(BACKUP_SECRETS_KEY);
-          }
-          if (!localRaw) {
-            for (const lk of LEGACY_SECRETS_KEYS) {
-              const leg = localStorage.getItem(lk);
-              if (leg) {
-                localRaw = leg;
-                break;
+          // Check Sovereign Vault IndexedDB
+          const idbSecrets = await dbGetAllVaultSecrets();
+          if (idbSecrets && idbSecrets.length > 0) {
+            encryptedRows = idbSecrets;
+          } else {
+            let localRaw = localStorage.getItem(LOCAL_SECRETS_KEY);
+            if (!localRaw) {
+              localRaw = localStorage.getItem(BACKUP_SECRETS_KEY);
+            }
+            if (!localRaw) {
+              for (const lk of LEGACY_SECRETS_KEYS) {
+                const leg = localStorage.getItem(lk);
+                if (leg) {
+                  localRaw = leg;
+                  break;
+                }
               }
             }
-          }
-          if (localRaw) {
-            try {
-              encryptedRows = JSON.parse(localRaw);
-            } catch {}
+            if (localRaw) {
+              try {
+                encryptedRows = JSON.parse(localRaw);
+              } catch {}
+            }
           }
         }
 
@@ -241,6 +257,9 @@ export const useVaultStore = defineStore("vault", () => {
     // Save to SQLite
     await tauriSaveVaultSecret(secretRow);
 
+    // Save to Sovereign IndexedDB Vault DB
+    await dbSaveVaultSecret(secretRow);
+
     // Save to LocalStorage fallback
     try {
       let list: VaultSecretItem[] = [];
@@ -275,6 +294,7 @@ export const useVaultStore = defineStore("vault", () => {
   async function deleteSecret(id: string) {
     decryptedSecrets.value = decryptedSecrets.value.filter((s) => s.id !== id);
     await tauriDeleteVaultSecret(id);
+    await dbDeleteVaultSecret(id);
 
     try {
       let list: VaultSecretItem[] = [];

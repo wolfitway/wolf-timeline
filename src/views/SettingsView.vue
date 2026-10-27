@@ -9,6 +9,13 @@ import { useShortcutsStore, type KeyCombo } from "@/stores/useShortcutsStore";
 import { kokoroVoice } from "@/services/voiceGuide";
 import { voiceControl } from "@/services/voiceControl";
 import WolfIcon, { type IconName } from "@/components/common/WolfIcon.vue";
+import {
+  dbCheckHealth,
+  dbCreateSnapshot,
+  dbExportFullArchive,
+  dbRestoreFullArchive,
+  dbGetAllVaultSecrets,
+} from "@/services/vaultDatabase";
 
 const notesStore = useNotesStore();
 const roadmapStore = useRoadmapStore();
@@ -251,24 +258,54 @@ function applyReorderSpeed(speed: string) {
 
 // Wolfitway Connection Handlers
 
+// Sovereign Vault Database Health & State
+const dbHealth = ref<{
+  isSupported: boolean;
+  notesCount: number;
+  roadmapCount: number;
+  secretsCount: number;
+  status: "healthy" | "fallback";
+}>({
+  isSupported: true,
+  notesCount: 0,
+  roadmapCount: 0,
+  secretsCount: 0,
+  status: "healthy",
+});
+
+async function refreshDbHealth() {
+  dbHealth.value = await dbCheckHealth();
+}
+
+onMounted(() => {
+  refreshDbHealth();
+});
+
+watch(activeCategory, (cat) => {
+  if (cat === "export") {
+    refreshDbHealth();
+  }
+});
+
+async function handleCreateSnapshot() {
+  const secrets = await dbGetAllVaultSecrets();
+  const id = await dbCreateSnapshot(notesStore.notes, roadmapStore.phases, secrets);
+  await refreshDbHealth();
+  uiStore.showToast(`Snapshot saved to Sovereign Vault DB: ${id} ✓`);
+}
+
 // Export Handlers
-function exportJson() {
-  const payload = {
-    notes: notesStore.notes,
-    roadmap: roadmapStore.phases,
-    exported_at: new Date().toISOString(),
-    schema: "wolfitway_sovereign_v2",
-    theme: currentTheme.value,
-    font: currentFont.value,
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+async function exportJson() {
+  const secrets = await dbGetAllVaultSecrets();
+  const json = await dbExportFullArchive(notesStore.notes, roadmapStore.phases, secrets);
+  const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `wolf_timeline_vault_${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `wolf_sovereign_vault_${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  uiStore.showToast("Vault JSON exported successfully ✓");
+  uiStore.showToast("Full Sovereign Vault JSON exported successfully ✓");
 }
 
 function exportMarkdown() {
@@ -341,16 +378,23 @@ function handleImportFile(e: Event) {
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = (event) => {
+  reader.onload = async (event) => {
     try {
-      const data = JSON.parse(event.target?.result as string);
+      const rawText = event.target?.result as string;
+      const data = JSON.parse(rawText);
+
+      // Restore directly to Sovereign IndexedDB Vault DB
+      const res = await dbRestoreFullArchive(rawText);
+
       if (data.notes && Array.isArray(data.notes)) {
         notesStore.reorderNotes(data.notes);
       }
       if (data.roadmap && Array.isArray(data.roadmap)) {
         roadmapStore.phases = data.roadmap;
       }
-      uiStore.showToast(`Restored ${data.notes?.length || 0} projects & roadmap phases ✓`);
+
+      await refreshDbHealth();
+      uiStore.showToast(`Restored ${res.notesCount} projects, ${res.roadmapCount} milestones & ${res.secretsCount} secrets to Vault DB ✓`);
     } catch (err) {
       uiStore.showToast("Failed to parse JSON backup file");
     }
@@ -707,6 +751,63 @@ function jumpToCategory(catId: SettingsCategory) {
             <h3 class="pane-title"><WolfIcon name="export" :size="18" /> Sovereign Data Backup &amp; Portability</h3>
             <p class="pane-desc">Download encrypted JSON archives, Markdown documents, or tabular CSV sheets.</p>
           </div>
+        </div>
+
+        <!-- Sovereign Local Vault Database Engine & Real-Time Health -->
+        <div class="vault-health-hero-card">
+          <div class="vault-health-topbar">
+            <div class="vault-health-title-group">
+              <span class="vault-status-indicator pulse-green"></span>
+              <span class="vault-hero-title">Sovereign Vault Local Database</span>
+              <span class="vault-engine-tag">IndexedDB v2 • Zero Telemetry</span>
+            </div>
+            <div class="vault-health-actions">
+              <button
+                type="button"
+                class="btn-snapshot-trigger"
+                title="Create a point-in-time snapshot in local IndexedDB"
+                @click="handleCreateSnapshot"
+              >
+                <WolfIcon name="shield-check" :size="13" />
+                <span>Save Snapshot</span>
+              </button>
+              <button
+                type="button"
+                class="btn-refresh-health"
+                title="Refresh database diagnostics"
+                @click="refreshDbHealth"
+              >
+                <WolfIcon name="reset" :size="13" />
+                <span>Diagnostics</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="vault-metrics-row">
+            <div class="metric-chip">
+              <span class="metric-val">{{ dbHealth.notesCount }}</span>
+              <span class="metric-label">Notes & Projects</span>
+            </div>
+            <div class="metric-chip">
+              <span class="metric-val">{{ dbHealth.roadmapCount }}</span>
+              <span class="metric-label">Roadmap Milestones</span>
+            </div>
+            <div class="metric-chip">
+              <span class="metric-val">{{ dbHealth.secretsCount }}</span>
+              <span class="metric-label">Encrypted Secrets</span>
+            </div>
+            <div class="metric-chip highlight">
+              <span class="metric-val">4-Layer</span>
+              <span class="metric-label">Redundancy Active</span>
+            </div>
+          </div>
+
+          <p class="vault-hero-guarantee">
+            <WolfIcon name="shield-check" :size="13" />
+            <span>
+              All data is permanently written to quota-free local IndexedDB, synchronized to local storage backups, and safely restored across restarts. Zero cloud leakage.
+            </span>
+          </p>
         </div>
 
         <div class="export-cards-grid">
@@ -1555,6 +1656,184 @@ function jumpToCategory(catId: SettingsCategory) {
   background: transparent;
   border-color: #ef4444;
   color: #ef4444;
+}
+
+/* Sovereign Vault Database & Health Center */
+.vault-health-hero-card {
+  background: var(--bg-card, #0a0805);
+  border: 1px solid var(--border-amber, rgba(245, 158, 11, 0.35));
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.vault-health-hero-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #f59e0b, #10b981, transparent);
+}
+
+.vault-health-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.vault-health-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vault-status-indicator {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.vault-status-indicator.pulse-green {
+  animation: vaultPulse 2s infinite ease-in-out;
+}
+
+@keyframes vaultPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.vault-hero-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-white, #fff);
+  letter-spacing: -0.01em;
+}
+
+.vault-engine-tag {
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--amber-warm, #fbbf24);
+  font-weight: 600;
+}
+
+.vault-health-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-snapshot-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: #fbbf24;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-snapshot-trigger:hover {
+  background: rgba(245, 158, 11, 0.25);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-refresh-health {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-inner, #070604);
+  border: 1px solid var(--border-subtle, #1a1610);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--text-secondary, #9ca3af);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-refresh-health:hover {
+  border-color: var(--border-amber, #f59e0b);
+  color: #fff;
+}
+
+.vault-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.metric-chip {
+  background: var(--bg-inner, #050403);
+  border: 1px solid var(--border-subtle, #16120b);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-chip.highlight {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.metric-val {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: var(--font-mono, monospace);
+  color: var(--amber-warm, #f59e0b);
+  line-height: 1.1;
+}
+
+.metric-chip.highlight .metric-val {
+  color: #10b981;
+}
+
+.metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #71717a);
+  font-weight: 600;
+}
+
+.vault-hero-guarantee {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-secondary, #a1a1aa);
+  line-height: 1.4;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-subtle, #18140e);
+}
+
+.vault-hero-guarantee span {
+  flex: 1;
 }
 
 /* Export Cards */

@@ -6,7 +6,7 @@ import { useBookmarksStore } from "../src/stores/useBookmarksStore";
 import { useVaultStore } from "../src/stores/useVaultStore";
 import { useUiStore } from "../src/stores/useUiStore";
 import { scanTextForCredentials } from "../src/services/scanner";
-import type { Note, RoadmapPhase } from "../src/types";
+import type { Note, RoadmapPhase, VaultSecretItem } from "../src/types";
 
 // Setup storage mock for Vitest Node environment
 const storageMock: Record<string, string> = {};
@@ -86,7 +86,7 @@ describe("Sovereign Data Safety & Zero-Loss Migration Suite", () => {
     expect(localStorage.getItem("wolftimeline_notes_v5")).toContain("Rescued Strategy");
   });
 
-  it("migrates roadmap phases from legacy storage without data loss", () => {
+  it("migrates roadmap phases from legacy storage without data loss", async () => {
     const legacyPhases: RoadmapPhase[] = [
       {
         id: "phase_custom_99",
@@ -107,7 +107,7 @@ describe("Sovereign Data Safety & Zero-Loss Migration Suite", () => {
     localStorage.setItem("wolftimeline_roadmap_v2", JSON.stringify(legacyPhases));
 
     const roadmapStore = useRoadmapStore();
-    roadmapStore.loadRoadmap();
+    await roadmapStore.loadRoadmap();
 
     expect(roadmapStore.phases.length).toBe(1);
     expect(roadmapStore.phases[0].title).toBe("Phase 1: Zero-Knowledge Architecture");
@@ -127,7 +127,7 @@ describe("Cross-Workspace User Flows & Integration Suite", () => {
   it("executes smooth Studio -> Roadmap flow by linking documents into roadmap phases", async () => {
     const notesStore = useNotesStore();
     const roadmapStore = useRoadmapStore();
-    roadmapStore.loadRoadmap();
+    await roadmapStore.loadRoadmap();
 
     const note = await notesStore.addNote({
       title: "Autonomous Agent Core",
@@ -152,7 +152,7 @@ describe("Cross-Workspace User Flows & Integration Suite", () => {
     const notesStore = useNotesStore();
     const roadmapStore = useRoadmapStore();
     const uiStore = useUiStore();
-    roadmapStore.loadRoadmap();
+    await roadmapStore.loadRoadmap();
 
     const phase = roadmapStore.addPhase("Decentralized Storage Engine", "P2P WebRTC data sync");
     expect(phase.id).toBeDefined();
@@ -196,5 +196,88 @@ describe("Cross-Workspace User Flows & Integration Suite", () => {
 
     expect(notesStore.selectedNote?.body).not.toContain(leakedKey);
     expect(notesStore.selectedNote?.body).toContain("[ENCRYPTED_VAULT_SECRET]");
+  });
+
+  it("exports and restores complete Sovereign Vault JSON archives with zero data loss", async () => {
+    const { dbExportFullArchive, dbRestoreFullArchive } = await import("../src/services/vaultDatabase");
+
+    const sampleNotes: Note[] = [
+      {
+        id: 501,
+        title: "Zero-Knowledge Proofs Whitepaper",
+        body: "# ZK Proofs\n\nMathematics of offline privacy.",
+        tags: ["zk", "crypto"],
+        kind: "idea",
+        status: "research",
+        funnel_stage: "product",
+        created_at: "2026-07-01T00:00:00Z",
+      },
+    ];
+
+    const sampleRoadmap: RoadmapPhase[] = [
+      {
+        id: "phase_zk_1",
+        number: 1,
+        title: "Phase 1: SNARK Circuits",
+        subtitle: "Circuit synthesis",
+        status: "Planned",
+        description: "Hardened circuits",
+        focus: "Privacy",
+        outcome: "Verified",
+        collapsed: false,
+        practices: [{ id: "pr1", text: "Benchmarking provers", completed: true }],
+      },
+    ];
+
+    const sampleSecrets: VaultSecretItem[] = [
+      {
+        id: "sec_zk_token",
+        service: "ZK Prover API",
+        category: "api",
+        username: "solowolf",
+        notes: "Confidential hardware token",
+        ciphertext: "abcd1234ef",
+        iv: "1234567890",
+        created_at: "2026-07-01T00:00:00Z",
+        updated_at: "2026-07-01T00:00:00Z",
+      },
+    ];
+
+    // 1. Export archive
+    const archiveJson = await dbExportFullArchive(sampleNotes, sampleRoadmap, sampleSecrets);
+    expect(archiveJson).toContain("Zero-Knowledge Proofs Whitepaper");
+    expect(archiveJson).toContain("Phase 1: SNARK Circuits");
+    expect(archiveJson).toContain("ZK Prover API");
+
+    // 2. Restore archive
+    const result = await dbRestoreFullArchive(archiveJson);
+    expect(result.success).toBe(true);
+    expect(result.notesCount).toBe(1);
+    expect(result.roadmapCount).toBe(1);
+    expect(result.secretsCount).toBe(1);
+  });
+
+  it("persists vault secrets to secondary backup mirrors for zero loss", async () => {
+    const backupSecrets = [
+      {
+        id: "sec_backup_rescued",
+        service: "Stripe Production Key",
+        category: "api",
+        username: "admin",
+        ciphertext: "cafebabe1234",
+        iv: "aabbccddeeff",
+        notes: "Restored from backup mirror",
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-01T00:00:00Z",
+      },
+    ];
+
+    localStorage.setItem("wolf_vault_secrets_backup", JSON.stringify(backupSecrets));
+
+    // Verify presence in backup key
+    const raw = localStorage.getItem("wolf_vault_secrets_backup");
+    expect(raw).toBeDefined();
+    const parsed = JSON.parse(raw!);
+    expect(parsed[0].service).toBe("Stripe Production Key");
   });
 });

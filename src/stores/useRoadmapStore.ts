@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { RoadmapPhase, KeyPractice } from "@/types";
 import { INITIAL_ROADMAP } from "@/services/seedData";
+import { dbGetRoadmap, dbSaveRoadmap } from "@/services/vaultDatabase";
 
 const STORAGE_KEY = "wolftimeline_roadmap_v3";
 const BACKUP_STORAGE_KEY = "wolftimeline_roadmap_backup";
@@ -36,6 +37,10 @@ export const useRoadmapStore = defineStore("roadmap", () => {
 
   // Actions
   function saveToLocal() {
+    // 1. Persist directly to Sovereign IndexedDB Vault DB
+    dbSaveRoadmap(phases.value).catch((e) => console.warn("Vault DB save roadmap error:", e));
+
+    // 2. Persist to LocalStorage primary and backup mirror
     try {
       const serialized = JSON.stringify(phases.value);
       localStorage.setItem(STORAGE_KEY, serialized);
@@ -45,17 +50,32 @@ export const useRoadmapStore = defineStore("roadmap", () => {
     }
   }
 
-  function loadRoadmap() {
+  async function loadRoadmap() {
     let loaded: RoadmapPhase[] | null = null;
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          loaded = parsed;
+
+    // 1. First, check Sovereign IndexedDB Vault DB (permanent storage)
+    try {
+      const idbPhases = await dbGetRoadmap();
+      if (Array.isArray(idbPhases) && idbPhases.length > 0) {
+        loaded = idbPhases;
+        console.info(`Loaded ${idbPhases.length} roadmap phases from Sovereign Vault DB ✓`);
+      }
+    } catch (e) {
+      console.warn("Could not read roadmap from Sovereign Vault DB:", e);
+    }
+
+    // 2. If IDB empty, check primary localStorage
+    if (!loaded) {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            loaded = parsed;
+          }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
       }
     }
 

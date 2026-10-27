@@ -800,6 +800,15 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
               <WolfIcon name="roadmap" :size="13" />
               <span>Roadmap</span>
             </button>
+            <button
+              type="button"
+              class="btn-action-icon scan"
+              title="Scan Document for Leaked Secrets & Redact into Vault"
+              @click="uiStore.showSecretScanner = true"
+            >
+              <WolfIcon name="shield-check" :size="13" />
+              <span>Scan</span>
+            </button>
             <button type="button" class="btn-action-icon delete" title="Delete Document" @click="handleDeleteCurrentNote">
               <WolfIcon name="trash" :size="13" />
             </button>
@@ -1561,6 +1570,12 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
   background: #450a0a;
   border-color: #ef4444;
   color: #fca5a5;
+}
+
+.btn-action-icon.scan:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+  color: #fbbf24;
 }
 
 .btn-focus-trigger {

@@ -10,6 +10,13 @@ import {
   getPhotoFromStorage,
   listPhotosForNote,
 } from "@/services/imageStorage";
+import {
+  dbGetAllNotes,
+  dbSaveAllNotes,
+  dbDeleteNote,
+  dbCreateSnapshot,
+  dbExportFullArchive,
+} from "@/services/vaultDatabase";
 
 const STORAGE_KEY = "wolftimeline_notes_v5";
 const BACKUP_STORAGE_KEY = "wolftimeline_notes_backup";
@@ -71,6 +78,10 @@ export const useNotesStore = defineStore("notes", () => {
 
   // Actions
   function saveToLocal() {
+    // 1. Persist directly to Sovereign IndexedDB Vault DB
+    dbSaveAllNotes(notes.value).catch((e) => console.warn("Vault DB save note error:", e));
+
+    // 2. Persist to LocalStorage primary and backup mirror
     try {
       const serialized = JSON.stringify(notes.value);
       localStorage.setItem(STORAGE_KEY, serialized);
@@ -97,21 +108,35 @@ export const useNotesStore = defineStore("notes", () => {
   }
 
   async function loadNotes() {
-    // 1. First, check active storage key
     let loadedData: Note[] | null = null;
-    const localRaw = localStorage.getItem(STORAGE_KEY);
-    if (localRaw) {
-      try {
-        const parsed = JSON.parse(localRaw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          loadedData = parsed;
+
+    // 1. First, check Sovereign IndexedDB Vault DB (permanent local storage)
+    try {
+      const idbNotes = await dbGetAllNotes();
+      if (Array.isArray(idbNotes) && idbNotes.length > 0) {
+        loadedData = idbNotes;
+        console.info(`Loaded ${idbNotes.length} notes from Sovereign Vault DB ✓`);
+      }
+    } catch (e) {
+      console.warn("Could not read from Sovereign Vault DB:", e);
+    }
+
+    // 2. If IDB is empty, check active localStorage storage key
+    if (!loadedData) {
+      const localRaw = localStorage.getItem(STORAGE_KEY);
+      if (localRaw) {
+        try {
+          const parsed = JSON.parse(localRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            loadedData = parsed;
+          }
+        } catch (err) {
+          console.warn("Error parsing primary notes storage:", err);
         }
-      } catch (err) {
-        console.warn("Error parsing primary notes storage:", err);
       }
     }
 
-    // 2. If primary key is empty, check backup mirror
+    // 3. If primary key is empty, check backup mirror
     if (!loadedData) {
       const backupRaw = localStorage.getItem(BACKUP_STORAGE_KEY);
       if (backupRaw) {
@@ -127,7 +152,7 @@ export const useNotesStore = defineStore("notes", () => {
       }
     }
 
-    // 3. If still empty, scan all historical legacy storage keys to guarantee user data preservation
+    // 4. If still empty, scan all historical legacy storage keys to guarantee user data preservation
     if (!loadedData) {
       for (const legacyKey of LEGACY_STORAGE_KEYS) {
         const legacyRaw = localStorage.getItem(legacyKey);
@@ -146,10 +171,10 @@ export const useNotesStore = defineStore("notes", () => {
       }
     }
 
-    // 4. Set notes value or use initial seed only if no previous data existed anywhere
+    // 5. Set notes value or use initial seed only if no previous data existed anywhere
     if (loadedData && loadedData.length > 0) {
       notes.value = loadedData;
-      saveToLocal(); // Sync to current key and backup mirror
+      saveToLocal(); // Sync to IDB Vault and localStorage
     } else {
       notes.value = JSON.parse(JSON.stringify(INITIAL_NOTES));
       saveToLocal();
@@ -255,6 +280,7 @@ export const useNotesStore = defineStore("notes", () => {
       selectedNoteId.value = notes.value[0]?.id || null;
     }
     await tauriDeleteNote(id);
+    await dbDeleteNote(id);
     saveToLocal();
   }
 
