@@ -460,5 +460,68 @@ async function handleSaveSelected() {
   color: var(--text-dim, #6b7280);
   font-size: 16px;
   cursor: pointer;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 680px) {
+  .modal-overlay {
+    padding: 8px;
+    align-items: flex-end;
+  }
+
+  .scanner-modal-window {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 24px);
+  }
+
+  .scanner-dropzone {
+    padding: 16px 12px;
+  }
+
+  .drop-text {
+    font-size: 13px;
+  }
+
+  .drop-sub {
+    font-size: 11px;
+  }
+
+  .paste-textarea {
+    font-size: 16px; /* Prevents auto-zoom */
+    padding: 10px 12px;
+  }
+
+  .btn-detect {
+    min-height: 46px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scanned-row {
+    padding: 10px 12px;
+    min-height: 48px;
+  }
+
+  .scanned-checkbox {
+    width: 20px;
+    height: 20px;
+  }
+
+  .btn-encrypt-selected {
+    min-height: 46px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 </style>

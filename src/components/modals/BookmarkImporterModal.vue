@@ -754,4 +754,60 @@ function closeModal() {
     opacity: 1;
   }
 }
+
+@media (max-width: 768px) {
+  .importer-modal-overlay {
+    padding: 8px;
+    align-items: flex-end;
+  }
+
+  .importer-modal-window {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: calc(100dvh - 20px);
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-body {
+    padding: 14px 16px;
+    gap: 14px;
+  }
+
+  .target-options-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .preview-filter-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .search-input,
+  .project-select,
+  .project-title-input {
+    font-size: 16px; /* Prevents auto-zoom on mobile */
+    min-height: 44px;
+  }
+
+  .modal-footer {
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    flex-direction: column-reverse;
+  }
+
+  .btn-confirm-import,
+  .btn-cancel {
+    width: 100%;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+}
 </style>

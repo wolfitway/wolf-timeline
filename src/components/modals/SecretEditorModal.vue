@@ -341,5 +341,68 @@ async function handleSave() {
   color: var(--text-dim, #6b7280);
   font-size: 16px;
   cursor: pointer;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 8px;
+    align-items: flex-end;
+  }
+
+  .modal-window {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding: 22px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 24px);
+  }
+
+  .form-row-2 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px; /* Prevents auto-zoom on mobile */
+    padding: 11px 14px;
+  }
+
+  .form-input.mono {
+    font-size: 15px;
+  }
+
+  .pass-input-row {
+    align-items: stretch;
+  }
+
+  .btn-toggle-eye {
+    min-width: 48px;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .modal-actions-row {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .btn-submit,
+  .btn-cancel {
+    width: 100%;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
 }
 </style>
