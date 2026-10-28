@@ -122,6 +122,32 @@ const results = computed<PaletteItem[]>(() => {
     },
   });
 
+  list.push({
+    id: "act-new-project",
+    type: "action",
+    title: "Create New Project Workspace",
+    subtitle: "New project with isolated notes, roadmap horizons, and research bookmarks",
+    icon: "plus",
+    badge: "Project",
+    action: () => {
+      uiStore.showCommandPalette = false;
+      uiStore.openNewProjectModal();
+    },
+  });
+
+  list.push({
+    id: "act-publish-web",
+    type: "action",
+    title: "Publish to Web & Notion-Style Sites",
+    subtitle: "Generate interactive standalone website with TOC, live preview, and theme toggle",
+    icon: "external",
+    badge: "Publish",
+    action: () => {
+      uiStore.showCommandPalette = false;
+      uiStore.openPublishWebModal();
+    },
+  });
+
   // Notes
   notesStore.notes.forEach((n) => {
     list.push({

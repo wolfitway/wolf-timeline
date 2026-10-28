@@ -26,42 +26,9 @@ const licenseStore = useLicenseStore();
 
     <!-- Main Navigation Tabs -->
     <nav class="sidebar-nav">
-      <!-- Lens Mode Selector Pill -->
-      <div class="sidebar-lens-bar">
-        <button
-          type="button"
-          class="sidebar-lens-btn"
-          :class="{ active: uiStore.activeLens === 'all' }"
-          @click="uiStore.setLens('all')"
-          title="All Workspaces"
-        >🐺 All</button>
-        <button
-          type="button"
-          class="sidebar-lens-btn"
-          :class="{ active: uiStore.activeLens === 'notes' }"
-          @click="uiStore.setLens('notes')"
-          title="Notes & Studio"
-        >✍️ Notes</button>
-        <button
-          type="button"
-          class="sidebar-lens-btn"
-          :class="{ active: uiStore.activeLens === 'roadmap' }"
-          @click="uiStore.setLens('roadmap')"
-          title="Roadmap Canvas"
-        >🗺️ Roadmap</button>
-        <button
-          type="button"
-          class="sidebar-lens-btn"
-          :class="{ active: uiStore.activeLens === 'vault' }"
-          @click="uiStore.setLens('vault')"
-          title="Secret Vault & Bookmarks"
-        >🔐 Vault</button>
-      </div>
-
       <div class="nav-section-title">WORKSPACES</div>
 
       <button
-        v-if="uiStore.activeLens === 'all' || uiStore.activeLens === 'notes'"
         type="button"
         class="nav-tab-btn"
         :class="{ active: uiStore.activeTab === 'timeline' }"
@@ -80,7 +47,6 @@ const licenseStore = useLicenseStore();
       </button>
 
       <button
-        v-if="uiStore.activeLens === 'all' || uiStore.activeLens === 'notes'"
         type="button"
         class="nav-tab-btn"
         :class="{ active: uiStore.activeTab === 'studio' }"
@@ -98,7 +64,6 @@ const licenseStore = useLicenseStore();
       </button>
 
       <button
-        v-if="uiStore.activeLens === 'all' || uiStore.activeLens === 'roadmap'"
         type="button"
         class="nav-tab-btn"
         :class="{ active: uiStore.activeTab === 'roadmap' }"
@@ -113,10 +78,38 @@ const licenseStore = useLicenseStore();
         <span class="tab-label">Roadmap Canvas</span>
       </button>
 
+      <button
+        type="button"
+        class="nav-tab-btn"
+        :class="{ active: uiStore.activeTab === 'bookmarks' }"
+        @click="uiStore.setTab('bookmarks')"
+      >
+        <div class="tab-icon-wrap">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <span class="tab-label">Smart Bookmarks</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-tab-btn btn-sidebar-new-project"
+        @click="uiStore.openNewProjectModal"
+        title="Create New Project Workspace"
+      >
+        <div class="tab-icon-wrap">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+        <span class="tab-label">+ New Project</span>
+      </button>
+
       <div class="nav-section-title">SOVEREIGN ENGINE</div>
 
       <button
-        v-if="uiStore.activeLens === 'all' || uiStore.activeLens === 'vault'"
         type="button"
         class="nav-tab-btn"
         :class="{ active: uiStore.activeTab === 'secrets' }"
@@ -366,6 +359,18 @@ const licenseStore = useLicenseStore();
 .license-arrow {
   font-size: 12px;
   opacity: 0.7;
+}
+
+.btn-sidebar-new-project {
+  color: var(--emerald-bright, #34d399) !important;
+  border: 1px dashed var(--border-card, #162a21) !important;
+  margin-top: 4px;
+  border-radius: 8px;
+}
+
+.btn-sidebar-new-project:hover {
+  background: var(--emerald-pill-bg, #063324) !important;
+  border-color: var(--emerald-main, #10b981) !important;
 }
 
 /* Sidebar Lens Switcher */

@@ -77,8 +77,19 @@ export interface WebBookmark {
 }
 
 
+export interface Project {
+  id: string;
+  title: string;
+  description?: string;
+  emoji: string;
+  color?: string;
+  created_at: string;
+  targetQuarter?: string;
+}
+
 export interface Note {
   id: number;
+  projectId?: string | number;
   created_at: string;
   title: string;
   body: string;
@@ -106,6 +117,7 @@ export type RoadmapHorizon = "now" | "next" | "later" | "shipped";
 
 export interface RoadmapPhase {
   id: string;
+  projectId?: string | number;
   number: number;
   title: string;
   subtitle: string;

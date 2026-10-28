@@ -24,12 +24,33 @@ export const useUiStore = defineStore("ui", () => {
   const showAiExplorationModal = ref<boolean>(false);
   const activeAiExplorationId = ref<string | null>(null);
   const showCompetitorAuditModal = ref<boolean>(false);
+  const showPublishWebModal = ref<boolean>(false);
+  const publishWebTargetNoteId = ref<number | null>(null);
+  const showNewProjectModal = ref<boolean>(false);
   const showLightbox = ref<boolean>(false);
   const lightboxImageUrl = ref<string>("");
   const lightboxCaption = ref<string>("");
   const lightboxTags = ref<string[]>([]);
   const lightboxGallery = ref<Array<{ url: string; caption?: string; tags?: string[] }>>([]);
   const lightboxIndex = ref<number>(0);
+
+  function openPublishWebModal(noteId?: number | null) {
+    publishWebTargetNoteId.value = noteId || null;
+    showPublishWebModal.value = true;
+  }
+
+  function closePublishWebModal() {
+    showPublishWebModal.value = false;
+    publishWebTargetNoteId.value = null;
+  }
+
+  function openNewProjectModal() {
+    showNewProjectModal.value = true;
+  }
+
+  function closeNewProjectModal() {
+    showNewProjectModal.value = false;
+  }
 
   function openCompetitorAuditModal() {
     showCompetitorAuditModal.value = true;
@@ -151,6 +172,13 @@ export const useUiStore = defineStore("ui", () => {
     showCompetitorAuditModal,
     openCompetitorAuditModal,
     closeCompetitorAuditModal,
+    showPublishWebModal,
+    publishWebTargetNoteId,
+    openPublishWebModal,
+    closePublishWebModal,
+    showNewProjectModal,
+    openNewProjectModal,
+    closeNewProjectModal,
     showLightbox,
     lightboxImageUrl,
     lightboxCaption,

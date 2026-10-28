@@ -20,6 +20,8 @@ import AiExplorationModal from "@/components/modals/AiExplorationModal.vue";
 import BookmarkImporterModal from "@/components/modals/BookmarkImporterModal.vue";
 import VoiceGuideModal from "@/components/modals/VoiceGuideModal.vue";
 import CompetitorAuditModal from "@/components/modals/CompetitorAuditModal.vue";
+import PublishWebModal from "@/components/modals/PublishWebModal.vue";
+import NewProjectModal from "@/components/modals/NewProjectModal.vue";
 
 import { useUiStore } from "@/stores/useUiStore";
 import { useNotesStore } from "@/stores/useNotesStore";
@@ -225,6 +227,8 @@ onUnmounted(() => {
     <BookmarkImporterModal />
     <VoiceGuideModal />
     <CompetitorAuditModal v-if="uiStore.showCompetitorAuditModal" />
+    <PublishWebModal v-if="uiStore.showPublishWebModal" />
+    <NewProjectModal v-if="uiStore.showNewProjectModal" />
 
     <!-- Toast Notification -->
     <div v-if="uiStore.toastMessage" class="global-toast">

@@ -34,6 +34,7 @@ export const useNotesStore = defineStore("notes", () => {
   const notes = ref<Note[]>([]);
   const selectedNoteId = ref<number | null>(1);
   const activeCategory = ref<string>("all");
+  const selectedProjectId = ref<string | "all">("all");
   const searchQuery = ref<string>("");
   const isLoaded = ref<boolean>(false);
 
@@ -48,6 +49,10 @@ export const useNotesStore = defineStore("notes", () => {
 
   const filteredNotes = computed<Note[]>(() => {
     return notes.value.filter((note) => {
+      // Workspace / Project filter
+      if (selectedProjectId.value !== "all" && note.projectId && note.projectId !== selectedProjectId.value) {
+        return false;
+      }
       // Category filter
       if (activeCategory.value !== "all") {
         if (note.kind !== activeCategory.value && note.funnel_stage !== activeCategory.value && note.status !== activeCategory.value) {
@@ -252,11 +257,13 @@ export const useNotesStore = defineStore("notes", () => {
     status?: "ideation" | "research" | "design" | "in_progress" | "live" | "backlog" | "exploring" | "shipped";
     funnel_stage?: "awareness" | "lead_magnet" | "product" | "revenue";
     remind_at?: string | null;
+    projectId?: string | number;
   }) {
     const created = await tauriAddNote(newNote);
     const noteId = created ? created.id : Date.now();
     const note: Note = {
       id: noteId,
+      projectId: newNote.projectId || (selectedProjectId.value !== "all" ? selectedProjectId.value : undefined),
       created_at: created?.created_at || new Date().toISOString(),
       title: newNote.title,
       body: newNote.body,
@@ -577,6 +584,7 @@ export const useNotesStore = defineStore("notes", () => {
     selectedNote,
     filteredNotes,
     activeCategory,
+    selectedProjectId,
     searchQuery,
     counts,
     allTags,

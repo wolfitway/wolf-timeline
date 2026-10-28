@@ -44,7 +44,9 @@ function onPreviewScroll() {
 
 // Studio Layout & View State
 type ViewMode = "split" | "editor" | "preview";
-const viewMode = ref<ViewMode>("split");
+const viewMode = ref<ViewMode>(
+  typeof window !== "undefined" && window.innerWidth <= 768 ? "editor" : "split"
+);
 const showSidebar = ref<boolean>(true);
 const mobileStudioMode = ref<"list" | "editor">(notesStore.selectedNote ? "editor" : "list");
 const sidebarSearch = ref<string>("");
@@ -748,7 +750,7 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
           <div class="view-mode-group">
             <button
               type="button"
-              class="btn-mode"
+              class="btn-mode btn-mode-split"
               :class="{ active: viewMode === 'split' }"
               title="Split View (Editor + Live Preview)"
               @click="viewMode = 'split'"
@@ -791,6 +793,15 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
             <button type="button" class="btn-action-icon" title="Download .md file" @click="downloadMarkdown">
               <WolfIcon name="download" :size="13" />
               <span>Export</span>
+            </button>
+            <button
+              type="button"
+              class="btn-action-icon"
+              title="Publish & Preview as Notion-Style Website (.html)"
+              @click="uiStore.openPublishWebModal(notesStore.selectedNote?.id)"
+            >
+              <WolfIcon name="external" :size="13" />
+              <span>Publish</span>
             </button>
             <button type="button" class="btn-action-icon" title="Duplicate Document" @click="handleDuplicateCurrentNote">
               <WolfIcon name="duplicate" :size="13" />
@@ -2393,7 +2404,9 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
     display: flex !important;
     width: 100% !important;
     height: 100% !important;
-    padding-bottom: 74px;
+    padding-bottom: 64px; /* Clearance for MobileBottomNav */
+    min-height: 0;
+    overflow: hidden;
   }
 
   .btn-mobile-docs {
@@ -2403,13 +2416,12 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
     background: var(--bg-surface, #181208);
     border: 1px solid var(--border-card, #33220a);
     color: var(--emerald-bright, #fbbf24);
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
-    padding: 6px 12px;
+    padding: 5px 10px;
     border-radius: 6px;
     cursor: pointer;
-    min-height: 38px;
-    margin-right: 6px;
+    min-height: 32px;
     flex-shrink: 0;
   }
 
@@ -2417,33 +2429,124 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
     display: none !important;
   }
 
-  .studio-panes.split {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
+  /* Hide duplicate timeline button on mobile since bottom nav already provides it */
+  .btn-studio-timeline-jump {
+    display: none !important;
   }
 
+  /* Compact 2-row header on mobile */
   .studio-topbar {
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 10px 14px;
-    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-subtle, #11221a);
+    background: var(--bg-inner, #07100c);
   }
 
   .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     width: 100%;
-    justify-content: flex-start;
+  }
+
+  .studio-title-input {
+    flex: 1;
+    min-width: 0;
+    font-size: 14.5px;
+    font-weight: 700;
+    padding: 4px 8px;
   }
 
   .topbar-right {
-    width: 100%;
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    gap: 6px;
+    width: 100%;
     overflow-x: auto;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .markdown-toolbar {
+  .topbar-right::-webkit-scrollbar {
+    display: none;
+  }
+
+  .status-select-box {
+    font-size: 11px;
+    padding: 4px 8px;
+    height: 30px;
+    min-width: 100px;
+    flex-shrink: 0;
+  }
+
+  .view-mode-group {
+    flex-shrink: 0;
+  }
+
+  /* Hide split mode on mobile - focus on Write OR Preview full-screen */
+  .btn-mode.btn-mode-split {
+    display: none !important;
+  }
+
+  .btn-mode {
+    min-height: 28px;
+    height: 28px;
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  .action-btn-group {
+    flex-shrink: 0;
+    gap: 4px;
+    display: flex;
+    align-items: center;
+  }
+
+  .btn-action-icon {
+    min-height: 28px;
+    height: 28px;
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  /* Hide text labels on action buttons on mobile so they fit as sleek icons */
+  .btn-action-icon span {
+    display: none;
+  }
+
+  .btn-focus-trigger {
+    padding: 4px 8px;
+    font-size: 11px;
+    height: 28px;
+  }
+
+  .btn-focus-trigger span {
+    display: none;
+  }
+
+  /* Tags strip */
+  .studio-tags-strip {
+    padding: 4px 12px;
+    gap: 6px;
     overflow-x: auto;
-    padding: 8px 12px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .studio-tags-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Markdown Formatting Toolbar on Mobile */
+  .markdown-toolbar {
+    padding: 4px 10px;
+    gap: 3px;
+    overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -2453,34 +2556,121 @@ function applyTemplate(tmpl: (typeof SOVEREIGN_TEMPLATES)[0]) {
     display: none;
   }
 
-  .btn-mode {
-    min-height: 38px;
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
   .btn-tool,
   .btn-tool-callout {
-    min-height: 38px;
-    padding: 6px 10px;
-    font-size: 12px;
+    min-height: 30px;
+    height: 30px;
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+
+  .btn-tool span {
+    font-size: 10.5px;
+  }
+
+  /* Studio Panes on Mobile: Always 1 full-height pane (Editor OR Preview) */
+  .studio-panes {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .studio-panes.split {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .studio-editor-pane,
+  .studio-preview-pane {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .studio-textarea {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-y: auto;
+  }
+
+  .preview-content {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-y: auto;
   }
 
   .pane-meta-strip {
-    padding: 6px 12px;
+    padding: 4px 12px;
+    font-size: 10px;
   }
 
-  .pane-hint {
+  .pane-hint,
+  .pane-sync {
+    display: none !important;
+  }
+
+  /* Studio Footer on Mobile: Compact, single-line, zero overlap */
+  .studio-footer {
+    height: 30px;
+    min-height: 30px;
+    padding: 0 12px;
+    font-size: 10.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-card, #060e0a);
+    border-top: 1px solid var(--border-subtle, #11221a);
+    flex-shrink: 0;
+  }
+
+  .footer-metrics {
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    white-space: nowrap;
+  }
+
+  .footer-metrics::-webkit-scrollbar {
     display: none;
   }
 
-  .studio-footer-status {
-    padding: 6px 12px;
-    margin-bottom: 8px;
+  /* Hide verbose metrics on mobile, keep words and reading time */
+  .footer-metrics .metric-item:nth-child(2), /* characters */
+  .footer-metrics .metric-item:nth-child(3), /* lines */
+  .footer-metrics .metric-item:nth-child(5) /* speak time */ {
+    display: none;
   }
 
-  .footer-left {
+  .footer-security {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .security-text {
     display: none;
+  }
+
+  .footer-security::after {
+    content: "Local AES-256";
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--emerald-bright, #34d399);
   }
 }
 </style>

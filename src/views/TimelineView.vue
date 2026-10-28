@@ -5,6 +5,7 @@ import { useNotesStore } from "@/stores/useNotesStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useRoadmapStore } from "@/stores/useRoadmapStore";
 import { useBookmarksStore } from "@/stores/useBookmarksStore";
+import { useProjectsStore } from "@/stores/useProjectsStore";
 import { optimizeImageFile, downloadPhotoFile, exportPhotosToFolder } from "@/services/imageStorage";
 import { fetchSmartResource } from "@/services/resourceFetcher";
 import { renderMarkdown, toggleTaskInMarkdown, cleanMarkdownSnippet } from "@/services/markdownRenderer";
@@ -15,6 +16,17 @@ const notesStore = useNotesStore();
 const uiStore = useUiStore();
 const roadmapStore = useRoadmapStore();
 const bookmarksStore = useBookmarksStore();
+const projectsStore = useProjectsStore();
+
+function handleProjectChange(projectId: string) {
+  projectsStore.setActiveProject(projectId);
+  notesStore.selectedProjectId = projectId;
+  uiStore.showToast(
+    projectId === "all"
+      ? "Viewing All Workspaces"
+      : `Switched to "${projectsStore.activeProject?.title || projectId}" ✓`
+  );
+}
 
 // Executive Today Briefing & Metrics
 const currentDayGreeting = computed(() => {
@@ -72,22 +84,85 @@ const roadmapStats = computed(() => {
   };
 });
 
-function handleQuickAddTask() {
-  if (!notesStore.selectedNote) {
-    uiStore.showToast("Select a project note first to append an action task");
-    return;
+const showQuickTaskModal = ref(false);
+const quickTaskInput = ref("");
+
+function openQuickTaskModal() {
+  if (!notesStore.selectedNote && notesStore.notes.length > 0) {
+    notesStore.selectNote(notesStore.notes[0].id);
   }
-  const taskText = prompt("Enter new action task for '" + notesStore.selectedNote.title + "':");
-  if (!taskText || !taskText.trim()) return;
-  const updatedBody = `${notesStore.selectedNote.body.trim()}\n- [ ] ${taskText.trim()}`;
+  quickTaskInput.value = "";
+  showQuickTaskModal.value = true;
+}
+
+function submitQuickTask() {
+  if (!quickTaskInput.value.trim() || !notesStore.selectedNote) return;
+  const updatedBody = `${notesStore.selectedNote.body.trim()}\n- [ ] ${quickTaskInput.value.trim()}`;
   notesStore.updateNote(notesStore.selectedNote.id, { body: updatedBody });
-  uiStore.showToast("Task added to note ✓");
+  uiStore.showToast(`Task added to "${notesStore.selectedNote.title}" ✓`);
+  quickTaskInput.value = "";
+  showQuickTaskModal.value = false;
+  activeDetailSection.value = "notes";
+  timelineNotesViewMode.value = "preview";
 }
 
 function focusFirstPendingTask() {
-  if (notesStore.selectedNote) {
+  let targetNote = notesStore.selectedNote;
+  if (!targetNote || !targetNote.body || !targetNote.body.includes("- [ ]")) {
+    targetNote = notesStore.notes.find((n) => n.body && n.body.includes("- [ ]")) || null;
+  }
+
+  if (targetNote) {
+    notesStore.selectNote(targetNote.id);
+    mobileShowDetail.value = true;
+    activeDetailSection.value = "notes";
     timelineNotesViewMode.value = "preview";
-    uiStore.showToast("Reviewing checklist tasks ✓");
+    uiStore.showToast(`Viewing pending tasks in "${targetNote.title}" ✓`);
+  } else {
+    uiStore.showToast("All action tasks are completed! 🎉");
+  }
+}
+
+function handleMilestonesClick() {
+  const hasMilestoneNotes = notesStore.notes.some(
+    (n) => n.kind === "milestone" || n.tags?.includes("milestone")
+  );
+  if (activeFeedTag.value === "milestone") {
+    activeFeedTag.value = null;
+    uiStore.showToast("Showing all projects");
+  } else if (hasMilestoneNotes) {
+    activeFeedTag.value = "milestone";
+    isSidebarVisible.value = true;
+    uiStore.showToast("Filtered feed to Milestone projects ✓");
+  } else {
+    uiStore.setTab("roadmap");
+  }
+}
+
+function handleNotesCardClick() {
+  activeFeedTag.value = null;
+  notesStore.searchQuery = "";
+  isSidebarVisible.value = true;
+  uiStore.showToast(`Showing all ${notesStore.notes.length} project notes`);
+}
+
+function handleWebResearchClick() {
+  if (notesStore.selectedNote) {
+    activeDetailSection.value = "docs";
+    mobileShowDetail.value = true;
+    uiStore.showToast(`Viewing web research for "${notesStore.selectedNote.title}" ✓`);
+  } else {
+    uiStore.setTab("bookmarks");
+  }
+}
+
+function handleAddWebResearchClick() {
+  if (notesStore.selectedNote) {
+    activeDetailSection.value = "docs";
+    showAddDoc.value = true;
+    mobileShowDetail.value = true;
+  } else {
+    uiStore.showBookmarkImporter = true;
   }
 }
 
@@ -102,8 +177,10 @@ const activeDetailSection = ref<"all" | "notes" | "docs" | "mood">(
   typeof window !== "undefined" && window.innerWidth <= 768 ? "notes" : "all"
 );
 
-// Left sidebar visibility - starts HIDDEN by default so user can focus on writing full-width!
-const isSidebarVisible = ref<boolean>(false);
+// Left sidebar visibility - default visible on desktop so projects and notes list are immediately accessible
+const isSidebarVisible = ref<boolean>(
+  typeof window !== "undefined" ? window.innerWidth > 768 : true
+);
 
 function toggleSidebar() {
   isSidebarVisible.value = !isSidebarVisible.value;
@@ -1103,12 +1180,17 @@ function toggleMoodTag(tag: string) {
         <p class="today-greeting-sub">{{ currentDayGreeting }}</p>
       </div>
 
-      <!-- 4 Circular Metric Action Cards in a Row (Signature Wolfitway & Linear Luxury) -->
+      <!-- 4 Circular Metric Action Cards in a Row (Signature Theme-Aware) -->
       <div class="today-metric-cards-grid">
         <!-- Metric 1: Roadmap Milestones -->
-        <div class="today-metric-card" @click="uiStore.setTab('roadmap')">
+        <div
+          class="today-metric-card"
+          :class="{ 'active-filter': activeFeedTag === 'milestone' }"
+          @click="handleMilestonesClick"
+          title="Click to filter Milestone projects in feed (or open Roadmap)"
+        >
           <div class="metric-circle-badge">
-            <svg class="progress-ring" width="44" height="44" viewBox="0 0 44 44">
+            <svg class="progress-ring" width="42" height="42" viewBox="0 0 44 44">
               <circle class="ring-bg" cx="22" cy="22" r="18" />
               <circle
                 class="ring-indicator"
@@ -1128,7 +1210,7 @@ function toggleMoodTag(tag: string) {
           <button
             type="button"
             class="metric-action-circle-btn"
-            title="Add Roadmap Milestone"
+            title="Open Roadmap Schedule & Milestones"
             @click.stop="uiStore.setTab('roadmap')"
           >
             <span class="plus-icon">+</span>
@@ -1136,9 +1218,13 @@ function toggleMoodTag(tag: string) {
         </div>
 
         <!-- Metric 2: Daily Markdown Action Tasks -->
-        <div class="today-metric-card" @click="focusFirstPendingTask">
+        <div
+          class="today-metric-card"
+          @click="focusFirstPendingTask"
+          title="Click to jump directly to your next incomplete checklist task"
+        >
           <div class="metric-circle-badge">
-            <svg class="progress-ring" width="44" height="44" viewBox="0 0 44 44">
+            <svg class="progress-ring" width="42" height="42" viewBox="0 0 44 44">
               <circle class="ring-bg" cx="22" cy="22" r="18" />
               <circle
                 class="ring-indicator"
@@ -1159,14 +1245,18 @@ function toggleMoodTag(tag: string) {
             type="button"
             class="metric-action-circle-btn"
             title="Add Checklist Task to Note"
-            @click.stop="handleQuickAddTask"
+            @click.stop="openQuickTaskModal"
           >
             <span class="plus-icon">+</span>
           </button>
         </div>
 
         <!-- Metric 3: Sovereign Projects & Notes -->
-        <div class="today-metric-card" @click="uiStore.showQuickCapture = true">
+        <div
+          class="today-metric-card"
+          @click="handleNotesCardClick"
+          title="Click to reset filters and reveal all project notes in your queue"
+        >
           <div class="metric-circle-badge static-circle">
             <span class="badge-number">{{ notesStore.notes.length }}</span>
           </div>
@@ -1185,7 +1275,11 @@ function toggleMoodTag(tag: string) {
         </div>
 
         <!-- Metric 4: Offline Research Bookmarks -->
-        <div class="today-metric-card" @click="uiStore.setTab('bookmarks')">
+        <div
+          class="today-metric-card"
+          @click="handleWebResearchClick"
+          title="Click to view saved research & links for active note (or open Hub)"
+        >
           <div class="metric-circle-badge static-circle">
             <span class="badge-number">{{ bookmarksStore.bookmarks.length }}</span>
           </div>
@@ -1196,8 +1290,8 @@ function toggleMoodTag(tag: string) {
           <button
             type="button"
             class="metric-action-circle-btn"
-            title="Import Browser Bookmarks"
-            @click.stop="uiStore.showBookmarkImporter = true"
+            title="Add Web Research Link"
+            @click.stop="handleAddWebResearchClick"
           >
             <span class="plus-icon">+</span>
           </button>
@@ -1222,6 +1316,36 @@ function toggleMoodTag(tag: string) {
             title="Collapse sidebar to focus on writing (⌘\)"
           >
             <span>✕ Hide</span>
+          </button>
+        </div>
+
+        <!-- Project Workspace Switcher & + New Project -->
+        <div class="workspace-switcher-strip">
+          <div class="workspace-dropdown-wrap">
+            <span class="workspace-chip-icon">{{ projectsStore.activeProject ? projectsStore.activeProject.emoji : '🐺' }}</span>
+            <select
+              class="workspace-select"
+              :value="projectsStore.activeProjectId"
+              @change="(e) => handleProjectChange((e.target as HTMLSelectElement).value)"
+              title="Select Active Project Workspace"
+            >
+              <option value="all">All Workspaces</option>
+              <option
+                v-for="p in projectsStore.projects"
+                :key="p.id"
+                :value="p.id"
+              >
+                {{ p.emoji }} {{ p.title }}
+              </option>
+            </select>
+          </div>
+          <button
+            type="button"
+            class="btn-new-project-header"
+            @click="uiStore.openNewProjectModal"
+            title="Create New Project Workspace with Dedicated Notes &amp; Roadmap"
+          >
+            <span>+ New</span>
           </button>
         </div>
 
@@ -1424,6 +1548,21 @@ function toggleMoodTag(tag: string) {
                 <span>Zen Focus</span>
               </button>
 
+              <!-- Publish to Web & Notion Sites -->
+              <button
+                type="button"
+                class="btn-action-pill btn-publish-web"
+                @click="uiStore.openPublishWebModal(notesStore.selectedNote?.id)"
+                title="Publish & Preview as Notion-Style Website (.html)"
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                <span>Publish Web</span>
+              </button>
+
               <!-- Export Client Dossier -->
               <button
                 type="button"
@@ -1619,31 +1758,164 @@ function toggleMoodTag(tag: string) {
         </div>
 
 
-        <!-- 3. Sovereign Bookmarks Hub Quick-Link (Dedicated Docs & Discovery) -->
+        <!-- 3. Web Links & Research Section -->
         <div
           v-show="activeDetailSection === 'all' || activeDetailSection === 'docs'"
-          class="collapsible-section bookmarks-hub-shortcut-card"
+          class="collapsible-section docs-section"
+          :class="{ 'dedicated-view': activeDetailSection === 'docs' }"
         >
-          <div class="bookmarks-shortcut-inner">
-            <div class="bookmarks-shortcut-left">
-              <div class="shortcut-icon-badge"><WolfIcon name="bookmarks" :size="14" /></div>
-              <div class="shortcut-text-wrap">
-                <h4 class="shortcut-title">Sovereign Bookmarks &amp; Resources Hub</h4>
-                <p class="shortcut-desc">
-                  Web resources, specs, and docs are managed in their dedicated Discovery Center with auto-classification, search, and neural Kokoro readouts.
-                </p>
+          <div v-if="activeDetailSection === 'all'" class="section-title-row">
+            <h2 class="section-title">Web Links &amp; Resources ({{ notesStore.selectedNote?.bookmarks?.length || 0 }})</h2>
+          </div>
+
+          <div v-if="filteredBookmarks.length" class="docs-list">
+            <div
+              v-for="doc in filteredBookmarks"
+              :key="doc.id"
+              class="doc-item"
+              :class="{
+                'is-dragging': draggedDocId === doc.id,
+                'drag-over-item': dragOverDocId === doc.id && draggedDocId !== doc.id
+              }"
+              draggable="true"
+              @dragstart="onDocDragStart($event, doc.id)"
+              @dragover="onDocDragOver($event, doc.id)"
+              @dragleave="onDocDragLeave(doc.id)"
+              @drop="onDocDrop($event, doc.id)"
+              @dragend="onDocDragEnd"
+            >
+              <!-- Optional Preview Image Banner -->
+              <div v-if="doc.preview_image" class="doc-preview-banner">
+                <img :src="doc.preview_image" alt="" class="doc-preview-img" />
+                <a :href="doc.url" target="_blank" rel="noopener noreferrer" class="preview-hover-overlay">
+                  <span>↗ Visit Resource</span>
+                </a>
+              </div>
+
+              <div class="doc-item-body">
+                <div class="doc-item-left">
+                  <div class="doc-title-row">
+                    <span class="card-drag-handle sm" title="Drag to reorder">⋮</span>
+                    <span class="doc-title">{{ doc.title }}</span>
+                    <span class="doc-domain-badge">{{ doc.domain }}</span>
+                  </div>
+
+                  <a :href="doc.url" target="_blank" rel="noopener noreferrer" class="doc-link">
+                    🔗 {{ doc.url }}
+                  </a>
+
+                  <p v-if="doc.description" class="doc-desc-text">{{ doc.description }}</p>
+                  <span v-else-if="doc.note" class="doc-note">{{ doc.note }}</span>
+
+                  <!-- Sovereign Council of Experts Review Badges -->
+                  <div v-if="doc.expert_reviews?.length" class="expert-reviews-row">
+                    <span class="council-label">🐺 Council Verdicts:</span>
+                    <div class="expert-badges-group">
+                      <span
+                        v-for="rev in doc.expert_reviews"
+                        :key="rev.expert"
+                        class="expert-review-badge"
+                        :title="`${rev.expert} (${rev.role}): ${rev.comment}`"
+                      >
+                        <span class="rev-avatar">{{ rev.avatar }}</span>
+                        <span class="rev-name">{{ rev.expert.split(' ')[0] }}:</span>
+                        <span class="rev-score">{{ rev.score }}/10</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div v-if="doc.tags?.length" class="inline-tags-row">
+                    <span
+                      v-for="t in doc.tags"
+                      :key="t"
+                      class="resource-tag-pill clickable"
+                      @click="toggleDetailTag(t)"
+                    >
+                      #{{ t }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="doc-item-actions">
+                  <button type="button" class="btn-item-icon" @click="startEditDoc(doc)" title="Edit Doc"><WolfIcon name="write" :size="12" /></button>
+                  <button type="button" class="btn-item-icon danger" @click="handleDeleteDoc(doc.id)" title="Delete Doc"><WolfIcon name="trash" :size="12" /></button>
+                </div>
               </div>
             </div>
-            <div class="bookmarks-shortcut-actions">
-              <span class="bookmarks-count-tag">{{ notesStore.selectedNote?.bookmarks?.length || 0 }} resources</span>
+          </div>
+
+          <div v-else class="resource-empty-hint">
+            <span>No documentation links saved for this project yet.</span>
+          </div>
+
+          <!-- Smart Auto-Fetch / Link Resource Box -->
+          <div v-if="!showAddDoc && !editingDocId" class="resource-quick-fetch-bar">
+            <div class="quick-fetch-input-wrap">
+              <span class="globe-icon">🌐</span>
+              <input
+                v-model="newDocUrl"
+                type="text"
+                class="quick-url-input"
+                placeholder="Paste URL to link & auto-fetch preview..."
+                @keydown.enter="handleAutoFetchResource"
+              />
               <button
                 type="button"
-                class="btn-switch-bookmarks-hub"
-                @click="uiStore.setTab('bookmarks')"
+                class="btn-quick-fetch"
+                :disabled="isFetchingResource"
+                @click="handleAutoFetchResource"
               >
-                <span>Open Bookmarks Tab</span>
-                <span class="btn-arrow">→</span>
+                <span v-if="isFetchingResource">⏳ Analyzing...</span>
+                <span v-else>⚡ Auto-Fetch</span>
               </button>
+            </div>
+            <button
+              type="button"
+              class="btn-manual-doc-toggle"
+              @click="showAddDoc = true"
+            >
+              + Manual Entry
+            </button>
+            <button
+              type="button"
+              class="btn-import-bookmarks-toggle"
+              @click="uiStore.setTab('bookmarks')"
+              title="Open full Bookmarks & Research Discovery Hub"
+            >
+              🔖 Bookmarks Hub →
+            </button>
+          </div>
+
+          <!-- Manual Add Doc Form -->
+          <div v-else-if="showAddDoc" class="inline-adder-card">
+            <div class="adder-header">
+              <span class="card-edit-badge">New Resource Link</span>
+              <button type="button" class="btn-item-icon" @click="showAddDoc = false">✕</button>
+            </div>
+            <input v-model="newDocUrl" type="text" class="adder-input" placeholder="https://... URL / spec link" />
+            <input v-model="newDocTitle" type="text" class="adder-input" placeholder="Document title..." />
+            <input v-model="newDocNote" type="text" class="adder-input" placeholder="Takeaway note (optional)..." />
+            <input v-model="newDocTags" type="text" class="adder-input" placeholder="Tags (comma-separated)..." />
+            <div class="adder-actions">
+              <button type="button" class="btn-adder-cancel" @click="showAddDoc = false">Cancel</button>
+              <button type="button" class="btn-adder-save" @click="handleAddDoc">Save Link</button>
+              <button type="button" class="btn-quick-fetch" @click="handleAutoFetchResource">⚡ Auto-Fetch &amp; Review</button>
+            </div>
+          </div>
+
+          <!-- Edit Doc Form -->
+          <div v-if="editingDocId" class="inline-adder-card edit-mode">
+            <div class="adder-header">
+              <span class="card-edit-badge">Editing Document</span>
+              <button type="button" class="btn-item-icon" @click="editingDocId = null">✕</button>
+            </div>
+            <input v-model="editDocTitle" type="text" class="adder-input" placeholder="Document title..." />
+            <input v-model="editDocUrl" type="text" class="adder-input" placeholder="URL / spec link..." />
+            <input v-model="editDocNote" type="text" class="adder-input" placeholder="Takeaway note..." />
+            <input v-model="editDocTags" type="text" class="adder-input" placeholder="Tags (comma-separated)..." />
+            <div class="adder-actions">
+              <button type="button" class="btn-adder-cancel" @click="editingDocId = null">Cancel</button>
+              <button type="button" class="btn-adder-save" @click="handleSaveEditDoc">Update Doc</button>
             </div>
           </div>
         </div>
@@ -1966,11 +2238,44 @@ function toggleMoodTag(tag: string) {
             <span>Open in Studio</span>
           </button>
 
-          <button type="button" class="btn-panel-action" @click="uiStore.openAiExplorationModal()" title="Launch AI Multi-Model Decision & Debate Studio">
-            <WolfIcon name="cpu" :size="13" class="action-icon" />
-            <span>AI Debate</span>
+          <button type="button" class="btn-panel-action" @click="uiStore.openPublishWebModal(notesStore.selectedNote?.id)">
+            <WolfIcon name="external" :size="13" class="action-icon" />
+            <span>Publish to Web</span>
           </button>
+
+
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Add Action Task Modal -->
+  <div v-if="showQuickTaskModal" class="task-modal-backdrop" @click="showQuickTaskModal = false">
+    <div class="task-modal-card" @click.stop>
+      <div class="task-modal-header">
+        <div class="task-modal-title-row">
+          <WolfIcon name="check-square" :size="15" />
+          <span class="task-modal-title">New Action Task</span>
+        </div>
+        <button type="button" class="btn-item-icon" @click="showQuickTaskModal = false">✕</button>
+      </div>
+      <p class="task-modal-sub">
+        Appending to <strong>{{ notesStore.selectedNote?.title || "Active Project" }}</strong>
+      </p>
+      <input
+        v-model="quickTaskInput"
+        type="text"
+        class="task-modal-input"
+        placeholder="e.g. Verify PostgreSQL indexing benchmarks..."
+        autofocus
+        @keydown.enter="submitQuickTask"
+        @keydown.esc="showQuickTaskModal = false"
+      />
+      <div class="task-modal-actions">
+        <button type="button" class="btn-task-cancel" @click="showQuickTaskModal = false">Cancel</button>
+        <button type="button" class="btn-task-submit" :disabled="!quickTaskInput.trim()" @click="submitQuickTask">
+          Add Task (Enter)
+        </button>
       </div>
     </div>
   </div>
@@ -2021,18 +2326,22 @@ function toggleMoodTag(tag: string) {
 /* =========================================================================
    Executive Today Command Dashboard & Metrics HUD
    ========================================================================= */
+/* =========================================================================
+   Executive Today Command Dashboard & Metrics HUD (Theme-Aware)
+   ========================================================================= */
 .timeline-executive-today-header {
-  background: var(--bg-card, #0e0c08);
-  border: 1px solid var(--border-subtle, rgba(245, 158, 11, 0.2));
+  background: var(--bg-card, #0b1410);
+  border: 1px solid var(--border-card, #162a21);
   border-radius: 16px;
-  padding: 18px 24px;
+  padding: 16px 22px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  gap: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .timeline-executive-today-header::before {
@@ -2042,7 +2351,7 @@ function toggleMoodTag(tag: string) {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #f59e0b 25%, #fbbf24 50%, #10b981 75%, transparent);
+  background: linear-gradient(90deg, transparent, var(--emerald-main, #10b981) 30%, var(--emerald-bright, #34d399) 70%, transparent);
 }
 
 .today-title-block {
@@ -2060,7 +2369,7 @@ function toggleMoodTag(tag: string) {
 }
 
 .today-main-heading {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--text-white, #ffffff);
@@ -2078,11 +2387,11 @@ function toggleMoodTag(tag: string) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.12));
+  border: 1px solid var(--emerald-pill-border, rgba(16, 185, 129, 0.35));
   border-radius: 20px;
   padding: 4px 12px;
-  color: var(--amber-warm, #fbbf24);
+  color: var(--emerald-bright, #34d399);
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -2096,13 +2405,13 @@ function toggleMoodTag(tag: string) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: var(--bg-surface, rgba(0, 0, 0, 0.25));
+  border: 1px solid var(--border-subtle, #14281f);
   border-radius: 20px;
   padding: 4px 12px;
-  color: var(--emerald-bright, #34d399);
+  color: var(--text-secondary, #9ca3af);
   font-size: 11.5px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -2110,18 +2419,18 @@ function toggleMoodTag(tag: string) {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--emerald-main, #10b981);
+  box-shadow: 0 0 8px var(--border-glow, rgba(16, 185, 129, 0.6));
 }
 
 .sync-dot.pulse-amber {
-  background: #f59e0b;
-  box-shadow: 0 0 8px #f59e0b;
+  background: var(--emerald-main, #10b981);
+  box-shadow: 0 0 8px var(--border-glow, rgba(16, 185, 129, 0.6));
 }
 
 .today-greeting-sub {
-  font-size: 12.5px;
-  color: var(--text-secondary, #a1a1aa);
+  font-size: 12px;
+  color: var(--text-secondary, #9ca3af);
   margin: 0;
   font-weight: 500;
 }
@@ -2137,26 +2446,33 @@ function toggleMoodTag(tag: string) {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: rgba(10, 8, 4, 0.85);
-  border: 1px solid rgba(245, 158, 11, 0.16);
+  background: var(--bg-inner, #070e0b);
+  border: 1px solid var(--border-card, #162a21);
   border-radius: 12px;
   padding: 12px 14px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  user-select: none;
 }
 
 .today-metric-card:hover {
-  border-color: rgba(245, 158, 11, 0.45);
-  background: rgba(18, 14, 8, 0.95);
+  border-color: var(--emerald-main, #10b981);
+  background: var(--bg-card-hover, #0f1c16);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 14px rgba(245, 158, 11, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 14px var(--border-glow, rgba(16, 185, 129, 0.15));
+}
+
+.today-metric-card.active-filter {
+  border-color: var(--emerald-bright, #34d399);
+  background: var(--emerald-pill-bg, #063324);
+  box-shadow: 0 0 16px var(--border-glow, rgba(16, 185, 129, 0.3));
 }
 
 .metric-circle-badge {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2165,8 +2481,8 @@ function toggleMoodTag(tag: string) {
 
 .metric-circle-badge.static-circle {
   border-radius: 50%;
-  border: 2px solid rgba(245, 158, 11, 0.3);
-  background: rgba(245, 158, 11, 0.08);
+  border: 2px solid var(--border-card, #162a21);
+  background: var(--emerald-pill-bg, rgba(16, 185, 129, 0.08));
 }
 
 .progress-ring {
@@ -2178,13 +2494,13 @@ function toggleMoodTag(tag: string) {
 
 .ring-bg {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.08);
+  stroke: var(--border-subtle, rgba(255, 255, 255, 0.08));
   stroke-width: 3.5;
 }
 
 .ring-indicator {
   fill: none;
-  stroke: #f59e0b;
+  stroke: var(--emerald-main, #10b981);
   stroke-width: 3.5;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.5s ease;
@@ -2218,18 +2534,18 @@ function toggleMoodTag(tag: string) {
 
 .metric-secondary-sub {
   font-size: 11px;
-  color: var(--text-secondary, #a1a1aa);
+  color: var(--text-secondary, #9ca3af);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .metric-action-circle-btn {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: #f59e0b;
-  color: #080603;
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #040c08);
   border: none;
   display: flex;
   align-items: center;
@@ -2237,25 +2553,132 @@ function toggleMoodTag(tag: string) {
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 0 8px var(--border-glow, rgba(16, 185, 129, 0.4));
 }
 
 .metric-action-circle-btn .plus-icon {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   line-height: 1;
 }
 
 .metric-action-circle-btn:hover {
   transform: scale(1.12);
-  background: #fbbf24;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
+  background: var(--emerald-bright, #34d399);
+  box-shadow: 0 0 14px var(--border-glow, rgba(16, 185, 129, 0.6));
 }
 
-/* Dashed Queue Clear Container (Exact Match to Screenshot) */
+/* Modal styles for Quick Add Task */
+.task-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.task-modal-card {
+  background: var(--bg-card, #0b1410);
+  border: 1px solid var(--border-card, #162a21);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 24px var(--border-glow, rgba(16, 185, 129, 0.2));
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.task-modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--emerald-bright, #34d399);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.task-modal-sub {
+  font-size: 12px;
+  color: var(--text-secondary, #9ca3af);
+  margin: 0;
+}
+
+.task-modal-sub strong {
+  color: var(--text-white, #ffffff);
+}
+
+.task-modal-input {
+  background: var(--bg-inner, #070e0b);
+  border: 1px solid var(--border-card, #162a21);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-white, #ffffff);
+  font-size: 13.5px;
+  outline: none;
+  font-family: inherit;
+}
+
+.task-modal-input:focus {
+  border-color: var(--emerald-main, #10b981);
+  box-shadow: 0 0 12px var(--border-glow, rgba(16, 185, 129, 0.3));
+}
+
+.task-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-task-cancel {
+  background: var(--bg-surface, #0f1c16);
+  border: 1px solid var(--border-subtle, #14281f);
+  color: var(--text-secondary, #9ca3af);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-task-submit {
+  background: var(--emerald-main, #10b981);
+  border: 1px solid var(--emerald-bright, #34d399);
+  color: var(--bg-canvas, #040c08);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-task-submit:hover:not(:disabled) {
+  background: var(--emerald-bright, #34d399);
+  box-shadow: 0 0 14px var(--border-glow, rgba(16, 185, 129, 0.4));
+}
+
+.btn-task-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dashed Queue Clear Container */
 .dashed-queue-card {
-  border: 1.5px dashed rgba(245, 158, 11, 0.3) !important;
-  background: rgba(14, 11, 6, 0.45) !important;
+  border: 1.5px dashed var(--border-card, #162a21) !important;
+  background: var(--bg-card, #0b1410) !important;
   border-radius: 14px;
   padding: 32px 20px;
   display: flex;
@@ -2362,6 +2785,71 @@ function toggleMoodTag(tag: string) {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.3);
   color: #fca5a5;
+}
+
+.workspace-switcher-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-inner, #070e0b);
+  border: 1px solid var(--border-card, #162a21);
+  border-radius: 8px;
+  padding: 4px 6px;
+  margin-top: 4px;
+}
+
+.workspace-dropdown-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.workspace-chip-icon {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.workspace-select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-white, #ffffff);
+  font-size: 11.5px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: inherit;
+}
+
+.workspace-select option {
+  background: var(--bg-card, #0b1410);
+  color: var(--text-white, #ffffff);
+}
+
+.btn-new-project-header {
+  background: var(--emerald-pill-bg, #063324);
+  border: 1px solid var(--border-subtle, #14281f);
+  color: var(--emerald-bright, #34d399);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-new-project-header:hover {
+  background: var(--emerald-main, #10b981);
+  color: var(--bg-canvas, #040c08);
+  border-color: var(--emerald-bright, #34d399);
 }
 
 .btn-quick-capture-hero {

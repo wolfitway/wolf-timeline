@@ -349,29 +349,13 @@ function toggleTheme() {
         </div>
         <span class="brand-title">Wolf Timeline</span>
       </div>
-
-      <!-- Council Recommended Focus Lens Switcher -->
-      <div class="lens-switcher-wrap" role="radiogroup" aria-label="Workspace Focus Lens">
-        <button
-          v-for="l in focusLenses"
-          :key="l.id"
-          type="button"
-          class="lens-switch-btn"
-          :class="{ active: uiStore.activeLens === l.id }"
-          @click="handleSelectLens(l.id)"
-          :title="l.title"
-        >
-          <span class="lens-btn-emoji">{{ l.emoji }}</span>
-          <span class="lens-btn-text">{{ l.shortLabel }}</span>
-        </button>
-      </div>
     </div>
 
-    <!-- Center: Segmented Navigation Pill Group (Filtered to Current Lens) -->
+    <!-- Center: Segmented Navigation Pill Group -->
     <nav class="topbar-nav" aria-label="Main Navigation">
       <div class="nav-pill-group">
         <button
-          v-for="item in visibleNavItems"
+          v-for="item in navItems"
           :key="item.id"
           type="button"
           class="nav-tab-pill"
@@ -409,6 +393,18 @@ function toggleTheme() {
       >
         <WolfIcon name="plus" :size="14" />
         <span class="capture-text">Capture</span>
+      </button>
+
+      <!-- 2b. New Project Workspace Button (+ Project) -->
+      <button
+        type="button"
+        class="topbar-new-project-btn"
+        @click="uiStore.openNewProjectModal"
+        title="Create New Project Workspace (with dedicated notes & roadmap)"
+        aria-label="New Project Workspace"
+      >
+        <span class="btn-emoji-icon">📁</span>
+        <span class="project-btn-text">+ Project</span>
       </button>
 
       <!-- 3. Sovereign Vault DB Status Pill -->
@@ -800,6 +796,37 @@ function toggleTheme() {
 
 .topbar-capture-btn:active {
   transform: translateY(0);
+}
+
+.topbar-new-project-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-card, #120e06);
+  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--border-card, #261908);
+  border-radius: 7px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.topbar-new-project-btn:hover {
+  border-color: var(--emerald-main, #10b981);
+  color: var(--emerald-bright, #34d399);
+  background: var(--emerald-pill-bg, #063324);
+  transform: translateY(-1px);
+}
+
+.topbar-new-project-btn:active {
+  transform: translateY(0);
+}
+
+.topbar-new-project-btn .btn-emoji-icon {
+  font-size: 13px;
+  line-height: 1;
 }
 
 /* 3. Security Status Pill */
